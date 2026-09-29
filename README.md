@@ -55,12 +55,12 @@ docs/screenshots/      Review screenshots (light/dark × desktop/phone)
 | `/ideas` | **Ideas** — media-led grid; filter by status, campaign, account, text; sort; active/archived |
 | `/ideas/:id` | **Idea · Overview** — concept, script, shot list, versions summary, people, references, live links & learning notes |
 | `/ideas/:id/assets` | **Idea · Assets** — raw/cutaway/photo/audio/cover, selects, moments, duplicates, music rights, promote to Library, demo uploader |
-| `/ideas/:id/versions?v=` | **Idea · Versions** — one row per account, grouped by platform; approximate post preview, cover pick, captions per language, on-screen text plan, checklist, schedule, honest posting |
+| `/ideas/:id/versions?v=` | **Idea · Versions** — one row per account, grouped by platform; **finished video picked from the Library (or from this device, session only) with an in-page player**; approximate post preview, cover pick, captions per language, on-screen text plan, checklist, schedule, honest posting |
 | `/ideas/:id/tasks` | **Idea · Tasks** — owner, stage, due, per-version tasks, stage progress |
-| `/accounts` | **Accounts** — notebook by platform, several accounts per platform, empty platforms, room for more channels, planned-next with account filter |
-| `/accounts/:id` | **Account** — profile + native analytics links, sibling accounts on the same platform, planned and published versions, links |
+| `/accounts` | **Accounts** — notebook by platform, several accounts per platform, empty platforms, room for more channels, planned-next with account filter, and **Finished videos** with an *All accounts* view plus a filter per account (`?videos=<accountId>`) |
+| `/accounts/:id` | **Account** — finished videos for this account with in-page players, profile + native analytics links, sibling accounts on the same platform, planned and published versions, links |
 | `/calendar` | **Calendar** — content and marketing perspectives, filters (account, platform, campaign, status, person), legend, drag to reschedule; agenda on phones |
-| `/library` | **Library** — storage meter, duplicate warning, search + filters (type/brand kit, campaign, platform, person, date), selection → download package |
+| `/library` | **Library** — in-page players for videos, storage meter, duplicate warning, search + filters (type incl. *Finished video*/brand kit, campaign, platform, person, date), selection → download package |
 | `/campaigns` | **Campaigns** — launches, series, sponsorships and their ideas |
 | `/links` | **Links** — account pages, native analytics, published posts, affiliate/campaign, brand resources |
 
@@ -68,9 +68,17 @@ docs/screenshots/      Review screenshots (light/dark × desktop/phone)
 
 Follow **“Slow mornings in the studio”** from Today → *Continue* → Versions. It has four versions: **Instagram personal (@mira.lane.demo)**, **Instagram business (@lanestudio.demo)**, **TikTok** and **YouTube** — two platforms plus two accounts on one platform, each with its own cover, caption, checklist and status.
 
+### Finished-video flow
+
+1. **Library** (`/library?kind=final`, or *Type → Finished video*) — videos play in the page. Upload a video from your device and it plays too, labelled *From this device · session only*.
+2. **Idea → Versions** — each account's version has a *Finished video* picker listing Library videos, plus *From this device*. The three vertical versions of “Slow mornings” (both Instagram accounts and TikTok) already share **one** Library file; picking the same video for another account adds a reference, never a copy, and the version shows which other accounts use it.
+3. **Accounts → Finished videos** — *All accounts* groups everything by idea, then by Library file, listing the platform/account versions that use each video. Filter to one account, or open an account page to see that account's videos with players.
+
+Two small sample videos (`public/demo-media/*.webm`, “HAVEN DEMO SAMPLE — not real footage” burned in) are bundled so the seeded Library has something to play. They are regenerated with `node scripts/make-demo-videos.mjs`.
+
 ## Screenshots
 
-All 32 review screenshots (8 screens × light/dark × desktop/phone) are in [`docs/screenshots/`](docs/screenshots/). Regenerate with `npm run screenshots`.
+All 40 review screenshots (10 screens × light/dark × desktop/phone) are in [`docs/screenshots/`](docs/screenshots/). Regenerate with `npm run screenshots`.
 
 | Light | Dark |
 | --- | --- |
@@ -85,7 +93,9 @@ All 32 review screenshots (8 screens × light/dark × desktop/phone) are in [`do
 
 The prototype never implies something happened that didn't:
 
-- **Uploads** are simulated. Only a file's name and size are read; nothing leaves the browser. Progress, pause/resume, an interruption and retry are shown, and results are tagged *Session only — not stored anywhere*.
+- **Uploads** are simulated; nothing leaves the browser. Progress, pause/resume, an interruption and retry are shown, and results are tagged *Session only*. A **video chosen from the device** gets a browser-local URL so it can play in the page, and is labelled *From this device · session only. Not uploaded or stored online; gone when you reload.*
+- **Bundled sample videos** are labelled *Demo sample bundled with the prototype, not real footage*. Seeded clips without a file say *Placeholder only*.
+- **Selecting a finished video** for a version doesn't post anything; account pages say *Nothing here is posted to any platform*.
 - **Downloads and download packages** show what would be produced but produce no files.
 - **Storage** numbers are labelled *Demo figures*. "Add storage" is disabled until billing exists. Nothing is ever deleted automatically.
 - **Posting**: Haven doesn't publish. A version becomes *Posted* only when you paste the live URL after posting natively; the link is then recorded in Links.
@@ -100,6 +110,7 @@ The prototype never implies something happened that didn't:
 - No auth, workspaces, roles, database, object storage, real uploads/downloads, or quota enforcement (Milestone 2).
 - No review links, timestamped review comments, version comparison, approvals, ready-to-post bundles, recurring templates, or billing (Milestone 3). The History idea tab is folded into Overview's "Live links & learning".
 - Media is generated artwork, not real footage; the post preview is a rough frame per platform, not the platform's renderer.
+- Device videos last only for the open tab (browser object URLs). Library sizes are demo figures, not the sample files' real size. The bundled samples are recorded in the browser and don't report a duration, so their seek bar is limited.
 - Calendar drag-and-drop uses native HTML drag events (mouse); on touch devices, reschedule from the version's date field.
 - Captions, tags and schedule are editable; concept, script, references and on-screen text are read-only in this prototype.
 - Fonts and colours are provisional pending design review.

@@ -69,4 +69,16 @@ describe('reducer', () => {
     expect(account.platform).toBe('x');
     expect(next.links.filter((l) => l.accountId === account.id).map((l) => l.category).sort()).toEqual(['account', 'analytics']);
   });
+
+  it('selects a Library video by reference, so several accounts share one asset', () => {
+    const before = data.assets.length;
+    let next = reducer(data, { type: 'version/media', versionId: 'v-wheel-tt', assetId: 'a-final-vertical' });
+    next = reducer(next, { type: 'version/media', versionId: 'v-wheel-ig', assetId: 'a-final-vertical' });
+    expect(next.assets).toHaveLength(before);
+    const users = next.versions.filter((v) => v.mediaAssetId === 'a-final-vertical').map((v) => v.accountId);
+    expect(users).toEqual(expect.arrayContaining(['ig-personal', 'ig-studio', 'tt-main']));
+    expect(next.assets.find((a) => a.id === 'a-final-vertical')!.ideaIds).toEqual(['slow-mornings', 'wheel-60']);
+    const cleared = reducer(next, { type: 'version/media', versionId: 'v-wheel-tt', assetId: undefined });
+    expect(cleared.versions.find((v) => v.id === 'v-wheel-tt')!.mediaAssetId).toBeUndefined();
+  });
 });

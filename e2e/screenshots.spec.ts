@@ -11,6 +11,8 @@ const screens = [
   { name: 'idea-versions', path: '/ideas/slow-mornings/versions?v=v-ig-studio' },
   { name: 'idea-assets', path: '/ideas/slow-mornings/assets' },
   { name: 'accounts', path: '/accounts' },
+  { name: 'account-videos', path: '/accounts/tt-main' },
+  { name: 'library-videos', path: '/library?kind=final' },
   { name: 'calendar', path: '/calendar' },
   { name: 'library', path: '/library' },
   { name: 'links', path: '/links' },
@@ -35,6 +37,10 @@ for (const theme of ['light', 'dark'] as const) {
           await page.goto(`${screen.path}${sep}instant`);
           await expect(page.locator('main h1').first()).toBeVisible();
           await page.evaluate(() => document.fonts.ready);
+          // Let in-page players show their first frame.
+          await page
+            .waitForFunction(() => [...document.querySelectorAll('video')].every((v) => v.readyState >= 2), null, { timeout: 5_000 })
+            .catch(() => {});
           await page.screenshot({ path: `docs/screenshots/${theme}-${device.name}-${screen.name}.jpg`, type: 'jpeg', quality: 82 });
         });
       }

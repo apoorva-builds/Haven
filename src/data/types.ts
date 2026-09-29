@@ -113,9 +113,10 @@ export interface Idea {
   learningNotes?: string;
 }
 
-export type AssetKind = 'raw' | 'cutaway' | 'photo' | 'audio' | 'cover' | 'document';
+export type AssetKind = 'final' | 'raw' | 'cutaway' | 'photo' | 'audio' | 'cover' | 'document';
 
 export const ASSET_KIND_LABEL: Record<AssetKind, string> = {
+  final: 'Finished video',
   raw: 'Raw video',
   cutaway: 'Cutaway',
   photo: 'Photo',
@@ -159,7 +160,19 @@ export interface Asset {
   moments: Moment[];
   /** Created during this browser session only. Never persisted. */
   sessionOnly?: boolean;
+  /**
+   * Playable video in this prototype. Either a small sample bundled with the
+   * app, or a browser-local object URL for a file chosen on this device.
+   */
+  videoUrl?: string;
+  mediaSource?: VideoSource;
 }
+
+/**
+ * Where a playable video comes from in the demo. Neither is online storage:
+ * bundled samples ship with the prototype; device files stay in this tab.
+ */
+export type VideoSource = 'bundled-sample' | 'device-session';
 
 export type VersionStatus = 'Planned' | 'Editing' | 'In review' | 'Ready to post' | 'Posted';
 

@@ -53,7 +53,7 @@ export function LibraryPage() {
   const used = storageUsedGB(data);
   const limit = data.workspace.storageLimitGB;
   const pct = used / limit;
-  const byKind = (['raw', 'cutaway', 'photo', 'audio', 'document'] as AssetKind[]).map((k) => ({
+  const byKind = (['final', 'raw', 'cutaway', 'photo', 'audio', 'document'] as AssetKind[]).map((k) => ({
     kind: k,
     gb: data.assets.filter((a) => a.kind === k || (k === 'photo' && a.kind === 'cover')).reduce((s, a) => s + a.sizeMB, 0) / 1024,
   }));

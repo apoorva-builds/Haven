@@ -13,20 +13,39 @@ interface Job {
   state: 'uploading' | 'paused' | 'failed' | 'done';
   /** The demo deterministically fails the second file once, to show retry. */
   failAt?: number;
+  /** Browser-local URL for a playable video (object URL or bundled sample). */
+  videoUrl?: string;
+  mediaSource?: Asset['mediaSource'];
 }
 
-function kindFromName(name: string): AssetKind {
+interface Incoming {
+  name: string;
+  size: number;
+  file?: File;
+  sampleUrl?: string;
+}
+
+const isVideoFile = (f: Incoming) => (f.file ? f.file.type.startsWith('video/') : /\.(mov|mp4|m4v|webm|mkv)$/i.test(f.name));
+
+/** Object URL for a video chosen on this device. It never leaves the tab. */
+export function localVideoUrl(file: File): string | undefined {
+  return file.type.startsWith('video/') ? URL.createObjectURL(file) : undefined;
+}
+
+function kindFromName(name: string, toLibrary: boolean): AssetKind {
   const ext = name.split('.').pop()?.toLowerCase() ?? '';
-  if (['mov', 'mp4', 'm4v', 'avi', 'mkv', 'webm'].includes(ext)) return 'raw';
+  // Videos added straight to the Library are treated as finished edits.
+  if (['mov', 'mp4', 'm4v', 'avi', 'mkv', 'webm'].includes(ext)) return toLibrary ? 'final' : 'raw';
   if (['jpg', 'jpeg', 'png', 'heic', 'webp', 'gif'].includes(ext)) return 'photo';
   if (['wav', 'mp3', 'aac', 'm4a', 'aif', 'aiff'].includes(ext)) return 'audio';
   return 'document';
 }
 
 /**
- * Simulated upload queue. Files are never read or sent anywhere: only the
- * file name and size are used, and the resulting asset exists for this
- * browser session only. Every surface says so.
+ * Simulated upload queue. Nothing is sent anywhere. For videos, the browser
+ * makes a local object URL so the file can play in the page; everything else
+ * uses only the name and size. Results exist for this browser session only,
+ * and every surface says so.
  */
 export function DemoUploader({ ideaId, toLibrary = false }: { ideaId?: string; toLibrary?: boolean }) {
   const { data, dispatch } = useStore();
@@ -63,7 +82,7 @@ export function DemoUploader({ ideaId, toLibrary = false }: { ideaId?: string; t
         const asset: Asset = {
           id: j.id,
           name: j.name,
-          kind: kindFromName(j.name),
+          kind: kindFromName(j.name, toLibrary),
           ideaIds: ideaId ? [ideaId] : [],
           inLibrary: toLibrary,
           sizeMB: j.sizeMB,
@@ -77,12 +96,14 @@ export function DemoUploader({ ideaId, toLibrary = false }: { ideaId?: string; t
           moments: [],
           duplicateOfId: duplicate?.id,
           sessionOnly: true,
+          videoUrl: j.videoUrl,
+          mediaSource: j.videoUrl ? j.mediaSource : undefined,
         };
         dispatch({ type: 'asset/add-session', asset });
       });
   }, [jobs, data.assets, data.currentUserId, data.today, dispatch, ideaId, toLibrary]);
 
-  const addFiles = (files: { name: string; size: number }[]) => {
+  const addFiles = (files: Incoming[]) => {
     setJobs((list) => [
       ...list,
       ...files.map((f, i) => {
@@ -95,6 +116,8 @@ export function DemoUploader({ ideaId, toLibrary = false }: { ideaId?: string; t
           progress: 0,
           state: 'uploading' as const,
           failAt: shouldFail ? 0.45 : undefined,
+          videoUrl: f.sampleUrl ?? (f.file && isVideoFile(f) ? localVideoUrl(f.file) : undefined),
+          mediaSource: f.sampleUrl ? ('bundled-sample' as const) : ('device-session' as const),
         };
       }),
     ]);
@@ -102,7 +125,7 @@ export function DemoUploader({ ideaId, toLibrary = false }: { ideaId?: string; t
 
   const sample = () =>
     addFiles([
-      { name: 'Phone clip — kiln glow.mov', size: 640 * 1024 * 1024 },
+      { name: 'Phone clip — kiln glow.webm', size: 640 * 1024 * 1024, sampleUrl: '/demo-media/slow-mornings-vertical.webm' },
       { name: 'Phone photo — shelf.heic', size: 4.2 * 1024 * 1024 },
     ]);
 
@@ -120,7 +143,7 @@ export function DemoUploader({ ideaId, toLibrary = false }: { ideaId?: string; t
         onDrop={(e) => {
           e.preventDefault();
           setDragging(false);
-          addFiles(Array.from(e.dataTransfer.files).map((f) => ({ name: f.name, size: f.size })));
+          addFiles(Array.from(e.dataTransfer.files).map((f) => ({ name: f.name, size: f.size, file: f })));
         }}
       >
         <Icon name="upload" size={22} />
@@ -128,7 +151,7 @@ export function DemoUploader({ ideaId, toLibrary = false }: { ideaId?: string; t
           <p className="dropzone__title">
             Drop footage, photos or audio <DemoTag>Demo upload</DemoTag>
           </p>
-          <p className="dropzone__hint">Simulated progress only. Files never leave your browser and nothing is stored after reload.</p>
+          <p className="dropzone__hint">Simulated progress only. Files never leave your browser; videos play in the page from this tab and are gone after reload.</p>
         </div>
         <div className="dropzone__actions">
           <button type="button" className="btn btn--ghost btn--sm" onClick={() => input.current?.click()}>
@@ -143,8 +166,9 @@ export function DemoUploader({ ideaId, toLibrary = false }: { ideaId?: string; t
           type="file"
           multiple
           hidden
+          data-testid="upload-input"
           onChange={(e) => {
-            addFiles(Array.from(e.target.files ?? []).map((f) => ({ name: f.name, size: f.size })));
+            addFiles(Array.from(e.target.files ?? []).map((f) => ({ name: f.name, size: f.size, file: f })));
             e.target.value = '';
           }}
         />

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { readFileSync } from 'node:fs';
 
 /** Desktop flow checks for the Milestone 1 review path. */
 
@@ -220,4 +221,79 @@ test('every primary route renders without console errors', async ({ page }) => {
     await expect(page.locator('main h1, main .empty h3').first()).toBeVisible();
   }
   expect(errors).toEqual([]);
+});
+
+const sampleVideo = () => ({
+  mimeType: 'video/webm',
+  buffer: readFileSync(new URL('../public/demo-media/slow-mornings-vertical.webm', import.meta.url)),
+});
+
+const canPlay = (video: ReturnType<Page['locator']>) => expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.readyState), { timeout: 10_000 }).toBeGreaterThan(0);
+
+test('Library videos play in the page, including uploads from this device', async ({ page }) => {
+  await open(page, '/library?kind=final');
+  const seeded = page.locator('.asset', { hasText: 'Slow mornings — vertical v3.webm' });
+  await expect(seeded.locator('video')).toBeVisible();
+  await canPlay(seeded.locator('video'));
+  await expect(seeded.getByText(/Demo sample bundled with the prototype/)).toBeVisible();
+  await expect(seeded.getByTestId('used-by')).toContainText('3 versions');
+
+  await page.getByRole('button', { name: 'Upload' }).click();
+  await page.getByTestId('upload-input').setInputFiles({ name: 'studio-final-cut.webm', ...sampleVideo() });
+  await expect(page.getByText('Added for this session only — not stored')).toBeVisible({ timeout: 15_000 });
+  const uploaded = page.locator('.asset', { hasText: 'studio-final-cut.webm' });
+  await expect(uploaded).toHaveCount(1);
+  await canPlay(uploaded.locator('video'));
+  await expect(uploaded.getByText(/From this device · session only\. Not uploaded or stored online/)).toBeVisible();
+});
+
+test('one Library video serves several accounts and shows on each account page', async ({ page }) => {
+  await open(page, '/ideas/wheel-60/versions?v=v-wheel-tt');
+  await expect(page.getByText('No finished video selected yet').or(page.getByText(/Pick the finished edit/))).toBeVisible();
+
+  // TikTok version: choose a finished video from this device (session only).
+  await page.getByTestId('finished-video-input').setInputFiles({ name: 'wheel-final.webm', ...sampleVideo() });
+  const selected = page.locator('.finished__selected');
+  await canPlay(selected.locator('video'));
+  await expect(selected.getByText(/From this device · session only/)).toBeVisible();
+  await expect(page.getByText(/nothing was uploaded or posted/)).toBeVisible();
+
+  // Instagram personal version: pick the same Library file — no copy.
+  await page.locator('.vrow', { hasText: '@mira.lane.demo' }).click();
+  await page.getByLabel('Finished video for @mira.lane.demo').selectOption({ label: 'wheel-final.webm (this device, session only) · used by 1' });
+  await expect(selected.getByText('Same Library file also used by')).toBeVisible();
+  await expect(selected.locator('.abadge', { hasText: '@miralane.demo' })).toBeVisible();
+
+  // Library holds exactly one asset for it, used by two versions.
+  await page.getByRole('link', { name: 'Library', exact: true }).first().click();
+  const card = page.locator('.asset', { hasText: 'wheel-final.webm' });
+  await expect(card).toHaveCount(1);
+  await expect(card.getByTestId('used-by')).toContainText('2 versions');
+
+  // Accounts → Finished videos: all accounts, grouped by idea.
+  await page.getByRole('link', { name: 'Accounts', exact: true }).first().click();
+  const section = page.locator('#finished');
+  await expect(section.getByRole('radio', { name: 'All accounts' })).toHaveAttribute('aria-checked', 'true');
+  const wheel = section.locator('.fv__idea', { hasText: 'Wheel-throwing in 60 seconds' });
+  const shared = wheel.locator('.fv__item', { hasText: 'wheel-final.webm' });
+  await expect(shared).toHaveCount(1);
+  await expect(shared).toContainText('One Library file · 2 accounts');
+  await expect(shared.locator('.fv__versions li')).toHaveCount(2);
+  const hero = section.locator('.fv__idea', { hasText: 'Slow mornings in the studio' });
+  await expect(hero.getByTestId('fv-asset-a-final-vertical').locator('.fv__versions li')).toHaveCount(3);
+  await expect(hero.getByTestId('fv-asset-a-final-wide').locator('.fv__versions li')).toHaveCount(1);
+
+  // Individual account filter.
+  await section.getByRole('radio', { name: /@miralane\.demo/ }).click();
+  await expect(section.locator('.fv__versions .abadge', { hasText: '@mira.lane.demo' })).toHaveCount(0);
+  await expect(wheel.locator('.fv__versions li')).toHaveCount(1);
+  await expect(section.locator('.fv__idea', { hasText: 'Market day recap' })).toHaveCount(0);
+
+  // The account page plays the same video.
+  await section.getByRole('link', { name: /@miralane\.demo page/ }).click();
+  await expect(page.getByRole('heading', { name: 'Finished videos for @miralane.demo' })).toBeVisible();
+  const accountVideo = page.locator('.fv__item', { hasText: 'wheel-final.webm' }).locator('video');
+  await canPlay(accountVideo);
+  await expect(page.locator('.fv__item', { hasText: 'wheel-final.webm' }).getByText(/session only/)).toBeVisible();
+  await expect(page.getByText('Nothing here is posted to any platform.')).toBeVisible();
 });

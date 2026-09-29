@@ -51,3 +51,10 @@ export function versionMatchesFocus(data: DemoData, v: Version, focus: Focus): b
   if (focus.kind === 'account') return v.accountId === focus.id;
   return ideaOf(data, v.ideaId)?.campaignId === focus.id;
 }
+
+export const isVideo = (a: Asset): boolean => a.kind === 'final' || a.kind === 'raw' || a.kind === 'cutaway';
+
+/** Library videos that can actually play in the prototype. */
+export const libraryVideos = (data: DemoData): Asset[] => data.assets.filter((a) => a.inLibrary && isVideo(a) && !!a.videoUrl);
+
+export const versionsUsingAsset = (data: DemoData, assetId: string): Version[] => data.versions.filter((v) => v.mediaAssetId === assetId);

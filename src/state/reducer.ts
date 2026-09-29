@@ -21,6 +21,7 @@ export type Action =
   | { type: 'version/caption'; versionId: string; lang: string; text: string }
   | { type: 'version/check'; versionId: string; itemId: string }
   | { type: 'version/cover'; versionId: string; assetId: string }
+  | { type: 'version/media'; versionId: string; assetId: string | undefined }
   | { type: 'version/reschedule'; versionId: string; date: ISODate }
   | { type: 'version/live-url'; versionId: string; url: string }
   | { type: 'asset/favorite'; assetId: string }
@@ -133,6 +134,15 @@ export function reducer(state: DemoData, action: Action): DemoData {
         ...v,
         checklist: v.checklist.map((c) => (c.id === action.itemId ? { ...c, done: !c.done } : c)),
       }));
+
+    case 'version/media': {
+      // Versions reference a Library video; choosing one never copies it.
+      const version = state.versions.find((v) => v.id === action.versionId);
+      if (!version) return state;
+      const next = mapVersion(state, action.versionId, (v) => ({ ...v, mediaAssetId: action.assetId }));
+      if (!action.assetId) return next;
+      return mapAsset(next, action.assetId, (a) => (a.ideaIds.includes(version.ideaId) ? a : { ...a, ideaIds: [...a.ideaIds, version.ideaId] }));
+    }
 
     case 'version/cover':
       return mapVersion(state, action.versionId, (v) => ({ ...v, coverAssetId: action.assetId }));

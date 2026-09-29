@@ -5,7 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 const open = (page: Page, path: string) => page.goto(`${path}${path.includes('?') ? '&' : '?'}instant`);
 
 test('phone layout uses the tab bar and never scrolls sideways', async ({ page }) => {
-  for (const path of ['/', '/ideas', '/ideas/slow-mornings/versions', '/ideas/slow-mornings/assets', '/accounts', '/accounts/ig-studio', '/calendar', '/library', '/campaigns', '/links']) {
+  for (const path of ['/', '/ideas', '/ideas/slow-mornings/versions', '/ideas/slow-mornings/assets', '/accounts', '/accounts?videos=ig-studio', '/accounts/ig-studio', '/calendar', '/library', '/campaigns', '/links']) {
     await open(page, path);
     await expect(page.locator('main h1').first()).toBeVisible();
     await expect(page.getByRole('navigation', { name: 'Primary (mobile)' })).toBeVisible();

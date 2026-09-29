@@ -1,12 +1,14 @@
 import { ASSET_KIND_LABEL, type Asset, type AssetKind } from '../data/types';
 import { formatDuration, formatSize } from '../lib/dates';
-import { assetOf, personOf } from '../state/selectors';
+import { accountOf, assetOf, personOf, versionsUsingAsset } from '../state/selectors';
 import { useStore } from '../state/store';
 import { Cover } from './Cover';
 import { Icon, type IconName } from './Icon';
 import { useToast } from './Toast';
+import { MediaSourceNote, VideoPlayer } from './VideoPlayer';
 
 export const KIND_ICON: Record<AssetKind, IconName> = {
+  final: 'play',
   raw: 'film',
   cutaway: 'layers',
   photo: 'image',
@@ -36,16 +38,23 @@ export function AssetCard({
   const toast = useToast();
   const original = assetOf(data, asset.duplicateOfId);
   const uploader = personOf(data, asset.uploadedById);
+  const usedBy = versionsUsingAsset(data, asset.id)
+    .map((v) => accountOf(data, v.accountId)?.handle)
+    .filter(Boolean);
 
   return (
     <article className={`asset ${selected ? 'is-selected' : ''}`} aria-label={asset.name}>
       <div className="asset__media">
+        {asset.videoUrl ? (
+          <VideoPlayer asset={asset} compact />
+        ) : (
         <Cover art={asset.art} ratio="16 / 10">
           <span className="asset__kind">
             <Icon name={KIND_ICON[asset.kind]} size={13} /> {ASSET_KIND_LABEL[asset.kind]}
           </span>
           {asset.durationSec !== undefined && <span className="asset__dur">{formatDuration(asset.durationSec)}</span>}
         </Cover>
+        )}
         {selectable && (
           <label className="asset__select">
             <input type="checkbox" checked={!!selected} onChange={onSelect} aria-label={`Select ${asset.name} for download package`} />
@@ -69,9 +78,15 @@ export function AssetCard({
           {formatSize(asset.sizeMB)} · <span className={`store store--${asset.storage}`}>{STORAGE_LABEL[asset.storage]}</span>
           {uploader && <> · {uploader.name.split(' ')[0]}</>}
         </p>
-        {asset.sessionOnly && (
+        {asset.videoUrl && <MediaSourceNote asset={asset} />}
+        {asset.sessionOnly && asset.mediaSource !== 'device-session' && (
           <p className="asset__flag asset__flag--demo">
             <Icon name="shield" size={13} /> Session only — not stored anywhere
+          </p>
+        )}
+        {usedBy.length > 0 && (
+          <p className="asset__used" data-testid="used-by">
+            Used by {usedBy.length} version{usedBy.length === 1 ? '' : 's'}: {usedBy.join(', ')}
           </p>
         )}
         {asset.storage === 'proxy-only' && (

@@ -4,10 +4,11 @@ import { VERSION_STATUSES, type Idea, type Version, type VersionStatus } from '.
 import { Cover } from '../../components/Cover';
 import { Icon } from '../../components/Icon';
 import { PostPreview } from '../../components/PostPreview';
+import { FinishedVideoField } from './FinishedVideoField';
 import { useToast } from '../../components/Toast';
 import { DemoTag, EmptyState, ExternalLink, PlatformGlyph, Progress, StatusPill } from '../../components/ui';
 import { formatDay, formatDuration } from '../../lib/dates';
-import { accountOf, assetOf, assetsForIdea, checklistProgress, platformOf, versionsForIdea } from '../../state/selectors';
+import { accountOf, assetsForIdea, checklistProgress, platformOf, versionsForIdea } from '../../state/selectors';
 import { useStore } from '../../state/store';
 
 const LANG_LABEL: Record<string, string> = { en: 'English', es: 'Español', fr: 'Français', de: 'Deutsch', pt: 'Português', ja: '日本語' };
@@ -118,7 +119,6 @@ function VersionDetail({ version, idea }: { version: Version; idea: Idea }) {
   const langs = Object.keys(version.captions);
   const [lang, setLang] = useState(langs[0] ?? 'en');
   const [liveUrl, setLiveUrl] = useState(version.liveUrl ?? '');
-  const media = assetOf(data, version.mediaAssetId);
   const covers = assetsForIdea(data, idea.id).filter((a) => a.kind === 'cover' || a.kind === 'photo');
   const { done, total } = checklistProgress(version);
   const ready = done === total;
@@ -163,23 +163,7 @@ function VersionDetail({ version, idea }: { version: Version; idea: Idea }) {
         </div>
 
         <div className="vdetail__form">
-          <section className="field-group">
-            <h3 className="h3">Media</h3>
-            {media ? (
-              <div className="media-row">
-                <Cover art={media.art} ratio="1 / 1" className="media-row__thumb" />
-                <div>
-                  <p>{media.name}</p>
-                  <p className="muted">
-                    {version.aspect}
-                    {media.durationSec !== undefined && ` · ${formatDuration(media.durationSec)}`} · edited in your editor, not in Haven
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <p className="muted">No edit attached yet. Upload the export from your editor to Assets.</p>
-            )}
-          </section>
+          <FinishedVideoField version={version} />
 
           {covers.length > 0 && (
             <section className="field-group">

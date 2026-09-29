@@ -57,4 +57,11 @@ describe('demo workspace', () => {
     expect(data.today).toBe('2026-09-29');
     expect(data.tasks.some((t) => t.due === data.today)).toBe(true);
   });
+
+  it('seeds playable finished videos in the Library, shared across accounts', () => {
+    const finals = data.assets.filter((a) => a.kind === 'final');
+    expect(finals.every((a) => a.inLibrary && a.videoUrl?.startsWith('/demo-media/') && a.mediaSource === 'bundled-sample')).toBe(true);
+    const vertical = data.versions.filter((v) => v.mediaAssetId === 'a-final-vertical').map((v) => v.accountId);
+    expect(vertical.sort()).toEqual(['ig-personal', 'ig-studio', 'tt-main']);
+  });
 });
