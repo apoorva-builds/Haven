@@ -1,10 +1,13 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { VERSION_STATUSES, type Idea, type Version, type VersionStatus } from '../../data/types';
 import { Cover } from '../../components/Cover';
 import { Icon } from '../../components/Icon';
 import { PostPreview } from '../../components/PostPreview';
 import { FinishedVideoField } from './FinishedVideoField';
+import { InfoButton } from '../../components/InfoButton';
+import { PhotoViewer, photosOf } from '../Gallery';
+import { creationMedia } from '../../lib/creations';
 import { useToast } from '../../components/Toast';
 import { DemoTag, EmptyState, ExternalLink, PlatformGlyph, Progress, StatusPill } from '../../components/ui';
 import { formatDay, formatDuration } from '../../lib/dates';
@@ -37,13 +40,16 @@ export function IdeaVersions({ idea }: { idea: Idea }) {
     <div className="versions">
       <div className="versions__list">
         <p className="versions__intro">
-          One source idea, {versions.length} version{versions.length === 1 ? '' : 's'} across {groups.length} platform{groups.length === 1 ? '' : 's'}. Each version keeps its own media, cover, caption, checklist and status.
+          <span>
+            {versions.length} version{versions.length === 1 ? '' : 's'} · {groups.length} platform{groups.length === 1 ? '' : 's'}
+          </span>
+          <InfoButton k="versions" />
         </p>
         {groups.map(({ platform, versions: vs }) => (
           <div key={platform.id} className="vgroup">
             <p className="vgroup__label">
               <PlatformGlyph platform={platform} size="sm" /> {platform.name}
-              {vs.length > 1 && <span className="tag">{vs.length} accounts</span>}
+              {vs.length > 1 && <span className="vgroup__count">{vs.length} accounts</span>}
             </p>
             <ul>
               {vs.map((v) => {
@@ -53,8 +59,10 @@ export function IdeaVersions({ idea }: { idea: Idea }) {
                   <li key={v.id}>
                     <button type="button" className={`vrow ${selected?.id === v.id ? 'is-active' : ''}`} onClick={() => select(v.id)} aria-current={selected?.id === v.id}>
                       <span className="vrow__top">
+                        <span className="vrow__glyph">
+                          <PlatformGlyph platform={platform} size="sm" />
+                        </span>
                         <span className="vrow__handle">{account.handle}</span>
-                        <span className="tag">{account.kind}</span>
                       </span>
                       <span className="vrow__meta">
                         {v.format} · {v.aspect} · {formatDay(v.scheduledFor)}
@@ -133,7 +141,8 @@ function VersionDetail({ version, idea }: { version: Version; idea: Idea }) {
             <PlatformGlyph platform={platform} size="sm" /> {platform.name} · {account.kind}
           </p>
           <h2 className="h2">
-            {account.handle} <span className="muted">— {version.format}</span>
+            <PlatformGlyph platform={platform} size="sm" />
+            {account.handle} <span className="muted">· {platform.name} {version.format}</span>
           </h2>
         </div>
         <label className="status-select">
@@ -157,14 +166,27 @@ function VersionDetail({ version, idea }: { version: Version; idea: Idea }) {
         </label>
       </header>
 
-      <div className="vdetail__grid">
-        <div className="vdetail__preview">
-          <PostPreview version={version} account={account} lang={lang} />
-        </div>
-
-        <div className="vdetail__form">
+      <div className="vdetail__stage-row">
+        {creationMedia(version) === 'photos' && photosOf(data, version).length > 0 ? (
+          <section className="vstage" aria-labelledby={`fp-${version.id}`}>
+            <div className="vstage__head">
+              <h3 id={`fp-${version.id}`} className="vstage__title">
+                Finished photos
+              </h3>
+              <Link to={`/gallery/${version.id}`} className="text-link">
+                View in Creation Gallery <Icon name="arrowRight" size={14} />
+              </Link>
+            </div>
+            <PhotoViewer photos={photosOf(data, version)} />
+          </section>
+        ) : (
           <FinishedVideoField version={version} />
+        )}
+        <PlatformPreview version={version} lang={lang} />
+      </div>
 
+      <div className="vdetail__grid">
+        <div className="vdetail__form">
           {covers.length > 0 && (
             <section className="field-group">
               <h3 className="h3">Cover / opening frame</h3>
@@ -323,5 +345,24 @@ function VersionDetail({ version, idea }: { version: Version; idea: Idea }) {
         </div>
       </div>
     </div>
+  );
+}
+
+/** Small, clearly secondary mock of the platform post. Collapsed on narrow screens. */
+function PlatformPreview({ version, lang }: { version: Version; lang: string }) {
+  const { data } = useStore();
+  const account = accountOf(data, version.accountId)!;
+  const platform = platformOf(data, account.platform);
+  const [open, setOpen] = useState(() => typeof window === 'undefined' || window.matchMedia('(min-width: 900px)').matches);
+  return (
+    <details className="pp" open={open} onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}>
+      <summary className="pp__summary">
+        <span className="pp__title">{platform.name} preview</span>
+        <span className="pp__approx">Approximate</span>
+      </summary>
+      <div className="pp__body">
+        <PostPreview version={version} account={account} lang={lang} />
+      </div>
+    </details>
   );
 }

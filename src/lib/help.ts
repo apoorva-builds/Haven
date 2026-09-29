@@ -27,6 +27,10 @@ export const HELP = {
     topic: 'Raw Library',
     text: 'Source files you reuse: original photos, audio and music, unedited clips and brand assets. Finished posts live in the Creation Gallery, not here. Nothing is deleted automatically.',
   },
+  versions: {
+    topic: 'Versions',
+    text: 'One idea, one version per account. Each version keeps its own finished media, cover, caption, checklist and status, so two Instagram accounts can post different cuts of the same idea.',
+  },
   finished: {
     topic: 'Finished video',
     text: 'The final edit for this account’s version. Several accounts can use the same file without copies. A file chosen from this device plays only in this tab and isn’t uploaded.',

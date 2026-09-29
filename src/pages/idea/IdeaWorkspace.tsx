@@ -5,9 +5,9 @@ import { Cover } from '../../components/Cover';
 import { Icon } from '../../components/Icon';
 import { Modal } from '../../components/Modal';
 import { useToast } from '../../components/Toast';
-import { AccountBadge, AvatarStack, DemoTag, EmptyState, Skeleton, useDismiss, useSimulatedLoad } from '../../components/ui';
+import { AvatarStack, DemoTag, EmptyState, Skeleton, useDismiss, useSimulatedLoad } from '../../components/ui';
 import { formatDay, relativeDay } from '../../lib/dates';
-import { accountsForIdea, assetsForIdea, ideaOf, personOf, tasksForIdea, versionsForIdea } from '../../state/selectors';
+import { assetsForIdea, ideaOf, personOf, tasksForIdea, versionsForIdea } from '../../state/selectors';
 import { useStore } from '../../state/store';
 import { IdeaAssets } from './IdeaAssets';
 import { IdeaOverview } from './IdeaOverview';
@@ -46,7 +46,6 @@ export function IdeaWorkspacePage() {
   }
 
   const active: TabKey = (TABS.some((t) => t.key === tab) ? tab : 'overview') as TabKey;
-  const accounts = accountsForIdea(data, idea.id);
   const versions = versionsForIdea(data, idea.id);
   const tasks = tasksForIdea(data, idea.id);
   const assets = assetsForIdea(data, idea.id);
@@ -68,7 +67,7 @@ export function IdeaWorkspacePage() {
       </nav>
 
       <header className="idea-head">
-        <Cover art={idea.art} ratio="16 / 9" className="idea-head__cover" />
+        <Cover art={idea.art} ratio="1 / 1" className="idea-head__cover" />
         <div className="idea-head__text">
           <p className="eyebrow">
             {campaign ? (
@@ -76,7 +75,7 @@ export function IdeaWorkspacePage() {
             ) : (
               'No campaign'
             )}
-            {idea.series && <> · {idea.series}</>}
+            {idea.series && idea.series !== campaign?.name && <> · {idea.series}</>}
             {idea.archived && <span className="tag tag--muted">Archived</span>}
           </p>
           <h1 className="display">{idea.title}</h1>
@@ -98,9 +97,6 @@ export function IdeaWorkspacePage() {
               {relativeDay(idea.due, data.today) === formatDay(idea.due) ? `Due ${formatDay(idea.due)}` : `${relativeDay(idea.due, data.today)} · ${formatDay(idea.due)}`}
             </span>
             <AvatarStack people={people} />
-          </div>
-          <div className="idea-head__accounts" aria-label="Target accounts">
-            {accounts.length ? accounts.map((a) => <AccountBadge key={a.id} account={a} showHandle />) : <span className="muted">No versions planned yet</span>}
           </div>
         </div>
         <div className="idea-head__menu" ref={menuRef}>

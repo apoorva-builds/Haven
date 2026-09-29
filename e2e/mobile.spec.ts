@@ -49,6 +49,10 @@ test('calendar becomes an agenda and the drawer reaches every section', async ({
 
 test('review a version on the phone', async ({ page }) => {
   await open(page, '/ideas/market-phrases/versions?v=v-ig-atlas');
+  // The finished video leads; the approximate platform preview is collapsed until asked for.
+  await expect(page.locator('.vstage video')).toBeVisible();
+  await expect(page.getByRole('figure', { name: /Approximate Instagram preview/ })).toBeHidden();
+  await page.getByText('Instagram preview').click();
   await expect(page.getByRole('figure', { name: /Approximate Instagram preview/ })).toBeVisible();
   await page.getByRole('checkbox', { name: 'Music rights noted' }).check();
   await expect(page.locator('.vrow.is-active')).toContainText('5/6');

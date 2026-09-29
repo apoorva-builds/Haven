@@ -29,6 +29,6 @@ export default defineConfig({
   projects: [
     { name: 'desktop', testMatch: /flows\.spec\.ts/, use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, launchOptions } },
     { name: 'mobile', testMatch: /mobile\.spec\.ts/, use: { ...devices['Pixel 7'], launchOptions } },
-    { name: 'screenshots', testMatch: /screenshots\.spec\.ts/, use: { ...devices['Desktop Chrome'], launchOptions } },
+    { name: 'screenshots', testMatch: /(screenshots|compare)\.spec\.ts/, use: { ...devices['Desktop Chrome'], launchOptions } },
   ],
 });

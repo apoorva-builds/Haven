@@ -4,6 +4,7 @@ import type { Asset, Version, VersionStatus } from '../data/types';
 import { Cover } from '../components/Cover';
 import { Icon } from '../components/Icon';
 import { AccountSelector, useAccountName } from '../components/AccountSelector';
+import { QuickAddModal } from '../components/Shell';
 import { AudiencePulse } from '../components/AudiencePulse';
 import { InfoButton } from '../components/InfoButton';
 import { EmptyState, ExternalLink, LoadingGrid, PlatformGlyph, SelectField, StatusPill, useSimulatedLoad } from '../components/ui';
@@ -24,7 +25,7 @@ const STATUS_GROUP: Record<VersionStatus, StatusFilter> = {
 };
 
 /** Photos shown for a carousel/photo creation, falling back to its cover. */
-function photosOf(data: ReturnType<typeof useStore>['data'], v: Version): Asset[] {
+export function photosOf(data: ReturnType<typeof useStore>['data'], v: Version): Asset[] {
   const ids = v.photoAssetIds?.length ? v.photoAssetIds : v.coverAssetId ? [v.coverAssetId] : [];
   return ids.map((id) => assetOf(data, id)).filter((a): a is Asset => !!a);
 }
@@ -32,7 +33,7 @@ function photosOf(data: ReturnType<typeof useStore>['data'], v: Version): Asset[
 /** One account's version as a gallery tile. Opens inside Haven. */
 const STATUS_TEXT: Record<VersionStatus, string> = {
   Planned: 'Planned',
-  Editing: 'Planned · editing',
+  Editing: 'Editing',
   'In review': 'In review',
   'Ready to post': 'Ready',
   Posted: 'Posted',
@@ -66,19 +67,23 @@ export function CreationTile({ version }: { version: Version }) {
         ) : (
           art && <Cover art={art} ratio="4 / 5" />
         )}
-        <span className="ctile__label">{creationLabel(version, account, platform)}</span>
         {kind === 'photos' && photos.length > 1 && (
           <span className="ctile__badge" aria-hidden="true">
             <Icon name="image" size={12} /> {photos.length}
           </span>
         )}
+        {playable && (
+          <span className="ctile__badge ctile__badge--play" aria-hidden="true">
+            <Icon name="play" size={11} />
+          </span>
+        )}
       </div>
       <div className="ctile__meta">
+        <span className="ctile__title">{version.title ?? idea?.title}</span>
         <span className="ctile__row">
-          <span className="ctile__account">{name(account.id)}</span>
+          <span className="ctile__label">{creationLabel(version, account, platform)}</span>
           <span className={`ctile__status ctile__status--${group}`}>{STATUS_TEXT[version.status]}</span>
         </span>
-        <span className="ctile__idea">{idea?.title}</span>
       </div>
     </Link>
   );
@@ -91,6 +96,7 @@ export function GalleryPage() {
 
 function GalleryIndex() {
   const { data } = useStore();
+  const [adding, setAdding] = useState(false);
   const ready = useSimulatedLoad();
   const [params, setParams] = useSearchParams();
   const account = accountOf(data, params.get('account') ?? undefined) ? params.get('account')! : 'all';
@@ -114,8 +120,13 @@ function GalleryIndex() {
   return (
     <div className="page gallery">
       <header className="gallery__head">
-        <h1 className="display gallery__title">Creation Gallery</h1>
-        <InfoButton k="gallery" />
+        <span className="with-info">
+          <h1 className="display gallery__title">Creation Gallery</h1>
+          <InfoButton k="gallery" />
+        </span>
+        <button type="button" className="btn btn--primary" onClick={() => setAdding(true)}>
+          <Icon name="plus" size={16} /> New idea
+        </button>
       </header>
 
       <div className="gallery__toolbar">
@@ -172,11 +183,12 @@ function GalleryIndex() {
           ))}
         </div>
       )}
+      {adding && <QuickAddModal onClose={() => setAdding(false)} />}
     </div>
   );
 }
 
-function PhotoViewer({ photos }: { photos: Asset[] }) {
+export function PhotoViewer({ photos }: { photos: Asset[] }) {
   const [i, setI] = useState(0);
   const photo = photos[i];
   return (
@@ -351,7 +363,7 @@ function CreationPage({ versionId }: { versionId: string }) {
           )}
 
           <div className="creation__actions">
-            <Link to={editHref} className="btn btn--ghost btn--sm">
+            <Link to={editHref} className={`btn btn--sm ${posted ? 'btn--ghost' : 'btn--primary'}`}>
               Edit version
             </Link>
             <Link to={`/ideas/${idea.id}`} className="btn btn--ghost btn--sm">

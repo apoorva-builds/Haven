@@ -55,7 +55,7 @@ export function AppShell() {
       </aside>
 
       <div className="main-col">
-        <Topbar onQuickAdd={() => setQuickAdd(true)} onMenu={() => setDrawer(true)} />
+        <Topbar onMenu={() => setDrawer(true)} />
         <main id="main" className="main" key={location.pathname.split('/').slice(0, 3).join('/')}>
           <Outlet />
         </main>
@@ -123,7 +123,7 @@ function WorkspaceSwitcher() {
   );
 }
 
-function Topbar({ onQuickAdd, onMenu }: { onQuickAdd: () => void; onMenu: () => void }) {
+function Topbar({ onMenu }: { onMenu: () => void }) {
   const { theme, toggle } = useTheme();
   const { data } = useStore();
   const me = personOf(data, data.currentUserId)!;
@@ -140,10 +140,6 @@ function Topbar({ onQuickAdd, onMenu }: { onQuickAdd: () => void; onMenu: () => 
         <span className="topbar__preview">
           <AboutPreviewButton />
         </span>
-        <button type="button" className="btn btn--primary topbar__add" onClick={onQuickAdd}>
-          <Icon name="plus" size={16} />
-          <span>New idea</span>
-        </button>
         <Notifications />
         <button
           type="button"

@@ -56,6 +56,13 @@ docs/screenshots/      Review screenshots (light/dark × desktop/phone)
 - **Sample content.** Two fictional brands, **Pine & Paper** and **Little Atlas**, with five accounts (two YouTube, two Instagram, one TikTok). Handles end in `.sample` and none link to a real profile. Six ideas, a handful of posts and files, and two placeholder links on example.com. Artwork is generated; the four videos in `public/demo-media/` are original synthetic samples with “HAVEN DEMO SAMPLE — not real footage” burned in (regenerate with `node scripts/make-demo-videos.mjs`).
 - **ⓘ buttons.** Main sections and less familiar features have an ⓘ button: Creation Gallery, account filter, post status, tiles and platform borders, Audience Pulse, Raw Library, finished video, Work, Ideas, Calendar and Links. The explanation appears on click or tap, one at a time, and closes on Escape (focus returns to the button), on an outside click, or when another opens. Panels stay inside the screen on phones and are announced to screen readers. The wording lives in `src/lib/help.ts`.
 
+## Design pass: calm, media-first
+
+- **Creation Gallery**: one title and one primary action (*New idea*); a quiet toolbar (account selector, status); at most three large, rounded covers per row on desktop (two on tablet, one on phone) with generous spacing. Tiles show only the title, platform/format (with a thin platform-colour mark) and status; captions, account details and actions live in the opened view.
+- **Version screen**: the finished video (or carousel photos) is the focal point. The platform mock is a small, labelled *Approximate* preview beside it, collapsed on phones. The idea header is compact and the version list is a quiet list (a scrolling row on phones).
+- **Quieter chrome**: status and account badges are text with a small dot instead of filled pills; lighter cards, outlines and shadows; no top-bar primary button.
+- Before/after captures of the Gallery and version screen, desktop and phone, both themes, are in [`docs/redesign/`](docs/redesign/). Regenerate with `COMPARE_OUT=after npm run screenshots`.
+
 ## Routes
 
 | Route | Screen |

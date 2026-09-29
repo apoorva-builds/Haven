@@ -56,10 +56,10 @@ export function FinishedVideoField({ version }: { version: Version }) {
   };
 
   return (
-    <section className="field-group finished" aria-labelledby={`fv-${version.id}`}>
-      <div className="field-group__head">
+    <section className="vstage" aria-labelledby={`fv-${version.id}`}>
+      <div className="vstage__head">
         <span className="with-info">
-          <h3 id={`fv-${version.id}`} className="h3">
+          <h3 id={`fv-${version.id}`} className="vstage__title">
             Finished video
           </h3>
           <InfoButton k="finished" />
@@ -68,6 +68,32 @@ export function FinishedVideoField({ version }: { version: Version }) {
           View in Creation Gallery <Icon name="arrowRight" size={14} />
         </Link>
       </div>
+
+      {selected ? (
+        <div className="finished__selected">
+          <VideoPlayer asset={selected} />
+          <div className="vstage__meta">
+            <p className="finished__name">{selected.name}</p>
+            <MediaSourceNote asset={selected} />
+            {others.length > 0 && (
+              <p className="finished__shared">
+                Same file also used by{' '}
+                {others.map((v) => {
+                  const a = accountOf(data, v.accountId);
+                  return a ? <AccountBadge key={v.id} account={a} showHandle /> : null;
+                })}
+              </p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="vstage__empty">
+          <Icon name="film" size={22} />
+          <p>No finished video yet</p>
+          <p className="muted small">Pick one below, or choose a file from this device (session only).</p>
+        </div>
+      )}
+
       <div className="finished__pick">
         <select
           aria-label={`Finished video for ${account.handle}`}
@@ -103,29 +129,6 @@ export function FinishedVideoField({ version }: { version: Version }) {
           }}
         />
       </div>
-
-      {selected ? (
-        <div className="finished__selected">
-          <VideoPlayer asset={selected} />
-          <p className="finished__name">{selected.name}</p>
-          <MediaSourceNote asset={selected} />
-          {others.length > 0 ? (
-            <p className="finished__shared">
-              Same file also used by{' '}
-              {others.map((v) => {
-                const a = accountOf(data, v.accountId);
-                return a ? <AccountBadge key={v.id} account={a} showHandle /> : null;
-              })}
-              <span className="muted"> — one file, no copies.</span>
-            </p>
-          ) : (
-            <p className="muted small">Only this version uses this video. Other accounts can pick the same file.</p>
-          )}
-          <p className="muted small">Edited in your editor, not in Haven. Selecting it here doesn’t post anything.</p>
-        </div>
-      ) : (
-        <p className="muted">Pick a finished video already used by another version, or choose one from this device for a session-only preview.</p>
-      )}
     </section>
   );
 }

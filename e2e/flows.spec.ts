@@ -127,6 +127,12 @@ test('one idea follows into three platforms and both Instagram accounts', async 
 
   await instagram.getByRole('button', { name: /@littleatlas\.sample/ }).click();
   await expect(page.getByRole('figure', { name: /Approximate Instagram preview for @littleatlas\.sample/ })).toBeVisible();
+
+  // The finished media is the focal point; the platform mock is small, labelled and secondary.
+  const media = await page.locator('.vstage .player').boundingBox();
+  const mock = await page.locator('.pp').boundingBox();
+  expect(media!.width).toBeGreaterThan(mock!.width * 2);
+  await expect(page.locator('.pp__approx')).toHaveText('Approximate');
   const caption = page.getByLabel(/Caption \(English\)/);
   await caption.fill('Five phrases, two speeds — edited in the preview');
   await expect(page.locator('.pv__cap')).toContainText('Five phrases, two speeds');
@@ -179,15 +185,18 @@ test('loading state appears before content', async ({ page }) => {
 });
 
 test('quick capture creates a session-only idea with versions', async ({ page }) => {
-  await open(page, '/');
-  await page.getByRole('button', { name: 'New idea' }).first().click();
+  await open(page, '/gallery');
+  // One primary action per page: the gallery's "New idea".
+  await expect(page.locator('main .btn--primary')).toHaveCount(1);
+  await page.getByRole('button', { name: 'New idea' }).click();
   const dialog = page.getByRole('dialog', { name: 'Capture an idea' });
   await expect(dialog.getByText('Session only')).toBeVisible();
   await dialog.getByLabel('Working title').fill('Train station phrases');
   await dialog.getByRole('button', { name: /YouTube @littleatlas\.sample/ }).click();
   await dialog.getByRole('button', { name: /Instagram @littleatlas\.sample/ }).click();
   await dialog.getByRole('button', { name: 'Capture idea' }).click();
-  await page.getByRole('link', { name: /Train station phrases/ }).click();
+  await expect(page).toHaveURL(/\/ideas$/);
+  await page.locator('.idea-tile', { hasText: 'Train station phrases' }).click();
   await page.getByRole('tab', { name: /Versions/ }).click();
   await expect(page.locator('.vrow')).toHaveCount(2);
 });
@@ -320,16 +329,19 @@ test('Creation Gallery: every account together, one compact account filter', asy
 
   const reel = tile(page, 'v-ig-atlas');
   await expect(reel.locator('.ctile__label')).toHaveText('Instagram · Reel');
-  await expect(reel).toContainText('@littleatlas.sample');
-  await expect(reel).toContainText('In review');
+  // Tiles show only title, platform/format and status; the account lives in the opened view.
   await expect(reel).toContainText('Five phrases for a night market');
+  await expect(reel).toContainText('In review');
+  await expect(reel).not.toContainText('@littleatlas.sample');
+  await expect(reel).toHaveAttribute('aria-label', /@littleatlas\.sample/);
+  await expect(page.locator('.ctile__media').first()).toHaveCSS('border-top-width', '0px');
   await expect(reel.locator('video')).toHaveCount(1);
   await expect(tile(page, 'v-yt-pine').locator('.ctile__label')).toHaveText('YouTube · Long video');
   await expect(tile(page, 'v-yt-atlas-short').locator('.ctile__label')).toHaveText('YouTube · Short');
   await expect(tile(page, 'v-tt-pine').locator('.ctile__label')).toHaveText('TikTok · Video');
   await expect(tile(page, 'v-ig-pine-desk').locator('.ctile__label')).toHaveText('Instagram · Carousel');
   await expect(tile(page, 'v-yt-pine-spots')).toContainText('Posted');
-  await expect(page.locator('.ctile', { hasText: 'Five phrases for a night market' })).toHaveCount(4);
+  await expect(page.locator('.ctile[aria-label*="Five phrases for a night market"]')).toHaveCount(4);
 
   await page.getByRole('button', { name: /^Account:/ }).click();
   const menu = page.getByRole('menu', { name: 'Choose account' });
