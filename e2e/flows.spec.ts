@@ -77,7 +77,7 @@ test('ⓘ buttons explain sections on request and stay out of the way', async ({
   // Keyboard: Enter opens.
   await page.getByRole('button', { name: 'About Account filter' }).focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('region', { name: 'About Account filter' })).toContainText('grouped by brand');
+  await expect(page.getByRole('region', { name: 'About Account filter' })).toContainText('grouped by Space');
   await page.mouse.click(5, 5);
   await expect(page.getByRole('region', { name: /^About / })).toHaveCount(0);
 

@@ -16,9 +16,10 @@ import { useStore } from '../../state/store';
  * versions reference them, so one file can serve several accounts.
  */
 export function FinishedVideoField({ version }: { version: Version }) {
-  const { data, dispatch } = useStore();
+  const { data, dispatch, can } = useStore();
   const toast = useToast();
   const input = useRef<HTMLInputElement>(null);
+  const canEdit = can('edit', version.accountId);
   const account = accountOf(data, version.accountId)!;
   const options = finishedVideos(data);
   const selected = assetOf(data, version.mediaAssetId);
@@ -98,6 +99,7 @@ export function FinishedVideoField({ version }: { version: Version }) {
         <select
           aria-label={`Finished video for ${account.handle}`}
           value={selected?.id ?? ''}
+          disabled={!canEdit}
           onChange={(e) => dispatch({ type: 'version/media', versionId: version.id, assetId: e.target.value || undefined })}
         >
           <option value="">No finished video selected</option>
@@ -113,7 +115,7 @@ export function FinishedVideoField({ version }: { version: Version }) {
           })}
           {selected && !options.includes(selected) && <option value={selected.id}>{selected.name} (placeholder, no playable file)</option>}
         </select>
-        <button type="button" className="btn btn--ghost btn--sm" onClick={() => input.current?.click()}>
+        <button type="button" className="btn btn--ghost btn--sm" disabled={!canEdit} onClick={() => input.current?.click()}>
           <Icon name="upload" size={14} /> From this device
         </button>
         <input

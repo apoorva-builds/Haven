@@ -10,7 +10,7 @@ export function useAccountName() {
   return (id: string) => accountOf(data, id)?.handle ?? '';
 }
 
-/** One compact control for choosing All accounts or a single account, grouped by brand. */
+/** One compact control for choosing All accounts or a single account, grouped by Space. */
 export function AccountSelector({ value, onChange }: { value: string; onChange: (accountId: string) => void }) {
   const { data } = useStore();
   const [open, setOpen] = useState(false);
@@ -30,7 +30,7 @@ export function AccountSelector({ value, onChange }: { value: string; onChange: 
         <span className="acct-select__text">
           <span className="acct-select__name">{current ? `${data.brands.find((b) => b.id === current.brandId)?.name} · ${platformOf(data, current.platform).name}` : 'All accounts'}</span>
           <span className="acct-select__sub">
-            {current ? name(current.id) : `${data.accounts.length} accounts · ${data.brands.length} brands`}
+            {current ? name(current.id) : `${data.accounts.length} account${data.accounts.length === 1 ? '' : 's'} · ${data.brands.length} Space${data.brands.length === 1 ? '' : 's'}`}
           </span>
         </span>
         <Icon name="chevronDown" size={16} />

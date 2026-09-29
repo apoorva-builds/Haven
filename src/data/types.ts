@@ -43,10 +43,49 @@ export interface Person {
 
 export type AccountKind = 'Personal' | 'Business' | 'Creator' | 'Brand' | 'Channel';
 
-/** A creator brand that owns one or more accounts, e.g. a main channel and a spin-off series. */
+/**
+ * A Space organises work inside the workspace, usually one brand or show
+ * with its own social accounts (e.g. "Pine & Paper"). Access is granted per
+ * Space or per account.
+ */
 export interface Brand {
   id: string;
   name: string;
+}
+
+/** Owner and admins have full access; collaborators see only what they're granted. */
+export type WorkspaceRole = 'owner' | 'admin' | 'collaborator';
+
+/**
+ * What a collaborator may do with a Space or account.
+ * view: open the work and its files · edit: change it and upload files ·
+ * review: approve versions (Ready to post) · publish: record a post as live.
+ * Publishing stays manual until a supported platform connection exists.
+ */
+export type Capability = 'view' | 'edit' | 'review' | 'publish';
+
+export const CAPABILITIES: Capability[] = ['view', 'edit', 'review', 'publish'];
+
+/** Access to a whole Space (all its accounts and Space-level work) or one social account. */
+export type AccessScope = { kind: 'space'; id: string } | { kind: 'account'; id: string };
+
+export interface AccessGrant {
+  scope: AccessScope;
+  capabilities: Capability[];
+}
+
+/**
+ * A person in the workspace. Each signs in to Haven as themselves; nobody
+ * shares or stores social account passwords (none are ever requested).
+ */
+export interface Member {
+  personId: string;
+  /** Sample addresses on example.com in the preview. */
+  email: string;
+  role: WorkspaceRole;
+  status: 'active' | 'invited';
+  /** Only used for collaborators; owner and admins have full access. */
+  grants: AccessGrant[];
 }
 
 export interface Account {
@@ -108,6 +147,8 @@ export interface Idea {
   id: string;
   title: string;
   campaignId?: string;
+  /** The Space this idea belongs to. Its versions may also target other Spaces' accounts. */
+  spaceId: string;
   series?: string;
   status: IdeaStatus;
   due: ISODate;
@@ -159,6 +200,8 @@ export interface Asset {
    * versions that use them.
    */
   inLibrary: boolean;
+  /** For library files not tied to an idea: the Space they belong to. None means workspace-wide (owner and admins). */
+  spaceId?: string;
   sizeMB: number;
   durationSec?: number;
   art: Art;
@@ -322,6 +365,7 @@ export interface DemoData {
   workspace: Workspace;
   currentUserId: string;
   people: Person[];
+  members: Member[];
   platforms: Platform[];
   accounts: Account[];
   campaigns: Campaign[];

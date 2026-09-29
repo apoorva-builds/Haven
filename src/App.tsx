@@ -9,6 +9,7 @@ import { IdeaWorkspacePage } from './pages/idea/IdeaWorkspace';
 import { LibraryPage } from './pages/Library';
 import { LinksPage } from './pages/Links';
 import { NotFoundPage } from './pages/NotFound';
+import { TeamPage } from './pages/Team';
 import { TodayPage } from './pages/Today';
 import { StoreProvider } from './state/store';
 import { ThemeProvider } from './state/theme';
@@ -39,6 +40,7 @@ export function App() {
                 <Route path="library" element={<LibraryPage />} />
                 <Route path="campaigns" element={<CampaignsPage />} />
                 <Route path="links" element={<LinksPage />} />
+                <Route path="team" element={<TeamPage />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Route>
             </Routes>

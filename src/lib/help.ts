@@ -3,13 +3,21 @@
  * wording stays consistent and out of the way until someone asks.
  */
 export const HELP = {
+  team: {
+    topic: 'Team & access',
+    text: 'The owner and admins have full access. Everyone else sees only the Spaces and social accounts you assign, with view, edit & upload, review & approve, or publish. Each person signs in to Haven as themselves; nobody needs your social account passwords. In this preview, access only filters this browser tab.',
+  },
+  capabilities: {
+    topic: 'Capabilities',
+    text: 'View: open the work and its files. Edit & upload: change versions, captions and dates, and add files. Review & approve: move a version to Ready to post. Publish: record a post as live. Haven has no platform connections yet, so posting itself stays manual in each app.',
+  },
   gallery: {
     topic: 'Creation Gallery',
     text: 'Every post you’re making: what’s coming up, then what’s posted. Each tile is one account’s version of an idea, shown in its real proportions. Open a tile to watch it or page through its photos without leaving Haven.',
   },
   accounts: {
     topic: 'Account filter',
-    text: 'Show all accounts together, or pick one to see only its posts and its Audience Pulse. Accounts are grouped by brand.',
+    text: 'Show all accounts together, or pick one to see only its posts and its Audience Pulse. Accounts are grouped by Space.',
   },
   status: {
     topic: 'Post status',

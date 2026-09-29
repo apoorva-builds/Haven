@@ -9,6 +9,7 @@ import { AvatarStack, DemoTag, EmptyState, Skeleton, useDismiss, useSimulatedLoa
 import { formatDay, relativeDay } from '../../lib/dates';
 import { assetsForIdea, ideaOf, personOf, tasksForIdea, versionsForIdea } from '../../state/selectors';
 import { useStore } from '../../state/store';
+import { NotShared } from '../../components/NotShared';
 import { IdeaAssets } from './IdeaAssets';
 import { IdeaOverview } from './IdeaOverview';
 import { IdeaTasks } from './IdeaTasks';
@@ -25,7 +26,7 @@ type TabKey = (typeof TABS)[number]['key'];
 
 export function IdeaWorkspacePage() {
   const { ideaId = '', tab = 'overview' } = useParams();
-  const { data, dispatch } = useStore();
+  const { data, dispatch, preview } = useStore();
   const ready = useSimulatedLoad(300);
   const idea = ideaOf(data, ideaId);
   const [menu, setMenu] = useState(false);
@@ -35,6 +36,7 @@ export function IdeaWorkspacePage() {
   const toast = useToast();
   const navigate = useNavigate();
 
+  if (!idea && ideaId && preview?.hidden.ideas.has(ideaId)) return <NotShared kind="idea" personId={preview.personId} />;
   if (!idea) {
     return (
       <div className="page">

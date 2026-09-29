@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 /**
  * Before/after captures for design review of the Creation Gallery and the
@@ -15,7 +15,19 @@ const allScreens = [
   { name: 'ideas', path: '/ideas', fullPage: true },
   { name: 'gallery', path: '/gallery', fullPage: true },
   { name: 'version', path: '/ideas/market-phrases/versions?v=v-ig-atlas' },
-];
+  { name: 'team', path: '/team', fullPage: true },
+  {
+    name: 'preview-as',
+    path: '/team',
+    then: async (page: Page, isMobile: boolean) => {
+      await page.locator('.member-list').getByRole('button', { name: /Sam/ }).click();
+      await page.getByRole('button', { name: 'Preview as Sam' }).click();
+      const nav = isMobile ? page.getByRole('navigation', { name: 'Primary (mobile)' }).getByRole('link', { name: 'Gallery' }) : page.getByRole('complementary', { name: 'Primary' }).getByRole('link', { name: 'Creation Gallery', exact: true });
+      await nav.click();
+      await expect(page.locator('.ctile')).toHaveCount(2);
+    },
+  },
+] as { name: string; path: string; fullPage?: boolean; then?: (page: Page, isMobile: boolean) => Promise<void> }[];
 const screens = only ? allScreens.filter((s) => only.includes(s.name)) : allScreens;
 const allDevices = [
   { name: 'desktop', viewport: { width: 1440, height: 900 }, isMobile: false },
@@ -32,6 +44,7 @@ for (const theme of ['light', 'dark'] as const) {
           await page.addInitScript((t) => localStorage.setItem('haven.theme', t), theme);
           await page.goto(`${screen.path}${screen.path.includes('?') ? '&' : '?'}instant`);
           await expect(page.locator('main h1').first()).toBeVisible();
+          if (screen.then) await screen.then(page, device.isMobile);
           await page.evaluate(() => document.fonts.ready);
           // Bring lazy images in before a full-page capture.
           await page.evaluate(async () => {

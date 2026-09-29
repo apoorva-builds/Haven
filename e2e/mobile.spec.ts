@@ -19,6 +19,7 @@ test('phone layout uses the tab bar and never scrolls sideways', async ({ page }
     '/library',
     '/campaigns',
     '/links',
+    '/team',
   ]) {
     await open(page, path);
     await expect(page.locator('main h1').first()).toBeVisible();

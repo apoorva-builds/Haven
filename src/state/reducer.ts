@@ -6,7 +6,8 @@
  */
 import { READY_CHECKS } from '../data/demo';
 import { addDays, daysBetween } from '../lib/dates';
-import type { Asset, DemoData, IdeaStatus, ISODate, LinkItem, Task, Version, VersionStatus } from '../data/types';
+import { toggleGrant } from '../lib/access';
+import type { AccessGrant, AccessScope, Asset, Capability, DemoData, IdeaStatus, ISODate, LinkItem, Task, Version, VersionStatus, WorkspaceRole } from '../data/types';
 
 export type Action =
   | { type: 'task/toggle'; taskId: string }
@@ -29,7 +30,11 @@ export type Action =
   | { type: 'asset/add-session'; asset: Asset }
   | { type: 'asset/dismiss-duplicate'; assetId: string }
   | { type: 'link/add'; link: Omit<LinkItem, 'id'> }
-  | { type: 'notifications/read' };
+  | { type: 'notifications/read' }
+  | { type: 'member/role'; personId: string; role: Exclude<WorkspaceRole, 'owner'> }
+  | { type: 'member/grant'; personId: string; scope: AccessScope; capability: Capability; on: boolean }
+  | { type: 'member/invite'; name: string; email: string; role: Exclude<WorkspaceRole, 'owner'>; grants: AccessGrant[] }
+  | { type: 'member/remove'; personId: string };
 
 let counter = 0;
 const uid = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${(counter++).toString(36)}`;
@@ -56,6 +61,7 @@ export function reducer(state: DemoData, action: Action): DemoData {
             id,
             title: action.title.trim() || 'Untitled idea',
             campaignId: action.campaignId,
+            spaceId: state.accounts.find((a) => a.id === action.accountIds[0])?.brandId ?? state.brands[0]?.id ?? '',
             status: 'Idea',
             due,
             art: { motif: 'grain', hue, hue2: (hue + 60) % 360 },
@@ -194,6 +200,34 @@ export function reducer(state: DemoData, action: Action): DemoData {
 
     case 'notifications/read':
       return { ...state, notifications: state.notifications.map((n) => ({ ...n, unread: false })) };
+
+    // Team & access (preview): changes last for this session and are not enforced by a server.
+    case 'member/role':
+      return {
+        ...state,
+        members: state.members.map((m) => (m.personId === action.personId && m.role !== 'owner' ? { ...m, role: action.role } : m)),
+      };
+
+    case 'member/grant':
+      return {
+        ...state,
+        members: state.members.map((m) => (m.personId === action.personId && m.role === 'collaborator' ? toggleGrant(m, action.scope, action.capability, action.on) : m)),
+      };
+
+    case 'member/invite': {
+      const email = action.email.trim().toLowerCase();
+      if (!email || state.members.some((m) => m.email === email)) return state;
+      const id = uid('person');
+      const name = action.name.trim() || email.split('@')[0];
+      return {
+        ...state,
+        people: [...state.people, { id, name, role: action.role === 'admin' ? 'Admin (invited)' : 'Collaborator (invited)', hue: Math.floor(Math.random() * 360) }],
+        members: [...state.members, { personId: id, email, role: action.role, status: 'invited', grants: action.grants }],
+      };
+    }
+
+    case 'member/remove':
+      return { ...state, members: state.members.filter((m) => m.personId !== action.personId || m.role === 'owner') };
   }
 }
 

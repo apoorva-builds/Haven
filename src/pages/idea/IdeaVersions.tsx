@@ -120,7 +120,12 @@ export function IdeaVersions({ idea }: { idea: Idea }) {
 }
 
 function VersionDetail({ version, idea }: { version: Version; idea: Idea }) {
-  const { data, dispatch } = useStore();
+  const { data, dispatch, can, preview } = useStore();
+  const canEdit = can('edit', version.accountId);
+  const canReview = can('review', version.accountId);
+  const canPublish = can('publish', version.accountId);
+  // Approving needs review; recording a post needs publish; everything else needs edit.
+  const allowed = (s: VersionStatus) => s === version.status || (s === 'Ready to post' ? canReview : s === 'Posted' ? canPublish : canEdit);
   const toast = useToast();
   const account = accountOf(data, version.accountId)!;
   const platform = platformOf(data, account.platform);
@@ -150,6 +155,7 @@ function VersionDetail({ version, idea }: { version: Version; idea: Idea }) {
           <select
             aria-label="Version status"
             value={version.status}
+            disabled={!VERSION_STATUSES.some((s) => s !== version.status && allowed(s))}
             onChange={(e) => {
               const status = e.target.value as VersionStatus;
               if (status === 'Posted' && !version.liveUrl) {
@@ -160,7 +166,10 @@ function VersionDetail({ version, idea }: { version: Version; idea: Idea }) {
             }}
           >
             {VERSION_STATUSES.map((s) => (
-              <option key={s}>{s}</option>
+              <option key={s} disabled={!allowed(s)}>
+                {s}
+                {!allowed(s) && preview ? ' (no access)' : ''}
+              </option>
             ))}
           </select>
         </label>
@@ -320,6 +329,11 @@ function VersionDetail({ version, idea }: { version: Version; idea: Idea }) {
                 </ExternalLink>
               )}
             </div>
+            {!canPublish ? (
+              <p className="muted access-note">
+                <Icon name="shield" size={14} /> Recording this post as live needs Publish access for {account.handle}. Ask an admin.
+              </p>
+            ) : (
             <form
               className="live-url"
               onSubmit={(e) => {
@@ -336,6 +350,7 @@ function VersionDetail({ version, idea }: { version: Version; idea: Idea }) {
                 {version.liveUrl ? 'Update link' : 'Mark as posted'}
               </button>
             </form>
+            )}
             {version.liveUrl && (
               <p className="posted">
                 <Icon name="check" size={14} /> Posted — <ExternalLink href={version.liveUrl}>view live post</ExternalLink>

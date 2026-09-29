@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 import { useStore } from '../state/store';
 import { useTheme } from '../state/theme';
 import { accountOf, personOf, platformOf } from '../state/selectors';
+import { accessSummary } from '../lib/access';
 import { Icon, type IconName } from './Icon';
 import { AboutPreviewButton } from './AboutPreview';
 import { Modal } from './Modal';
@@ -56,6 +57,7 @@ export function AppShell() {
 
       <div className="main-col">
         <Topbar onMenu={() => setDrawer(true)} />
+        <PreviewAsBar />
         <main id="main" className="main" key={location.pathname.split('/').slice(0, 3).join('/')}>
           <Outlet />
         </main>
@@ -87,6 +89,35 @@ export function AppShell() {
   );
 }
 
+/** Shown while previewing as a collaborator. Honest about what it is. */
+function PreviewAsBar() {
+  const { data, preview, setPreviewAs } = useStore();
+  const navigate = useNavigate();
+  if (!preview) return null;
+  const person = data.people.find((p) => p.id === preview.personId);
+  const member = data.members.find((m) => m.personId === preview.personId);
+  return (
+    <div className="viewas" role="status">
+      <Icon name="user" size={16} />
+      <p>
+        Previewing as <strong>{person?.name}</strong>
+        {member && <span className="viewas__scope"> · {accessSummary(data, member)}</span>}
+        <span className="viewas__note"> · Preview only: this tab hides work you can’t see as them. It isn’t security.</span>
+      </p>
+      <button
+        type="button"
+        className="btn btn--sm viewas__exit"
+        onClick={() => {
+          setPreviewAs(null);
+          navigate('/team');
+        }}
+      >
+        Back to your view
+      </button>
+    </div>
+  );
+}
+
 function WorkspaceSwitcher() {
   const { data } = useStore();
   const [open, setOpen] = useState(false);
@@ -110,13 +141,11 @@ function WorkspaceSwitcher() {
             <Icon name="check" size={14} />
           </button>
           <div className="popover__sep" />
-          <p className="popover__label">Workspace</p>
-          {['Team & roles', 'Storage & downloads', 'Billing', 'Settings'].map((label) => (
-            <button key={label} type="button" role="menuitem" className="popover__item" disabled>
-              {label}
-              <span className="soon">Milestone 2–3</span>
-            </button>
-          ))}
+          <Link role="menuitem" className="popover__item" to="/team" onClick={close}>
+            <Icon name="user" size={15} /> Team & access
+            <span className="soon">Preview</span>
+          </Link>
+          <p className="ws__later">Billing, storage and settings arrive with real sign-in.</p>
         </div>
       )}
     </div>
@@ -323,6 +352,10 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
             <span className="nav__label">{n.label}</span>
           </NavLink>
         ))}
+        <NavLink to="/team" className="nav__item" onClick={onClose}>
+          <Icon name="user" size={20} />
+          <span className="nav__label">Team & access</span>
+        </NavLink>
         <div className="drawer__about">
           <AboutPreviewButton />
         </div>

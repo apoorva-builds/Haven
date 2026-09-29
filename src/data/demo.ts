@@ -4,13 +4,13 @@
  * Everything here is fictional: the two brands (Pine & Paper, Little Atlas),
  * their accounts, the people, posts, files and audience figures. Handles end
  * in ".sample" and no account links to a real profile. Artwork is generated
- * and the videos are original synthetic samples (scripts/make-demo-videos.mjs).
+ * and the videos are original synthetic samples (scripts/make-demo-media.mjs).
  *
  * Dates are relative to "today" so the gallery and calendar always look current.
  */
 import { addDays, toISODate } from '../lib/dates';
 import { sampleSnapshots } from '../lib/audience';
-import type { Account, Asset, AudienceSeries, Campaign, ChecklistItem, DemoData, Idea, LinkItem, MarketingEvent, Notification, Person, Platform, Task, Version } from './types';
+import type { Account, Asset, AudienceSeries, Campaign, ChecklistItem, DemoData, Idea, LinkItem, MarketingEvent, Member, Notification, Person, Platform, Task, Version } from './types';
 
 export const PLATFORMS: Platform[] = [
   { id: 'youtube', name: 'YouTube', glyph: 'YT', hue: 10, tier: 'core' },
@@ -50,6 +50,38 @@ export function createDemoData(now: Date = new Date()): DemoData {
     { id: 'me', name: 'Robin', role: 'Creator · Owner (sample)', hue: 262 },
     { id: 'jonah', name: 'Jonah', role: 'Editor (sample)', hue: 188 },
     { id: 'priya', name: 'Priya', role: 'Producer (sample)', hue: 32 },
+    { id: 'sam', name: 'Sam', role: 'Short-form editor (sample)', hue: 150 },
+    { id: 'alex', name: 'Alex', role: 'Reviewer (sample)', hue: 210 },
+  ];
+
+  // Sample workspace members. Access here is a preview: it filters this tab only.
+  const members: Member[] = [
+    { personId: 'me', email: 'robin@example.com', role: 'owner', status: 'active', grants: [] },
+    { personId: 'priya', email: 'priya@example.com', role: 'admin', status: 'active', grants: [] },
+    {
+      personId: 'jonah',
+      email: 'jonah@example.com',
+      role: 'collaborator',
+      status: 'active',
+      grants: [
+        { scope: { kind: 'space', id: 'pine' }, capabilities: ['view', 'edit', 'review'] },
+        { scope: { kind: 'account', id: 'ig-atlas' }, capabilities: ['view', 'edit'] },
+      ],
+    },
+    {
+      personId: 'sam',
+      email: 'sam@example.com',
+      role: 'collaborator',
+      status: 'active',
+      grants: [{ scope: { kind: 'account', id: 'tt-pine' }, capabilities: ['view', 'edit'] }],
+    },
+    {
+      personId: 'alex',
+      email: 'alex@example.com',
+      role: 'collaborator',
+      status: 'invited',
+      grants: [{ scope: { kind: 'space', id: 'atlas' }, capabilities: ['view', 'review'] }],
+    },
   ];
 
   const brands = [
@@ -98,7 +130,7 @@ export function createDemoData(now: Date = new Date()): DemoData {
     { id: 'phrase-guides', name: 'Phrase guides', kind: 'Series', hue: 175, start: d(-20), end: d(40), summary: 'Sample series: short, useful travel phrases.' },
   ];
 
-  const idea = (partial: Partial<Idea> & Pick<Idea, 'id' | 'title' | 'status' | 'due' | 'art' | 'concept'>): Idea => ({
+  const idea = (partial: Partial<Idea> & Pick<Idea, 'id' | 'title' | 'status' | 'due' | 'art' | 'concept' | 'spaceId'>): Idea => ({
     script: '',
     shotList: [],
     references: [],
@@ -113,6 +145,7 @@ export function createDemoData(now: Date = new Date()): DemoData {
       id: HERO_IDEA_ID,
       title: 'Five phrases for a night market',
       campaignId: 'phrase-guides',
+      spaceId: 'atlas',
       series: 'Phrase guides',
       status: 'Editing',
       due: d(2),
@@ -130,6 +163,7 @@ export function createDemoData(now: Date = new Date()): DemoData {
       id: 'morning-routine',
       title: 'A quiet morning at the desk',
       campaignId: 'routines',
+      spaceId: 'pine',
       series: 'Study routines',
       status: 'In review',
       due: d(1),
@@ -145,6 +179,7 @@ export function createDemoData(now: Date = new Date()): DemoData {
       id: 'desk-setup',
       title: 'Three small desk changes',
       campaignId: 'routines',
+      spaceId: 'pine',
       status: 'Ready',
       due: d(0),
       art: { motif: 'studio', hue: 205, hue2: 262, image: '/demo-media/desk-notebook.jpg' },
@@ -155,6 +190,7 @@ export function createDemoData(now: Date = new Date()): DemoData {
     idea({
       id: 'reading-list',
       title: 'Books on focus',
+      spaceId: 'pine',
       status: 'Idea',
       due: d(16),
       art: { motif: 'horizon', hue: 32, hue2: 14 },
@@ -164,6 +200,7 @@ export function createDemoData(now: Date = new Date()): DemoData {
     idea({
       id: 'study-spots',
       title: 'Four quiet places to work',
+      spaceId: 'pine',
       series: 'Study routines',
       status: 'Posted',
       due: d(-6),
@@ -176,6 +213,7 @@ export function createDemoData(now: Date = new Date()): DemoData {
       id: 'cafe-words',
       title: 'Café words to know',
       campaignId: 'phrase-guides',
+      spaceId: 'atlas',
       status: 'Posted',
       due: d(-3),
       art: { motif: 'bloom', hue: 120, hue2: 40, image: '/demo-media/cafe-cup.jpg' },
@@ -185,6 +223,7 @@ export function createDemoData(now: Date = new Date()): DemoData {
     idea({
       id: 'packing-list',
       title: 'Carry-on packing list',
+      spaceId: 'atlas',
       status: 'Posted',
       due: d(-40),
       art: { motif: 'grain', hue: 30, hue2: 330 },
@@ -308,6 +347,7 @@ export function createDemoData(now: Date = new Date()): DemoData {
       kind: 'document',
       ideaIds: [],
       inLibrary: true,
+      spaceId: 'pine',
       sizeMB: 3,
       art: { motif: 'grain', hue: 262, hue2: 40 },
       uploadedById: 'priya',
@@ -465,6 +505,7 @@ export function createDemoData(now: Date = new Date()): DemoData {
     { id: 't5', title: 'Trim long cut to under 8 minutes', ideaId: 'morning-routine', versionId: 'v-yt-pine', ownerId: 'jonah', due: d(1), stage: 'Edit', done: false },
     { id: 't6', title: 'Pick five books', ideaId: 'reading-list', ownerId: 'me', due: d(8), stage: 'Plan', done: false },
     { id: 't7', title: 'Write the Spanish caption', ideaId: HERO_IDEA_ID, versionId: 'v-tt-pine', ownerId: 'priya', due: d(2), stage: 'Post', done: true },
+    { id: 't8', title: 'Tighten the TikTok hook to two seconds', ideaId: HERO_IDEA_ID, versionId: 'v-tt-pine', ownerId: 'sam', due: d(1), stage: 'Edit', done: false },
   ];
 
   const links: LinkItem[] = [
@@ -491,6 +532,7 @@ export function createDemoData(now: Date = new Date()): DemoData {
     brands,
     audience,
     people,
+    members,
     platforms: PLATFORMS,
     accounts,
     campaigns,

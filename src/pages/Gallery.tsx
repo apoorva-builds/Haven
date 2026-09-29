@@ -4,6 +4,7 @@ import type { Asset, Version, VersionStatus } from '../data/types';
 import { Cover } from '../components/Cover';
 import { TypeCover } from '../components/TypeCover';
 import { toneOf } from '../lib/studio';
+import { NotShared } from '../components/NotShared';
 import { justify } from '../lib/justify';
 import { Icon } from '../components/Icon';
 import { AccountSelector, useAccountName } from '../components/AccountSelector';
@@ -178,7 +179,7 @@ function GalleryIndex() {
             <InfoButton k="gallery" />
           </span>
           <p className="studio-head__count">
-            {versions.length} creation{versions.length === 1 ? '' : 's'} · {account === 'all' ? `${data.accounts.length} accounts` : name(account)}
+            {versions.length} creation{versions.length === 1 ? '' : 's'} · {account === 'all' ? `${data.accounts.length} account${data.accounts.length === 1 ? '' : 's'}` : name(account)}
           </p>
         </div>
         <button type="button" className="btn btn--primary" onClick={() => setAdding(true)}>
@@ -270,12 +271,13 @@ export function PhotoViewer({ photos }: { photos: Asset[] }) {
 }
 
 function CreationPage({ versionId }: { versionId: string }) {
-  const { data } = useStore();
+  const { data, preview } = useStore();
   const name = useAccountName();
   const version = data.versions.find((v) => v.id === versionId);
   const langs = version ? Object.keys(version.captions) : [];
   const [lang, setLang] = useState(langs[0] ?? 'en');
 
+  if (!version && preview?.hidden.versions.has(versionId)) return <NotShared kind="creation" personId={preview.personId} />;
   if (!version) {
     return (
       <div className="page">

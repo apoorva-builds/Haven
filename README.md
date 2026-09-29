@@ -56,6 +56,15 @@ docs/screenshots/      Review screenshots (light/dark × desktop/phone)
 - **Sample content.** Two fictional brands, **Pine & Paper** and **Little Atlas**, with five accounts (two YouTube, two Instagram, one TikTok). Handles end in `.sample` and none link to a real profile. Six ideas, a handful of posts and files, and two placeholder links on example.com. Every still and clip in `public/demo-media/` is painted on a canvas by `scripts/demo-media/scenes.js` (a night market, a desk in morning light, a reading room, desks and café tables from above). None are real photos or footage, and each carries a small burned-in “Haven sample · not a real photo / not real footage” mark. Regenerate with `node scripts/make-demo-media.mjs`.
 - **ⓘ buttons.** Main sections and less familiar features have an ⓘ button: Creation Gallery, account filter, post status, tiles and platform borders, Audience Pulse, Raw Library, finished video, Work, Ideas, Calendar and Links. The explanation appears on click or tap, one at a time, and closes on Escape (focus returns to the button), on an outside click, or when another opens. Panels stay inside the screen on phones and are announced to screen readers. The wording lives in `src/lib/help.ts`.
 
+## Team & access (preview)
+
+The workspace menu opens **Team & access** (`/team`). It shows sample members (owner, admin, two collaborators, one pending invitation) and an access editor organised by **Space** and **social account**, with four capabilities: **View**, **Edit & upload**, **Review & approve** and **Publish** (manual until a supported platform connection exists).
+
+- **Preview as** a collaborator: every page shows only what that person could open. Direct links to other work say it isn't shared, files follow the work, and status and posting controls follow their capabilities.
+- **Honest scope:** this filters the current browser tab only. It is **not security**, and invitations send nothing. Real sign-in, invitations and server-enforced access are planned in [`docs/backend-plan.md`](docs/backend-plan.md).
+- Haven never asks for social account passwords; a handle only identifies an account. There is no team chat; feedback attached to a creation is a later feature.
+- Rules: `src/lib/access.ts` (unit tested in `access.test.ts`); flows in `e2e/team.spec.ts`. Captures in [`docs/redesign/team/`](docs/redesign/team/).
+
 ## Colour: an editorial palette (in review)
 
 Warm ivory and ink are the foundation in both themes (layered warm charcoal in dark). Each accent has one job, everywhere:
@@ -97,6 +106,7 @@ Applied so far to **Ideas** and the **Creation Gallery** only; the rest of Haven
 | `/ideas`, `/ideas/:id[/assets|/versions|/tasks]` | **Ideas** and the **Idea workspace**; the Versions tab holds the finished-video picker |
 | `/calendar` | Content and marketing perspectives, filters, drag to reschedule; agenda on phones |
 | `/links`, `/campaigns` | Saved links; campaigns (reachable from ideas) |
+| `/team` | **Team & access** (preview): members, invitations, access by Space and account, preview as a collaborator |
 | `/accounts`, `/accounts/:id` | Redirect to the Creation Gallery |
 
 ## The review path
@@ -146,7 +156,7 @@ All 48 review screenshots (12 screens × light/dark × desktop/phone) are in [`d
 ## Known limitations (by design for Milestone 1)
 
 - No persistence beyond the theme: all edits reset on reload.
-- No auth, database, object storage, real uploads/downloads, quota enforcement or platform connections (Milestone 2).
+- No auth, database, object storage, real uploads/downloads, quota enforcement or platform connections (Milestone 2). Team & access is a preview: it filters one tab and is not security.
 - No review links, version comparison, approvals, ready-to-post bundles, recurring templates or billing (Milestone 3).
 - Media is generated artwork and synthetic sample video; the post preview is approximate.
 - The bundled samples don’t report a duration, so their seek bar is limited.
