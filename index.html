@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Haven — a calm daily workspace for creators. Milestone 1 interactive demo." />
+    <meta name="theme-color" content="#f7f3ec" />
+    <link rel="icon" href="/haven-mark.svg" type="image/svg+xml" />
+    <title>Haven</title>
+    <script>
+      // Apply the remembered theme before first paint so neither appearance flashes.
+      (function () {
+        try {
+          var stored = localStorage.getItem('haven.theme');
+          var theme = stored === 'light' || stored === 'dark'
+            ? stored
+            : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.dataset.theme = theme;
+        } catch (e) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
