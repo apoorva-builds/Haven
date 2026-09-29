@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ASSET_KIND_LABEL, type AssetKind } from '../data/types';
 import { AssetCard } from '../components/AssetCard';
 import { DemoUploader } from '../components/DemoUploader';
@@ -8,7 +8,7 @@ import { Modal } from '../components/Modal';
 import { useToast } from '../components/Toast';
 import { DemoTag, EmptyState, LoadingGrid, PageHeader, Progress, SelectField, useSimulatedLoad } from '../components/ui';
 import { addDays, formatSize } from '../lib/dates';
-import { storageUsedGB } from '../state/selectors';
+import { rawLibrary, storageUsedGB } from '../state/selectors';
 import { useStore } from '../state/store';
 
 export function LibraryPage() {
@@ -32,7 +32,7 @@ export function LibraryPage() {
     setParams(next, { replace: true });
   };
 
-  const library = data.assets.filter((a) => a.inLibrary);
+  const library = rawLibrary(data);
   const assets = useMemo(() => {
     const term = q.trim().toLowerCase();
     return library.filter((a) => {
@@ -64,9 +64,17 @@ export function LibraryPage() {
   return (
     <div className="page">
       <PageHeader
-        eyebrow="Library"
+        eyebrow="Raw Library"
         title="Originals, kept safe"
-        lede="Reusable footage, music and brand assets. Nothing here is deleted automatically — not even when storage is full."
+        lede={
+          <>
+            Source material: original photos, audio and music, unedited clips and brand assets. Finished posts live in the{' '}
+            <Link className="inline-link" to="/gallery">
+              Creation Gallery
+            </Link>
+            . Nothing here is deleted automatically, not even when storage is full.
+          </>
+        }
         actions={
           <button type="button" className="btn btn--primary" onClick={() => setShowUpload((s) => !s)} aria-expanded={showUpload}>
             <Icon name="upload" size={16} /> Upload
@@ -94,7 +102,7 @@ export function LibraryPage() {
         <ul className="storage__legend">
           {byKind.map((k) => (
             <li key={k.kind}>
-              {ASSET_KIND_LABEL[k.kind]} <strong>{formatSize(k.gb * 1024)}</strong>
+              {k.kind === 'final' ? 'Finished videos (Creation Gallery)' : ASSET_KIND_LABEL[k.kind]} <strong>{formatSize(k.gb * 1024)}</strong>
             </li>
           ))}
           <li>
@@ -126,7 +134,7 @@ export function LibraryPage() {
         <SelectField label="Type" value={kind} onChange={(v) => set('kind', v)}>
           <option value="all">All types</option>
           <option value="brand">Brand kit</option>
-          {(Object.keys(ASSET_KIND_LABEL) as AssetKind[]).map((k) => (
+          {(Object.keys(ASSET_KIND_LABEL) as AssetKind[]).filter((k) => k !== 'final').map((k) => (
             <option key={k} value={k}>
               {ASSET_KIND_LABEL[k]}
             </option>
@@ -186,7 +194,7 @@ export function LibraryPage() {
       ) : assets.length === 0 ? (
         <EmptyState
           icon="library"
-          title={anyFilter ? 'No assets match' : 'Your Library is empty'}
+          title={anyFilter ? 'No assets match' : 'Your Raw Library is empty'}
           action={
             anyFilter ? (
               <button type="button" className="btn btn--ghost" onClick={() => setParams({}, { replace: true })}>

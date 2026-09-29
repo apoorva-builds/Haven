@@ -4,6 +4,7 @@ import { ToastProvider } from './components/Toast';
 import { AccountsPage } from './pages/Accounts';
 import { CalendarPage } from './pages/Calendar';
 import { CampaignsPage } from './pages/Campaigns';
+import { GalleryPage } from './pages/Gallery';
 import { IdeasPage } from './pages/Ideas';
 import { IdeaWorkspacePage } from './pages/idea/IdeaWorkspace';
 import { LibraryPage } from './pages/Library';
@@ -27,6 +28,8 @@ export function App() {
                 <Route path="ideas/:ideaId/:tab" element={<IdeaWorkspacePage />} />
                 <Route path="accounts" element={<AccountsPage />} />
                 <Route path="accounts/:accountId" element={<AccountsPage />} />
+                <Route path="gallery" element={<GalleryPage />} />
+                <Route path="gallery/:versionId" element={<GalleryPage />} />
                 <Route path="calendar" element={<CalendarPage />} />
                 <Route path="library" element={<LibraryPage />} />
                 <Route path="campaigns" element={<CampaignsPage />} />

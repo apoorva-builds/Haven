@@ -144,6 +144,11 @@ export interface Asset {
   kind: AssetKind;
   /** Idea this asset was gathered for, if any. Library assets may be shared. */
   ideaIds: string[];
+  /**
+   * In the Raw Library of reusable source material. Finished videos
+   * (kind 'final') never are: they belong to the Creation Gallery via the
+   * versions that use them.
+   */
   inLibrary: boolean;
   sizeMB: number;
   durationSec?: number;
@@ -195,8 +200,11 @@ export interface Version {
   accountId: string;
   format: VersionFormat;
   aspect: Aspect;
+  /** Finished video for this account's version (a shared asset, never a copy). */
   mediaAssetId?: string;
   coverAssetId?: string;
+  /** Photos for carousel/photo posts, in order. */
+  photoAssetIds?: string[];
   title?: string;
   /** Captions keyed by language code; entered by the user, never machine-generated here. */
   captions: Record<string, string>;

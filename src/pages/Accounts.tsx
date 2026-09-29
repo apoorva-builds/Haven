@@ -1,8 +1,8 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
+import { useState, type FormEvent } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import type { Account, AccountKind, PlatformId, Version } from '../data/types';
 import { Cover } from '../components/Cover';
-import { FinishedVideos } from '../components/FinishedVideos';
+import { CreationTile } from './Gallery';
 import { Icon } from '../components/Icon';
 import { Modal } from '../components/Modal';
 import { useToast } from '../components/Toast';
@@ -129,67 +129,8 @@ function AllAccounts() {
           </aside>
         </div>
       )}
-      {ready && <FinishedVideosSection />}
       {adding && <AddAccountModal initialPlatform={adding} onClose={() => setAdding(null)} />}
     </div>
-  );
-}
-
-/** All-accounts view of finished videos, with a filter per account. */
-function FinishedVideosSection() {
-  const { data } = useStore();
-  const [params, setParams] = useSearchParams();
-  const { hash } = useLocation();
-  const selected = params.get('videos') ?? 'all';
-  useEffect(() => {
-    if (hash === '#finished') document.getElementById('finished')?.scrollIntoView({ block: 'start' });
-  }, [hash]);
-  const current = accountOf(data, selected);
-  const pick = (value: string) => {
-    const next = new URLSearchParams(params);
-    if (value === 'all') next.delete('videos');
-    else next.set('videos', value);
-    setParams(next, { replace: true });
-  };
-  const ordered = [...data.accounts].sort(
-    (a, b) => data.platforms.findIndex((p) => p.id === a.platform) - data.platforms.findIndex((p) => p.id === b.platform),
-  );
-  return (
-    <section id="finished" className="panel" aria-labelledby="finished-h">
-      <div className="panel__head">
-        <h2 id="finished-h" className="h2">
-          Finished videos
-        </h2>
-        {current && (
-          <Link className="text-link" to={`/accounts/${current.id}`}>
-            {current.handle} page <Icon name="arrowRight" size={14} />
-          </Link>
-        )}
-      </div>
-      <div className="chip-grid" role="radiogroup" aria-label="Show finished videos for">
-        <button type="button" role="radio" aria-checked={selected === 'all'} className={`chip chip--plain ${selected === 'all' ? 'is-on' : ''}`} onClick={() => pick('all')}>
-          All accounts
-        </button>
-        {ordered.map((a) => {
-          const p = platformOf(data, a.platform);
-          return (
-            <button
-              key={a.id}
-              type="button"
-              role="radio"
-              aria-checked={selected === a.id}
-              className={`chip ${selected === a.id ? 'is-on' : ''}`}
-              style={{ ['--hue' as string]: p.hue }}
-              onClick={() => pick(a.id)}
-            >
-              <span className="chip__glyph">{p.glyph}</span>
-              {a.handle}
-            </button>
-          );
-        })}
-      </div>
-      <FinishedVideos accountId={selected === 'all' ? undefined : selected} />
-    </section>
   );
 }
 
@@ -332,16 +273,29 @@ function AccountDetail({ accountId }: { accountId: string }) {
               </ul>
             )}
           </section>
-          <section className="panel account-grid__wide" aria-labelledby="acct-fv-h">
+          <section className="panel account-grid__wide" aria-labelledby="acct-cr-h">
             <div className="panel__head">
-              <h2 id="acct-fv-h" className="h2">
-                Finished videos for {account.handle}
+              <h2 id="acct-cr-h" className="h2">
+                Creations for {account.handle}
               </h2>
-              <Link className="text-link" to={`/accounts?videos=all#finished`}>
-                All accounts <Icon name="arrowRight" size={14} />
+              <Link className="text-link" to={`/gallery?account=${account.id}`}>
+                Open in Creation Gallery <Icon name="arrowRight" size={14} />
               </Link>
             </div>
-            <FinishedVideos accountId={account.id} />
+            {versions.length === 0 ? (
+              <EmptyState icon="grid" title="No creations for this account yet">
+                Plan a version for this account from any idea.
+              </EmptyState>
+            ) : (
+              <div className="gallery__grid gallery__grid--compact">
+                {[...versions]
+                  .sort((a, b) => b.scheduledFor.localeCompare(a.scheduledFor))
+                  .slice(0, 4)
+                  .map((v) => (
+                    <CreationTile key={v.id} version={v} />
+                  ))}
+              </div>
+            )}
           </section>
           <div className="stack">
             <section className="panel" aria-labelledby="posted-h">

@@ -32,10 +32,10 @@ export function localVideoUrl(file: File): string | undefined {
   return file.type.startsWith('video/') ? URL.createObjectURL(file) : undefined;
 }
 
-function kindFromName(name: string, toLibrary: boolean): AssetKind {
+function kindFromName(name: string): AssetKind {
   const ext = name.split('.').pop()?.toLowerCase() ?? '';
-  // Videos added straight to the Library are treated as finished edits.
-  if (['mov', 'mp4', 'm4v', 'avi', 'mkv', 'webm'].includes(ext)) return toLibrary ? 'final' : 'raw';
+  // Uploads here are source material; finished edits go through a version's picker.
+  if (['mov', 'mp4', 'm4v', 'avi', 'mkv', 'webm'].includes(ext)) return 'raw';
   if (['jpg', 'jpeg', 'png', 'heic', 'webp', 'gif'].includes(ext)) return 'photo';
   if (['wav', 'mp3', 'aac', 'm4a', 'aif', 'aiff'].includes(ext)) return 'audio';
   return 'document';
@@ -82,7 +82,7 @@ export function DemoUploader({ ideaId, toLibrary = false }: { ideaId?: string; t
         const asset: Asset = {
           id: j.id,
           name: j.name,
-          kind: kindFromName(j.name, toLibrary),
+          kind: kindFromName(j.name),
           ideaIds: ideaId ? [ideaId] : [],
           inLibrary: toLibrary,
           sizeMB: j.sizeMB,

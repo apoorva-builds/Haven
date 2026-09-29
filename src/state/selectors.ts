@@ -54,7 +54,10 @@ export function versionMatchesFocus(data: DemoData, v: Version, focus: Focus): b
 
 export const isVideo = (a: Asset): boolean => a.kind === 'final' || a.kind === 'raw' || a.kind === 'cutaway';
 
-/** Library videos that can actually play in the prototype. */
-export const libraryVideos = (data: DemoData): Asset[] => data.assets.filter((a) => a.inLibrary && isVideo(a) && !!a.videoUrl);
+/** Finished videos that can play in the prototype; versions pick from these. */
+export const finishedVideos = (data: DemoData): Asset[] => data.assets.filter((a) => a.kind === 'final' && !!a.videoUrl);
+
+/** Raw Library: reusable source material only, never finished posts. */
+export const rawLibrary = (data: DemoData): Asset[] => data.assets.filter((a) => a.inLibrary && a.kind !== 'final');
 
 export const versionsUsingAsset = (data: DemoData, assetId: string): Version[] => data.versions.filter((v) => v.mediaAssetId === assetId);

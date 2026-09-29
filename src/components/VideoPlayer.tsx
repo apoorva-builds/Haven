@@ -21,7 +21,7 @@ export function MediaSourceNote({ asset }: { asset: Asset }) {
 }
 
 /**
- * In-page player for a Library video. Renders nothing playable for assets
+ * In-page player for a video asset. Renders nothing playable for assets
  * without a file (seeded placeholders), and says so.
  */
 export function VideoPlayer({ asset, compact = false }: { asset: Asset; compact?: boolean }) {

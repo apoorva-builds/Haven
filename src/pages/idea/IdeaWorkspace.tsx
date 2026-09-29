@@ -167,7 +167,7 @@ export function IdeaWorkspacePage() {
           ideaId={idea.id}
           onClose={() => setConfirmDelete(false)}
           onDeleted={() => {
-            toast('Idea deleted for this session. Library originals were kept.', 'demo');
+            toast('Idea deleted for this session. Raw Library originals were kept.', 'demo');
             navigate('/ideas');
           }}
         />
@@ -213,7 +213,7 @@ function DeleteIdeaModal({ ideaId, onClose, onDeleted }: { ideaId: string; onClo
           <h3 className="h3">
             <Icon name="shield" size={15} /> Kept ({kept.length})
           </h3>
-          <p className="muted">Library originals and files used by other ideas are never removed with an idea.</p>
+          <p className="muted">Raw Library originals and files used by other ideas are never removed with an idea.</p>
           <ul className="plain-list">
             {kept.map((a) => (
               <li key={a.id}>{a.name}</li>
@@ -225,7 +225,7 @@ function DeleteIdeaModal({ ideaId, onClose, onDeleted }: { ideaId: string; onClo
           <h3 className="h3">
             <Icon name="trash" size={15} /> Removed with the idea ({removed.length})
           </h3>
-          <p className="muted">Promote any of these to the Library first if you want to keep them.</p>
+          <p className="muted">Promote any of these to the Raw Library first if you want to keep them.</p>
           <ul className="plain-list">
             {removed.map((a) => (
               <li key={a.id}>{a.name}</li>

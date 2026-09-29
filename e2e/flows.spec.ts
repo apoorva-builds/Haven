@@ -5,6 +5,9 @@ import { readFileSync } from 'node:fs';
 
 const open = (page: Page, path: string) => page.goto(`${path}${path.includes('?') ? '&' : '?'}instant`);
 
+/** Click a primary (sidebar) navigation link; keeps the in-memory demo session. */
+const nav = (page: Page, name: string) => page.getByRole('complementary', { name: 'Primary' }).getByRole('link', { name, exact: true }).click();
+
 test('theme toggle is remembered across reloads', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' });
   await open(page, '/');
@@ -147,7 +150,7 @@ test('deleting an idea explains which originals are kept', async ({ page }) => {
   await expect(dialog.getByText('Glaze dip — 120fps.mov')).toBeVisible();
   await dialog.getByRole('button', { name: 'Delete idea' }).click();
   await expect(page).toHaveURL(/\/ideas$/);
-  await page.getByRole('link', { name: 'Library', exact: true }).click();
+  await nav(page, 'Raw Library');
   await expect(page.getByText('Glaze dip — 120fps.mov')).toBeVisible();
 });
 
@@ -216,7 +219,7 @@ test('every primary route renders without console errors', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
-  for (const path of ['/', '/ideas', '/ideas/slow-mornings', '/ideas/slow-mornings/assets', '/ideas/slow-mornings/versions', '/ideas/slow-mornings/tasks', '/accounts', '/accounts/yt-main', '/calendar', '/library', '/campaigns', '/links', '/nope']) {
+  for (const path of ['/', '/gallery', '/gallery?account=ig-studio', '/gallery/v-ig-personal', '/gallery/v-blues-ig', '/ideas', '/ideas/slow-mornings', '/ideas/slow-mornings/assets', '/ideas/slow-mornings/versions', '/ideas/slow-mornings/tasks', '/accounts', '/accounts/yt-main', '/calendar', '/library', '/campaigns', '/links', '/nope']) {
     await open(page, path);
     await expect(page.locator('main h1, main .empty h3').first()).toBeVisible();
   }
@@ -230,70 +233,140 @@ const sampleVideo = () => ({
 
 const canPlay = (video: ReturnType<Page['locator']>) => expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.readyState), { timeout: 10_000 }).toBeGreaterThan(0);
 
-test('Library videos play in the page, including uploads from this device', async ({ page }) => {
-  await open(page, '/library?kind=final');
-  const seeded = page.locator('.asset', { hasText: 'Slow mornings — vertical v3.webm' });
-  await expect(seeded.locator('video')).toBeVisible();
-  await canPlay(seeded.locator('video'));
-  await expect(seeded.getByText(/Demo sample bundled with the prototype/)).toBeVisible();
-  await expect(seeded.getByTestId('used-by')).toContainText('3 versions');
+const tile = (page: Page, versionId: string) => page.locator(`.ctile[data-version="${versionId}"]`);
+
+test('Raw Library holds source material only; device clips play in the page', async ({ page }) => {
+  await open(page, '/library');
+  await expect(page.locator('.page-header .eyebrow')).toHaveText('Raw Library');
+  await expect(page.getByRole('link', { name: 'Creation Gallery', exact: true }).last()).toBeVisible();
+  await expect(page.locator('.asset', { hasText: 'Slow mornings — vertical v3.webm' })).toHaveCount(0);
+  await expect(page.locator('select[aria-label="Type"] option', { hasText: 'Finished video' })).toHaveCount(0);
 
   await page.getByRole('button', { name: 'Upload' }).click();
-  await page.getByTestId('upload-input').setInputFiles({ name: 'studio-final-cut.webm', ...sampleVideo() });
+  await page.getByTestId('upload-input').setInputFiles({ name: 'raw-kiln-clip.webm', ...sampleVideo() });
   await expect(page.getByText('Added for this session only — not stored')).toBeVisible({ timeout: 15_000 });
-  const uploaded = page.locator('.asset', { hasText: 'studio-final-cut.webm' });
+  const uploaded = page.locator('.asset', { hasText: 'raw-kiln-clip.webm' });
   await expect(uploaded).toHaveCount(1);
   await canPlay(uploaded.locator('video'));
   await expect(uploaded.getByText(/From this device · session only\. Not uploaded or stored online/)).toBeVisible();
+  await expect(uploaded.getByText('Raw video')).toBeVisible();
 });
 
-test('one Library video serves several accounts and shows on each account page', async ({ page }) => {
-  await open(page, '/ideas/wheel-60/versions?v=v-wheel-tt');
-  await expect(page.getByText('No finished video selected yet').or(page.getByText(/Pick the finished edit/))).toBeVisible();
+test('Creation Gallery shows creations by day across platforms, with account filters', async ({ page }) => {
+  await open(page, '/gallery');
+  await expect(page.getByRole('heading', { level: 2, name: /^Today/ })).toBeVisible();
 
-  // TikTok version: choose a finished video from this device (session only).
+  const personal = tile(page, 'v-ig-personal');
+  await expect(personal.locator('.ctile__label')).toHaveText('Instagram · Reel');
+  await expect(personal).toContainText('@mira.lane.demo');
+  await expect(personal).toContainText('In review');
+  await expect(personal).toContainText('Slow mornings in the studio');
+  await expect(personal.locator('video')).toHaveCount(1);
+  await expect(tile(page, 'v-yt').locator('.ctile__label')).toHaveText('YouTube · Long video');
+  await expect(tile(page, 'v-tt').locator('.ctile__label')).toHaveText('TikTok · Video');
+  await expect(tile(page, 'v-blues-ig').locator('.ctile__label')).toHaveText('Instagram · Carousel');
+  await expect(tile(page, 'v-blues-ig')).toContainText('3 photos');
+  await expect(tile(page, 'v-market-ig')).toContainText('Posted');
+
+  // Several versions of one idea, each its own tile, all tied to the idea.
+  const heroTiles = page.locator('.ctile', { hasText: 'Slow mornings in the studio' });
+  await expect(heroTiles).toHaveCount(4);
+  await expect(heroTiles.first()).toContainText('4 versions');
+
+  // Individual account filter.
+  await page.getByRole('radio', { name: /@lanestudio\.demo/ }).click();
+  await expect(page.getByText(/Showing 3 creations for/)).toBeVisible();
+  await expect(page.locator('.ctile')).toHaveCount(3);
+  for (const t of await page.locator('.ctile').all()) await expect(t).toContainText('@lanestudio.demo');
+
+  // Status filter composes with the account filter; All accounts resets it.
+  await page.getByRole('radio', { name: 'All accounts' }).click();
+  await page.getByRole('radio', { name: 'Posted' }).click();
+  await expect(page.locator('.ctile')).toHaveCount(1);
+  await expect(tile(page, 'v-market-ig')).toBeVisible();
+});
+
+test('opening a creation stays in Haven; the posted link appears only when posted', async ({ page }) => {
+  await open(page, '/gallery');
+  await tile(page, 'v-ig-personal').click();
+  await expect(page).toHaveURL(/\/gallery\/v-ig-personal$/);
+  const stage = page.locator('.creation__stage');
+  await canPlay(stage.locator('video'));
+  await expect(stage.getByText(/Demo sample bundled with the prototype/)).toBeVisible();
+  const info = page.locator('.creation__info');
+  await expect(info.getByRole('link', { name: '@mira.lane.demo' })).toBeVisible();
+  await expect(info).toContainText('In review');
+  await expect(info).toContainText('Planned for');
+  await expect(info).toContainText('Most mornings start before the wheel does.');
+  await info.getByRole('tab', { name: 'ES' }).click();
+  await expect(info).toContainText('La mayoría de las mañanas');
+  await expect(info.getByRole('link', { name: 'Slow mornings in the studio' })).toBeVisible();
+  await expect(info.getByText(/Not published\. Haven prepares posts but never publishes them/)).toBeVisible();
+  await expect(page.getByRole('link', { name: /Open posted/ })).toHaveCount(0);
+  await expect(page.locator('.creation__siblings .ctile')).toHaveCount(3);
+
+  // A carousel shows its photos.
+  await page.locator('.creation__siblings').getByRole('link', { name: /Instagram · Reel for @lanestudio/ }).isVisible();
+  await open(page, '/gallery/v-blues-ig');
+  await expect(page.getByRole('figure', { name: 'Photo 1 of 3' })).toBeVisible();
+  await page.getByRole('button', { name: 'Next photo' }).click();
+  await expect(page.getByRole('figure', { name: 'Photo 2 of 3' })).toBeVisible();
+
+  // Seeded posted version with a saved live URL.
+  await open(page, '/gallery/v-market-ig');
+  const postedLink = page.getByRole('link', { name: /Open posted video/ });
+  await expect(postedLink).toHaveAttribute('href', 'https://www.instagram.com/mira.lane.demo/');
+  await expect(postedLink).toHaveAttribute('target', '_blank');
+
+  // Marking a version posted with a live URL makes the button appear on its creation.
+  await open(page, '/ideas/slow-mornings/versions?v=v-tt');
+  await page.getByLabel('Live URL (after posting)').fill('https://www.tiktok.com/@miralane.demo/video/42');
+  await page.getByRole('button', { name: 'Mark as posted' }).click();
+  await page.getByRole('link', { name: /View in Creation Gallery/ }).click();
+  await expect(page.getByRole('link', { name: /Open posted video/ })).toHaveAttribute('href', 'https://www.tiktok.com/@miralane.demo/video/42');
+  await expect(page.locator('.creation__info')).toContainText('Posted');
+});
+
+test('one finished video serves several account versions without a duplicate asset', async ({ page }) => {
+  await open(page, '/ideas/wheel-60/versions?v=v-wheel-tt');
+
+  // TikTok version: finished video from this device (session only).
   await page.getByTestId('finished-video-input').setInputFiles({ name: 'wheel-final.webm', ...sampleVideo() });
   const selected = page.locator('.finished__selected');
   await canPlay(selected.locator('video'));
   await expect(selected.getByText(/From this device · session only/)).toBeVisible();
   await expect(page.getByText(/nothing was uploaded or posted/)).toBeVisible();
 
-  // Instagram personal version: pick the same Library file — no copy.
+  // Instagram personal version: same file, no copy.
   await page.locator('.vrow', { hasText: '@mira.lane.demo' }).click();
   await page.getByLabel('Finished video for @mira.lane.demo').selectOption({ label: 'wheel-final.webm (this device, session only) · used by 1' });
-  await expect(selected.getByText('Same Library file also used by')).toBeVisible();
+  await expect(selected.getByText('Same file also used by')).toBeVisible();
   await expect(selected.locator('.abadge', { hasText: '@miralane.demo' })).toBeVisible();
 
-  // Library holds exactly one asset for it, used by two versions.
-  await page.getByRole('link', { name: 'Library', exact: true }).first().click();
+  // One asset, used by two versions; it is a finished video, not Raw Library material.
+  await page.getByRole('tab', { name: /Assets/ }).click();
   const card = page.locator('.asset', { hasText: 'wheel-final.webm' });
   await expect(card).toHaveCount(1);
   await expect(card.getByTestId('used-by')).toContainText('2 versions');
+  await expect(card.getByText('Finished · Creation Gallery')).toBeVisible();
+  await nav(page, 'Raw Library');
+  await expect(page.locator('.asset').first()).toBeVisible();
+  await expect(page.locator('.asset', { hasText: 'wheel-final.webm' })).toHaveCount(0);
 
-  // Accounts → Finished videos: all accounts, grouped by idea.
-  await page.getByRole('link', { name: 'Accounts', exact: true }).first().click();
-  const section = page.locator('#finished');
-  await expect(section.getByRole('radio', { name: 'All accounts' })).toHaveAttribute('aria-checked', 'true');
-  const wheel = section.locator('.fv__idea', { hasText: 'Wheel-throwing in 60 seconds' });
-  const shared = wheel.locator('.fv__item', { hasText: 'wheel-final.webm' });
-  await expect(shared).toHaveCount(1);
-  await expect(shared).toContainText('One Library file · 2 accounts');
-  await expect(shared.locator('.fv__versions li')).toHaveCount(2);
-  const hero = section.locator('.fv__idea', { hasText: 'Slow mornings in the studio' });
-  await expect(hero.getByTestId('fv-asset-a-final-vertical').locator('.fv__versions li')).toHaveCount(3);
-  await expect(hero.getByTestId('fv-asset-a-final-wide').locator('.fv__versions li')).toHaveCount(1);
+  // Creation Gallery: both account tiles play the very same file.
+  await nav(page, 'Creation Gallery');
+  const tt = tile(page, 'v-wheel-tt').locator('video');
+  const ig = tile(page, 'v-wheel-ig').locator('video');
+  await expect(tt).toHaveAttribute('src', /^blob:/);
+  expect(await tt.getAttribute('src')).toBe(await ig.getAttribute('src'));
 
-  // Individual account filter.
-  await section.getByRole('radio', { name: /@miralane\.demo/ }).click();
-  await expect(section.locator('.fv__versions .abadge', { hasText: '@mira.lane.demo' })).toHaveCount(0);
-  await expect(wheel.locator('.fv__versions li')).toHaveCount(1);
-  await expect(section.locator('.fv__idea', { hasText: 'Market day recap' })).toHaveCount(0);
+  await page.getByRole('radio', { name: /@miralane\.demo/ }).click();
+  await expect(tile(page, 'v-wheel-tt')).toBeVisible();
+  await expect(tile(page, 'v-wheel-ig')).toHaveCount(0);
 
-  // The account page plays the same video.
-  await section.getByRole('link', { name: /@miralane\.demo page/ }).click();
-  await expect(page.getByRole('heading', { name: 'Finished videos for @miralane.demo' })).toBeVisible();
-  const accountVideo = page.locator('.fv__item', { hasText: 'wheel-final.webm' }).locator('video');
-  await canPlay(accountVideo);
-  await expect(page.locator('.fv__item', { hasText: 'wheel-final.webm' }).getByText(/session only/)).toBeVisible();
-  await expect(page.getByText('Nothing here is posted to any platform.')).toBeVisible();
+  await tile(page, 'v-wheel-tt').click();
+  await canPlay(page.locator('.creation__stage video'));
+  await expect(page.locator('.creation__stage').getByText(/From this device · session only\. Not uploaded or stored online/)).toBeVisible();
+  await expect(page.getByRole('link', { name: /Open posted/ })).toHaveCount(0);
+  await expect(page.getByText(/Not published/)).toBeVisible();
 });

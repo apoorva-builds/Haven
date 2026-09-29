@@ -40,7 +40,7 @@ export function IdeaAssets({ idea }: { idea: Idea }) {
       </div>
       {shown.length === 0 ? (
         <EmptyState icon="film" title={all.length ? 'Nothing of this type' : 'No media gathered yet'}>
-          {all.length ? 'Try another type, or star useful clips to build selects.' : 'Drop raw footage, cutaways, photos, and music here, or pull files from the Library.'}
+          {all.length ? 'Try another type, or star useful clips to build selects.' : 'Drop raw footage, cutaways, photos, and music here, or pull files from the Raw Library.'}
         </EmptyState>
       ) : (
         <div className="asset-grid">

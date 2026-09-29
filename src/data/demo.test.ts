@@ -58,10 +58,17 @@ describe('demo workspace', () => {
     expect(data.tasks.some((t) => t.due === data.today)).toBe(true);
   });
 
-  it('seeds playable finished videos in the Library, shared across accounts', () => {
+  it('seeds playable finished videos outside the Raw Library, shared across accounts', () => {
     const finals = data.assets.filter((a) => a.kind === 'final');
-    expect(finals.every((a) => a.inLibrary && a.videoUrl?.startsWith('/demo-media/') && a.mediaSource === 'bundled-sample')).toBe(true);
+    expect(finals.length).toBeGreaterThan(0);
+    expect(finals.every((a) => !a.inLibrary && a.videoUrl?.startsWith('/demo-media/') && a.mediaSource === 'bundled-sample')).toBe(true);
     const vertical = data.versions.filter((v) => v.mediaAssetId === 'a-final-vertical').map((v) => v.accountId);
     expect(vertical.sort()).toEqual(['ig-personal', 'ig-studio', 'tt-main']);
+  });
+
+  it('gives the carousel its own ordered photos', () => {
+    const carousel = data.versions.find((v) => v.format === 'Carousel')!;
+    expect(carousel.photoAssetIds).toHaveLength(3);
+    carousel.photoAssetIds!.forEach((id) => expect(data.assets.find((a) => a.id === id)?.kind).toBe('photo'));
   });
 });

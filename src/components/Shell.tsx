@@ -11,9 +11,10 @@ import { Avatar, DemoTag, useDismiss } from './ui';
 export const NAV: { to: string; label: string; icon: IconName }[] = [
   { to: '/', label: 'Today', icon: 'today' },
   { to: '/ideas', label: 'Ideas', icon: 'ideas' },
+  { to: '/gallery', label: 'Creation Gallery', icon: 'grid' },
   { to: '/calendar', label: 'Calendar', icon: 'calendar' },
   { to: '/accounts', label: 'Accounts', icon: 'accounts' },
-  { to: '/library', label: 'Library', icon: 'library' },
+  { to: '/library', label: 'Raw Library', icon: 'library' },
   { to: '/campaigns', label: 'Campaigns', icon: 'campaigns' },
   { to: '/links', label: 'Links', icon: 'links' },
 ];
@@ -77,9 +78,9 @@ export function AppShell() {
         <button type="button" className="tabbar__add" onClick={() => setQuickAdd(true)} aria-label="Capture a new idea">
           <Icon name="plus" size={24} />
         </button>
-        <NavLink to="/calendar" className="tabbar__item">
-          <Icon name="calendar" size={21} />
-          <span>Calendar</span>
+        <NavLink to="/gallery" className="tabbar__item">
+          <Icon name="grid" size={21} />
+          <span>Gallery</span>
         </NavLink>
         <button type="button" className="tabbar__item" onClick={() => setDrawer(true)} aria-label="More sections">
           <Icon name="menu" size={21} />

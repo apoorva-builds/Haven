@@ -75,6 +75,7 @@ export function AssetCard({
           {asset.name}
         </p>
         <p className="asset__meta">
+          {asset.videoUrl && <>{ASSET_KIND_LABEL[asset.kind]} · </>}
           {formatSize(asset.sizeMB)} · <span className={`store store--${asset.storage}`}>{STORAGE_LABEL[asset.storage]}</span>
           {uploader && <> · {uploader.name.split(' ')[0]}</>}
         </p>
@@ -130,9 +131,13 @@ export function AssetCard({
           </ul>
         )}
         <div className="asset__actions">
-          {asset.inLibrary ? (
+          {asset.kind === 'final' ? (
             <span className="tag tag--accent">
-              <Icon name="library" size={12} /> In Library
+              <Icon name="grid" size={12} /> Finished · Creation Gallery
+            </span>
+          ) : asset.inLibrary ? (
+            <span className="tag tag--accent">
+              <Icon name="library" size={12} /> In Raw Library
             </span>
           ) : (
             <button
@@ -140,10 +145,10 @@ export function AssetCard({
               className="btn btn--ghost btn--xs"
               onClick={() => {
                 dispatch({ type: 'asset/promote', assetId: asset.id });
-                toast(`“${asset.name}” promoted to the Library for this session.`, 'demo');
+                toast(`“${asset.name}” promoted to the Raw Library for this session.`, 'demo');
               }}
             >
-              <Icon name="library" size={13} /> Promote to Library
+              <Icon name="library" size={13} /> Promote to Raw Library
             </button>
           )}
           <button

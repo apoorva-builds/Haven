@@ -5,7 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 const open = (page: Page, path: string) => page.goto(`${path}${path.includes('?') ? '&' : '?'}instant`);
 
 test('phone layout uses the tab bar and never scrolls sideways', async ({ page }) => {
-  for (const path of ['/', '/ideas', '/ideas/slow-mornings/versions', '/ideas/slow-mornings/assets', '/accounts', '/accounts?videos=ig-studio', '/accounts/ig-studio', '/calendar', '/library', '/campaigns', '/links']) {
+  for (const path of ['/', '/ideas', '/ideas/slow-mornings/versions', '/ideas/slow-mornings/assets', '/accounts', '/gallery', '/gallery?account=tt-main', '/gallery/v-ig-personal', '/gallery/v-blues-ig', '/accounts/ig-studio', '/calendar', '/library', '/campaigns', '/links']) {
     await open(page, path);
     await expect(page.locator('main h1').first()).toBeVisible();
     await expect(page.getByRole('navigation', { name: 'Primary (mobile)' })).toBeVisible();
@@ -29,7 +29,7 @@ test('calendar becomes an agenda and the drawer reaches every section', async ({
   await expect(page.getByRole('region', { name: /Agenda/ })).toBeVisible();
   await page.getByRole('button', { name: 'More sections' }).click();
   const drawer = page.getByRole('navigation', { name: 'All sections' });
-  await drawer.getByRole('link', { name: 'Library' }).click();
+  await drawer.getByRole('link', { name: 'Raw Library' }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Originals, kept safe');
 });
 
@@ -38,4 +38,14 @@ test('review a version on the phone', async ({ page }) => {
   await expect(page.getByRole('figure', { name: /Approximate Instagram preview/ })).toBeVisible();
   await page.getByRole('checkbox', { name: 'Music rights noted' }).check();
   await expect(page.locator('.vrow.is-active')).toContainText('4/6');
+});
+
+test('Creation Gallery on the phone: tab bar, account filter, opened creation', async ({ page }) => {
+  await open(page, '/');
+  await page.getByRole('navigation', { name: 'Primary (mobile)' }).getByRole('link', { name: 'Gallery' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Everything you’re making, day by day');
+  await page.getByRole('radio', { name: /@mira\.lane\.demo/ }).click();
+  await page.locator('.ctile[data-version="v-ig-personal"]').click();
+  await expect(page.locator('.creation__stage video')).toBeVisible();
+  await expect(page.getByText(/Not published/)).toBeVisible();
 });

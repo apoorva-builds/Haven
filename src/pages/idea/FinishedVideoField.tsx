@@ -6,20 +6,20 @@ import { Icon } from '../../components/Icon';
 import { useToast } from '../../components/Toast';
 import { AccountBadge } from '../../components/ui';
 import { MediaSourceNote, VideoPlayer } from '../../components/VideoPlayer';
-import { accountOf, assetOf, libraryVideos, versionsUsingAsset } from '../../state/selectors';
+import { accountOf, assetOf, finishedVideos, versionsUsingAsset } from '../../state/selectors';
 import { useStore } from '../../state/store';
 
 /**
- * Picks the finished edit for one account's version from the Library.
- * Versions reference the Library asset, so one video can serve several
- * accounts without duplicate files.
+ * Picks the finished edit for one account's version. Finished videos are
+ * shared assets shown in the Creation Gallery (not the Raw Library);
+ * versions reference them, so one file can serve several accounts.
  */
 export function FinishedVideoField({ version }: { version: Version }) {
   const { data, dispatch } = useStore();
   const toast = useToast();
   const input = useRef<HTMLInputElement>(null);
   const account = accountOf(data, version.accountId)!;
-  const options = libraryVideos(data);
+  const options = finishedVideos(data);
   const selected = assetOf(data, version.mediaAssetId);
   const others = selected ? versionsUsingAsset(data, selected.id).filter((v) => v.id !== version.id) : [];
 
@@ -35,7 +35,7 @@ export function FinishedVideoField({ version }: { version: Version }) {
       name: file.name,
       kind: 'final',
       ideaIds: [version.ideaId],
-      inLibrary: true,
+      inLibrary: false,
       sizeMB: Math.max(0.1, file.size / 1024 / 1024),
       art: { motif: 'grain', hue, hue2: (hue + 40) % 360 },
       favorite: false,
@@ -51,7 +51,7 @@ export function FinishedVideoField({ version }: { version: Version }) {
     };
     dispatch({ type: 'asset/add-session', asset });
     dispatch({ type: 'version/media', versionId: version.id, assetId: asset.id });
-    toast('Video added to the Library for this session only. It plays from this tab; nothing was uploaded or posted.', 'demo');
+    toast('Finished video added for this session only. It plays from this tab; nothing was uploaded or posted.', 'demo');
   };
 
   return (
@@ -60,8 +60,8 @@ export function FinishedVideoField({ version }: { version: Version }) {
         <h3 id={`fv-${version.id}`} className="h3">
           Finished video
         </h3>
-        <Link to="/library?kind=final" className="text-link">
-          Library <Icon name="arrowRight" size={14} />
+        <Link to={`/gallery/${version.id}`} className="text-link">
+          View in Creation Gallery <Icon name="arrowRight" size={14} />
         </Link>
       </div>
       <div className="finished__pick">
@@ -107,7 +107,7 @@ export function FinishedVideoField({ version }: { version: Version }) {
           <MediaSourceNote asset={selected} />
           {others.length > 0 ? (
             <p className="finished__shared">
-              Same Library file also used by{' '}
+              Same file also used by{' '}
               {others.map((v) => {
                 const a = accountOf(data, v.accountId);
                 return a ? <AccountBadge key={v.id} account={a} showHandle /> : null;
@@ -115,12 +115,12 @@ export function FinishedVideoField({ version }: { version: Version }) {
               <span className="muted"> — one file, no copies.</span>
             </p>
           ) : (
-            <p className="muted small">Only this version uses this video. Other accounts can pick the same Library file.</p>
+            <p className="muted small">Only this version uses this video. Other accounts can pick the same file.</p>
           )}
           <p className="muted small">Edited in your editor, not in Haven. Selecting it here doesn’t post anything.</p>
         </div>
       ) : (
-        <p className="muted">Pick the finished edit from the Library, or choose a video from this device for a session-only preview.</p>
+        <p className="muted">Pick a finished video already used by another version, or choose one from this device for a session-only preview.</p>
       )}
     </section>
   );
