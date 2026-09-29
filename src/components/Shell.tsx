@@ -4,6 +4,7 @@ import { useStore } from '../state/store';
 import { useTheme } from '../state/theme';
 import { accountOf, personOf, platformOf } from '../state/selectors';
 import { Icon, type IconName } from './Icon';
+import { AboutPreviewButton } from './AboutPreview';
 import { Modal } from './Modal';
 import { useToast } from './Toast';
 import { Avatar, DemoTag, useDismiss } from './ui';
@@ -51,12 +52,6 @@ export function AppShell() {
             </NavLink>
           ))}
         </nav>
-        <div className="sidebar__foot">
-          <StorageMini />
-          <p className="sidebar__note">
-            <Icon name="shield" size={14} /> Illustrative workspace, not affiliated with Mia Yilin. Sample data; changes reset on reload.
-          </p>
-        </div>
       </aside>
 
       <div className="main-col">
@@ -92,26 +87,6 @@ export function AppShell() {
   );
 }
 
-function StorageMini() {
-  const { data } = useStore();
-  const used = data.workspace.otherStorageGB + data.assets.reduce((s, a) => s + a.sizeMB, 0) / 1024;
-  const pct = used / data.workspace.storageLimitGB;
-  return (
-    <Link to="/library" className="storage-mini" aria-label={`Storage: ${Math.round(used)} of ${data.workspace.storageLimitGB} GB used (demo figures)`}>
-      <span className="storage-mini__row">
-        <span>Storage</span>
-        <span>
-          {Math.round(used)} / {data.workspace.storageLimitGB} GB
-        </span>
-      </span>
-      <span className="storage-mini__track">
-        <span style={{ width: `${Math.min(100, pct * 100)}%` }} />
-      </span>
-      <span className="storage-mini__demo">Demo figures</span>
-    </Link>
-  );
-}
-
 function WorkspaceSwitcher() {
   const { data } = useStore();
   const [open, setOpen] = useState(false);
@@ -120,7 +95,7 @@ function WorkspaceSwitcher() {
   return (
     <div className="ws" ref={ref}>
       <button type="button" className="ws__btn" aria-expanded={open} aria-haspopup="menu" onClick={() => setOpen((o) => !o)}>
-        <span className="ws__avatar">MY</span>
+        <span className="ws__avatar">HP</span>
         <span className="ws__text">
           <span className="ws__name">{data.workspace.name}</span>
           <span className="ws__plan">{data.workspace.planLabel}</span>
@@ -131,7 +106,7 @@ function WorkspaceSwitcher() {
         <div className="popover ws__menu" role="menu">
           <p className="popover__label">Workspaces</p>
           <button type="button" role="menuitemradio" aria-checked="true" className="popover__item is-active" onClick={close}>
-            <span className="ws__avatar ws__avatar--sm">MY</span> {data.workspace.name}
+            <span className="ws__avatar ws__avatar--sm">HP</span> {data.workspace.name}
             <Icon name="check" size={14} />
           </button>
           <div className="popover__sep" />
@@ -162,6 +137,9 @@ function Topbar({ onQuickAdd, onMenu }: { onQuickAdd: () => void; onMenu: () => 
       </Link>
       <SearchBox />
       <div className="topbar__actions">
+        <span className="topbar__preview">
+          <AboutPreviewButton />
+        </span>
         <button type="button" className="btn btn--primary topbar__add" onClick={onQuickAdd}>
           <Icon name="plus" size={16} />
           <span>New idea</span>
@@ -349,9 +327,9 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
             <span className="nav__label">{n.label}</span>
           </NavLink>
         ))}
-        <p className="sidebar__note">
-          <Icon name="shield" size={14} /> Illustrative workspace, not affiliated with Mia Yilin. Sample data; changes reset on reload.
-        </p>
+        <div className="drawer__about">
+          <AboutPreviewButton />
+        </div>
       </nav>
     </div>
   );
@@ -416,7 +394,8 @@ export function QuickAddModal({ onClose }: { onClose: () => void }) {
               const on = accountIds.includes(a.id);
               return (
                 <button type="button" key={a.id} className={`chip ${on ? 'is-on' : ''}`} aria-pressed={on} onClick={() => toggle(a.id)} style={{ ['--hue' as string]: p.hue }}>
-                  <span className="chip__glyph">{p.glyph}</span>
+                  <span className="chip__glyph" aria-hidden="true">{p.glyph}</span>
+                  <span className="sr-only">{p.name} </span>
                   {accountOf(data, a.id)!.handle}
                 </button>
               );

@@ -8,13 +8,13 @@ test('phone layout uses the tab bar and never scrolls sideways', async ({ page }
   for (const path of [
     '/',
     '/gallery',
-    '/gallery?account=yt-mia',
-    '/gallery?account=ig-explore',
-    '/gallery/v-ig-explore',
-    '/gallery/v-ig-mia-desk',
+    '/gallery?account=yt-pine',
+    '/gallery?account=ig-atlas',
+    '/gallery/v-ig-atlas',
+    '/gallery/v-ig-pine-desk',
     '/ideas',
-    '/ideas/street-food/versions',
-    '/ideas/street-food/assets',
+    '/ideas/market-phrases/versions',
+    '/ideas/market-phrases/assets',
     '/calendar',
     '/library',
     '/campaigns',
@@ -32,9 +32,9 @@ test('phone layout uses the tab bar and never scrolls sideways', async ({ page }
 test('quick capture from the tab bar', async ({ page }) => {
   await open(page, '/');
   await page.getByRole('button', { name: 'Capture a new idea' }).click();
-  await page.getByLabel('Working title').fill('Phone idea: tea house phrases');
+  await page.getByLabel('Working title').fill('Phone idea: ferry phrases');
   await page.getByRole('button', { name: 'Capture idea' }).click();
-  await expect(page.getByRole('link', { name: /Phone idea: tea house phrases/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Phone idea: ferry phrases/ })).toBeVisible();
 });
 
 test('calendar becomes an agenda and the drawer reaches every section', async ({ page }) => {
@@ -48,22 +48,34 @@ test('calendar becomes an agenda and the drawer reaches every section', async ({
 });
 
 test('review a version on the phone', async ({ page }) => {
-  await open(page, '/ideas/street-food/versions?v=v-ig-explore');
+  await open(page, '/ideas/market-phrases/versions?v=v-ig-atlas');
   await expect(page.getByRole('figure', { name: /Approximate Instagram preview/ })).toBeVisible();
   await page.getByRole('checkbox', { name: 'Music rights noted' }).check();
   await expect(page.locator('.vrow.is-active')).toContainText('5/6');
 });
 
-test('Creation Gallery on the phone: account selector, Audience Pulse, opened creation', async ({ page }) => {
+test('Creation Gallery on the phone: preview label, ⓘ, account selector, Audience Pulse, opened creation', async ({ page }) => {
   await open(page, '/');
+  await expect(page.getByRole('button', { name: /About this preview/ })).toBeVisible();
   const tabbar = page.getByRole('navigation', { name: 'Primary (mobile)' });
   await expect(tabbar.getByRole('link')).toHaveCount(3);
   await tabbar.getByRole('link', { name: 'Gallery' }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Creation Gallery');
+
+  // ⓘ explanations open on tap and stay inside the screen.
+  await page.getByRole('button', { name: 'About Post status' }).click();
+  const pop = page.getByRole('region', { name: 'About Post status' });
+  await expect(pop).toBeVisible();
+  const box = (await pop.boundingBox())!;
+  const width = page.viewportSize()!.width;
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(width);
+  await page.keyboard.press('Escape');
+
   await page.getByRole('button', { name: /^Account:/ }).click();
-  await page.getByRole('menuitemradio', { name: /@mia_yilin_/ }).click();
-  await expect(page.getByTestId('audience-pulse')).toContainText('Sample data');
-  await page.locator('.ctile[data-version="v-ig-mia-desk"]').click();
+  await page.getByRole('group', { name: 'Pine & Paper' }).getByRole('menuitemradio', { name: /Instagram/ }).click();
+  await expect(page.getByTestId('audience-pulse')).toContainText('sample');
+  await page.locator('.ctile[data-version="v-ig-pine-desk"]').click();
   await expect(page.getByRole('figure', { name: 'Photo 1 of 3' })).toBeVisible();
   await expect(page.getByText(/Not published/)).toBeVisible();
 });

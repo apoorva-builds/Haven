@@ -65,14 +65,15 @@ export function LibraryPage() {
     <div className="page">
       <PageHeader
         eyebrow="Raw Library"
+        info="library"
         title="Originals, kept safe"
         lede={
           <>
-            Source material: original photos, audio and music, unedited clips and brand assets. Finished posts live in the{' '}
+            Source files you reuse. Finished posts live in the{' '}
             <Link className="inline-link" to="/gallery">
               Creation Gallery
             </Link>
-            . Nothing here is deleted automatically, not even when storage is full.
+            .
           </>
         }
         actions={

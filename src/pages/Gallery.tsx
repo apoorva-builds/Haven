@@ -5,6 +5,7 @@ import { Cover } from '../components/Cover';
 import { Icon } from '../components/Icon';
 import { AccountSelector, useAccountName } from '../components/AccountSelector';
 import { AudiencePulse } from '../components/AudiencePulse';
+import { InfoButton } from '../components/InfoButton';
 import { EmptyState, ExternalLink, LoadingGrid, PlatformGlyph, SelectField, StatusPill, useSimulatedLoad } from '../components/ui';
 import { MediaSourceNote, VideoPlayer } from '../components/VideoPlayer';
 import { creationLabel, creationMedia, groupByDay, postedLinkLabel } from '../lib/creations';
@@ -114,18 +115,24 @@ function GalleryIndex() {
     <div className="page gallery">
       <header className="gallery__head">
         <h1 className="display gallery__title">Creation Gallery</h1>
-        <p className="gallery__note">Illustrative workspace. Posts are samples made for this demo, not real drafts.</p>
+        <InfoButton k="gallery" />
       </header>
 
       <div className="gallery__toolbar">
-        <AccountSelector value={account} onChange={(id) => set('account', id, 'all')} />
-        <SelectField label="Status" value={status} onChange={(v) => set('status', v, 'all')}>
-          <option value="all">All statuses</option>
-          <option value="planned">Planned</option>
-          <option value="review">In review</option>
-          <option value="ready">Ready</option>
-          <option value="posted">Posted</option>
-        </SelectField>
+        <span className="with-info">
+          <AccountSelector value={account} onChange={(id) => set('account', id, 'all')} />
+          <InfoButton k="accounts" />
+        </span>
+        <span className="with-info">
+          <SelectField label="Status" value={status} onChange={(v) => set('status', v, 'all')}>
+            <option value="all">All statuses</option>
+            <option value="planned">Planned</option>
+            <option value="review">In review</option>
+            <option value="ready">Ready</option>
+            <option value="posted">Posted</option>
+          </SelectField>
+          <InfoButton k="status" />
+        </span>
       </div>
 
       {account !== 'all' && <AudiencePulse accountId={account} />}
@@ -149,10 +156,13 @@ function GalleryIndex() {
           {days.map(({ day, items }, index) => (
             <section key={day} className="gallery__day" aria-labelledby={`day-${day}`}>
               {index === firstPast && index > 0 && <p className="gallery__earlier">Earlier</p>}
-              <h2 id={`day-${day}`} className="gallery__date">
-                <span>{relativeDay(day, data.today)}</span>
-                {relativeDay(day, data.today) !== formatDay(day) && <span className="muted">{formatDay(day, { weekday: 'long', month: 'long', day: 'numeric' })}</span>}
-              </h2>
+              <div className="gallery__dayhead">
+                <h2 id={`day-${day}`} className="gallery__date">
+                  <span>{relativeDay(day, data.today)}</span>
+                  {relativeDay(day, data.today) !== formatDay(day) && <span className="muted">{formatDay(day, { weekday: 'long', month: 'long', day: 'numeric' })}</span>}
+                </h2>
+                {index === 0 && <InfoButton k="tiles" />}
+              </div>
               <div className="gallery__grid">
                 {items.map((v) => (
                   <CreationTile key={v.id} version={v} />
@@ -266,7 +276,6 @@ function CreationPage({ versionId }: { versionId: string }) {
             <PlatformGlyph platform={platform} size="sm" /> {creationLabel(version, account, platform)}
           </p>
           <h1 className="display">{version.title ?? idea.title}</h1>
-          <p className="creation__sample">Sample post made for this demo, not a real draft.</p>
 
           <dl className="creation__facts">
             <dt>Account</dt>

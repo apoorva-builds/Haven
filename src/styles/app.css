@@ -3762,15 +3762,12 @@ a.week__item:hover {
   gap: 36px;
 }
 .gallery__head {
-  display: grid;
-  gap: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 .gallery__title {
   font-size: clamp(28px, 3vw, 38px);
-}
-.gallery__note {
-  font-size: 13.5px;
-  color: var(--ink-3);
 }
 .gallery__toolbar {
   display: grid;
@@ -3938,36 +3935,6 @@ a.week__item:hover {
   stroke: var(--surface);
   stroke-width: 2;
 }
-.pulse__foot {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 16px;
-  font-size: 12.5px;
-  color: var(--ink-3);
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
-}
-.pulse__account {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 16px;
-  align-items: baseline;
-  font-size: 14px;
-}
-.pulse__identity {
-  display: flex;
-  gap: 6px;
-  align-items: flex-start;
-  font-size: 12.5px;
-  color: var(--ink-3);
-}
-.pulse__identity svg {
-  flex: none;
-  margin-top: 2px;
-}
-.pulse__identity--demo {
-  color: var(--warn);
-}
 .ctile__status {
   font-size: 12.5px;
   font-weight: 560;
@@ -3993,10 +3960,131 @@ a.week__item:hover {
 .ctile__status--posted::before {
   background: var(--accent);
 }
-.creation__sample {
-  font-size: 13px;
+
+/* ⓘ info buttons and the About panel */
+.info {
+  display: inline-flex;
+  vertical-align: middle;
+}
+.info__btn {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   color: var(--ink-3);
-  margin-top: -10px;
+  transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.info__btn:hover,
+.info__btn.is-open {
+  color: var(--accent-text);
+  background: var(--accent-soft);
+}
+.info__pop {
+  position: fixed;
+  z-index: 80;
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  box-shadow: var(--shadow-3);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  text-align: left;
+  animation: pop 160ms var(--ease);
+}
+.info__topic {
+  font-weight: 650;
+  color: var(--ink);
+}
+.with-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.gallery__toolbar .with-info:first-child {
+  display: flex;
+}
+.gallery__toolbar .with-info:first-child .acct-select {
+  flex: 1;
+}
+.eyebrow .info__btn {
+  width: 24px;
+  height: 24px;
+  margin: -4px 0;
+}
+.gallery__dayhead {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  border-bottom: 1px solid var(--line);
+}
+.gallery__dayhead .gallery__date {
+  border-bottom: 0;
+}
+.gallery__dayhead .info {
+  margin-bottom: 8px;
+}
+.pulse__head {
+  flex-wrap: wrap;
+}
+.pulse__updated {
+  margin-left: auto;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.acct-select__handle {
+  margin-left: auto;
+  font-size: 12.5px;
+}
+.preview-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 99px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--warn);
+  background: var(--warn-soft);
+  border: 1px dashed color-mix(in srgb, var(--warn) 45%, transparent);
+  white-space: nowrap;
+}
+.preview-chip:hover {
+  border-style: solid;
+}
+.preview-chip__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.preview-chip__short {
+  display: none;
+}
+.about-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 12px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.about-list strong {
+  color: var(--ink);
+}
+.drawer__about {
+  margin-top: 16px;
+  padding: 0 8px;
 }
 
 .creation__grid {
@@ -4274,8 +4362,25 @@ a.week__item:hover {
   }
   .topbar__add,
   .topbar__me,
-  .search__kbd {
+  .search__kbd,
+  .preview-chip__long {
     display: none;
+  }
+  .preview-chip__short {
+    display: inline;
+  }
+  .preview-chip {
+    padding: 0 10px;
+  }
+  .gallery__toolbar .with-info {
+    display: flex;
+  }
+  .gallery__toolbar .with-info > .select {
+    flex: 1;
+  }
+  .pulse__updated {
+    margin-left: 0;
+    width: 100%;
   }
   .search input {
     height: 38px;

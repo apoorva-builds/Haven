@@ -5,16 +5,18 @@ import { expect, test } from '@playwright/test';
  * phone. Output: docs/screenshots/<theme>-<device>-<screen>.jpg
  * Run with: npm run screenshots
  */
-const screens = [
+const screens: { name: string; path: string; click?: string }[] = [
   { name: 'gallery', path: '/gallery' },
-  { name: 'gallery-account', path: '/gallery?account=yt-mia' },
-  { name: 'gallery-account-stale', path: '/gallery?account=ig-explore' },
-  { name: 'creation', path: '/gallery/v-tt-explore' },
-  { name: 'creation-posted', path: '/gallery/v-yt-mia-spots' },
+  { name: 'gallery-info', path: '/gallery', click: 'About Post status' },
+  { name: 'about-preview', path: '/gallery', click: 'About this preview' },
+  { name: 'gallery-account', path: '/gallery?account=yt-pine' },
+  { name: 'gallery-account-stale', path: '/gallery?account=ig-atlas' },
+  { name: 'creation', path: '/gallery/v-ig-atlas' },
+  { name: 'creation-posted', path: '/gallery/v-yt-pine-spots' },
   { name: 'library', path: '/library' },
   { name: 'today', path: '/' },
   { name: 'ideas', path: '/ideas' },
-  { name: 'idea-versions', path: '/ideas/street-food/versions?v=v-ig-explore' },
+  { name: 'idea-versions', path: '/ideas/market-phrases/versions?v=v-ig-atlas' },
   { name: 'calendar', path: '/calendar' },
 ]
 
@@ -37,6 +39,11 @@ for (const theme of ['light', 'dark'] as const) {
           await page.goto(`${screen.path}${sep}instant`);
           await expect(page.locator('main h1').first()).toBeVisible();
           await page.evaluate(() => document.fonts.ready);
+          if (screen.click) {
+            // dispatchEvent avoids Playwright scrolling the button under the sticky header.
+            await page.getByRole('button', { name: new RegExp(screen.click) }).first().dispatchEvent('click');
+            await page.waitForTimeout(400); // let smooth scroll and the open animation settle
+          }
           // Let in-page players show their first frame.
           await page
             .waitForFunction(() => [...document.querySelectorAll('video')].every((v) => v.readyState >= 2), null, { timeout: 5_000 })

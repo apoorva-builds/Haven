@@ -3,25 +3,19 @@ import { createDemoData, HERO_IDEA_ID } from './demo';
 
 const data = createDemoData(new Date(2026, 8, 29, 10, 0));
 
-describe('demo workspace', () => {
-  it('models two brands with a main and an Explore with Mia account on YouTube and Instagram', () => {
-    expect(data.brands.map((b) => b.name)).toEqual(['Mia Yilin', 'Explore with Mia']);
-    const youtube = data.accounts.filter((a) => a.platform === 'youtube');
-    expect(youtube.map((a) => a.handle).sort()).toEqual(['@explorewith_mia', '@miayilin']);
-    const instagram = data.accounts.filter((a) => a.platform === 'instagram');
-    expect(new Set(instagram.map((a) => a.brandId))).toEqual(new Set(['mia', 'explore']));
+describe('preview sample workspace', () => {
+  it('uses two fictional brands with two YouTube and two Instagram accounts', () => {
+    expect(data.brands.map((b) => b.name)).toEqual(['Pine & Paper', 'Little Atlas']);
+    expect(data.accounts.filter((a) => a.platform === 'youtube')).toHaveLength(2);
+    expect(data.accounts.filter((a) => a.platform === 'instagram')).toHaveLength(2);
   });
 
-  it('marks unconfirmed and LinkedIn accounts as illustrative, with no real handle or link', () => {
-    const illustrative = data.accounts.filter((a) => a.identity === 'illustrative');
-    expect(illustrative.map((a) => a.id).sort()).toEqual(['ig-explore', 'li-mia']);
-    for (const a of illustrative) {
-      expect(a.handle).toMatch(/\(demo\)$/);
+  it('keeps every account clearly fictional and unlinked', () => {
+    for (const a of data.accounts) {
+      expect(a.handle).toMatch(/\.sample$/);
       expect(a.profileUrl).toBeUndefined();
       expect(a.analyticsUrl).toBeUndefined();
     }
-    for (const a of data.accounts.filter((x) => x.platform === 'linkedin')) expect(a.identity).toBe('illustrative');
-    for (const a of data.accounts.filter((x) => x.identity === 'public')) expect(a.identityNote).toMatch(/samples/);
   });
 
   it('follows the hero idea into three platforms and both Instagram accounts with one shared file', () => {
@@ -29,12 +23,18 @@ describe('demo workspace', () => {
     const accounts = versions.map((v) => data.accounts.find((a) => a.id === v.accountId)!);
     expect(new Set(accounts.map((a) => a.platform))).toEqual(new Set(['tiktok', 'instagram', 'youtube']));
     expect(accounts.filter((a) => a.platform === 'instagram')).toHaveLength(2);
-    expect(new Set(versions.map((v) => v.mediaAssetId))).toEqual(new Set(['a-street-vertical']));
+    expect(new Set(versions.map((v) => v.mediaAssetId))).toEqual(new Set(['a-market-vertical']));
   });
 
   it('has referential integrity', () => {
     const ids = (xs: { id: string }[]) => new Set(xs.map((x) => x.id));
-    const [accounts, ideas, assets, versions, people, campaigns, brands] = [data.accounts, data.ideas, data.assets, data.versions, data.people, data.campaigns, data.brands].map(ids);
+    const accounts = ids(data.accounts);
+    const ideas = ids(data.ideas);
+    const assets = ids(data.assets);
+    const versions = ids(data.versions);
+    const people = ids(data.people);
+    const campaigns = ids(data.campaigns);
+    const brands = ids(data.brands);
     for (const a of data.accounts) expect(brands.has(a.brandId)).toBe(true);
     for (const v of data.versions) {
       expect(accounts.has(v.accountId)).toBe(true);
@@ -51,19 +51,13 @@ describe('demo workspace', () => {
       if (a.duplicateOfId) expect(assets.has(a.duplicateOfId)).toBe(true);
     }
     for (const i of data.ideas) if (i.campaignId) expect(campaigns.has(i.campaignId)).toBe(true);
-    for (const s of data.audience) expect(accounts.has(s.accountId)).toBe(true);
     expect(data.audience.map((s) => s.accountId).sort()).toEqual([...accounts].sort());
   });
 
-  it('contains no credentials, and sample posted links point at example.com', () => {
-    const urls = [...data.accounts.flatMap((a) => [a.profileUrl ?? '', a.analyticsUrl ?? '']), ...data.links.map((l) => l.url), ...data.versions.flatMap((v) => v.links)].filter(Boolean);
-    for (const raw of urls) {
-      const url = new URL(raw);
-      expect(url.protocol).toBe('https:');
-      expect(url.username + url.password).toBe('');
-      expect(url.search).not.toMatch(/token|key|secret|password|session/i);
-    }
-    for (const v of data.versions.filter((x) => x.liveUrl)) expect(new URL(v.liveUrl!).hostname).toBe('example.com');
+  it('only links to example.com placeholders', () => {
+    const urls = [...data.links.map((l) => l.url), ...data.versions.flatMap((v) => [...v.links, v.liveUrl ?? '']), ...data.ideas.flatMap((i) => i.references.map((r) => r.url))].filter(Boolean);
+    expect(urls.length).toBeGreaterThan(0);
+    for (const raw of urls) expect(new URL(raw).hostname).toBe('example.com');
   });
 
   it('labels every audience series as sample data', () => {
@@ -77,7 +71,7 @@ describe('demo workspace', () => {
   });
 
   it('gives carousels their own ordered photos', () => {
-    const carousel = data.versions.find((v) => v.id === 'v-ig-mia-desk')!;
+    const carousel = data.versions.find((v) => v.id === 'v-ig-pine-desk')!;
     expect(carousel.photoAssetIds).toHaveLength(3);
     carousel.photoAssetIds!.forEach((id) => expect(data.assets.find((a) => a.id === id)?.kind).toBe('photo'));
   });

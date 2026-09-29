@@ -12,16 +12,16 @@ const label = (versionId: string) => {
 
 describe('creations', () => {
   it('labels tiles by platform and format', () => {
-    expect(label('v-ig-explore')).toBe('Instagram · Reel');
-    expect(label('v-ig-mia-desk')).toBe('Instagram · Carousel');
-    expect(label('v-yt-mia')).toBe('YouTube · Long video');
-    expect(label('v-yt-explore-short')).toBe('YouTube · Short');
-    expect(label('v-tt-explore')).toBe('TikTok · Video');
+    expect(label('v-ig-atlas')).toBe('Instagram · Reel');
+    expect(label('v-ig-pine-desk')).toBe('Instagram · Carousel');
+    expect(label('v-yt-pine')).toBe('YouTube · Long video');
+    expect(label('v-yt-atlas-short')).toBe('YouTube · Short');
+    expect(label('v-tt-pine')).toBe('TikTok · Video');
   });
 
   it('names the posted link by what you open', () => {
-    expect(postedLinkLabel(data.versions.find((v) => v.id === 'v-yt-mia-spots')!)).toBe('Open posted video');
-    expect(postedLinkLabel(data.versions.find((v) => v.id === 'v-ig-explore-tea')!)).toBe('Open posted post');
+    expect(postedLinkLabel(data.versions.find((v) => v.id === 'v-yt-pine-spots')!)).toBe('Open posted video');
+    expect(postedLinkLabel(data.versions.find((v) => v.id === 'v-ig-atlas-cafe')!)).toBe('Open posted post');
   });
 
   it('groups by day, newest first, keeping an idea’s versions together', () => {
@@ -43,6 +43,6 @@ describe('creations', () => {
 
   it('keeps the Raw Library and finished videos apart', () => {
     expect(rawLibrary(data).some((a) => a.kind === 'final')).toBe(false);
-    expect(finishedVideos(data).map((a) => a.id).sort()).toEqual(['a-morning-vertical', 'a-morning-wide', 'a-spots-vertical', 'a-street-vertical']);
+    expect(finishedVideos(data).map((a) => a.id).sort()).toEqual(['a-market-vertical', 'a-morning-vertical', 'a-morning-wide', 'a-spots-vertical']);
   });
 });

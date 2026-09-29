@@ -1,10 +1,8 @@
 import type { AudienceSeries } from '../data/types';
 import { changeOver, formatAge, formatCount, formatSigned, freshness, latestSnapshot, trend, type Change } from '../lib/audience';
-import { accountOf, platformOf } from '../state/selectors';
+import { accountOf } from '../state/selectors';
 import { useStore } from '../state/store';
-import { useAccountName } from './AccountSelector';
-import { Icon } from './Icon';
-import { DemoTag, ExternalLink } from './ui';
+import { InfoButton } from './InfoButton';
 
 const when = (iso: string) =>
   new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
@@ -50,17 +48,15 @@ function Delta({ change, label }: { change: Change | null; label: string }) {
 }
 
 /**
- * Compact audience summary for one account. All figures in this demo are
- * sample data. A count older than the series' stale window is shown as
- * "Out of date" with its date, never as the current number.
+ * Compact audience summary for one account. All figures in the preview are
+ * samples. A count older than the series' stale window is shown as
+ * "Out of date", never as the current number.
  */
 export function AudiencePulse({ accountId }: { accountId: string }) {
   const { data } = useStore();
-  const name = useAccountName();
   const account = accountOf(data, accountId);
   const series: AudienceSeries | undefined = data.audience.find((s) => s.accountId === accountId);
   if (!account) return null;
-  const platform = platformOf(data, account.platform);
   const latest = series && latestSnapshot(series);
   const fresh = series ? freshness(series) : undefined;
   const metric = series?.metric ?? 'followers';
@@ -71,7 +67,12 @@ export function AudiencePulse({ accountId }: { accountId: string }) {
         <h2 id="pulse-h" className="pulse__title">
           Audience Pulse
         </h2>
-        <DemoTag title="These numbers are invented for the demo. They are not real audience figures.">Sample data</DemoTag>
+        <InfoButton k="pulse" />
+        {latest && fresh && (
+          <span className="pulse__updated">
+            Last updated <time dateTime={latest.at}>{when(latest.at)}</time> · {formatAge(fresh.ageMs)}
+          </span>
+        )}
       </div>
 
       {!series || !latest || !fresh ? (
@@ -81,7 +82,7 @@ export function AudiencePulse({ accountId }: { accountId: string }) {
           <div className="pulse__main">
             <p className="pulse__value pulse__value--stale">Out of date</p>
             <p className="pulse__metric">
-              Last known: {formatCount(latest.count)} {metric}, {formatAge(fresh.ageMs)}. Add a new snapshot to show a current count.
+              Last known: {formatCount(latest.count)} {metric} (sample), {formatAge(fresh.ageMs)}. {series.source.kind === 'sample' && series.source.plannedUpdate === 'manual' ? 'Add a new snapshot to show a current count.' : 'Waiting for a fresh update.'}
             </p>
           </div>
         </div>
@@ -91,39 +92,14 @@ export function AudiencePulse({ accountId }: { accountId: string }) {
             <p className="pulse__value" data-testid="pulse-count">
               {formatCount(latest.count)}
             </p>
-            <p className="pulse__metric">{metric}</p>
+            <p className="pulse__metric">
+              {metric} · <span data-testid="pulse-sample">sample</span>
+            </p>
           </div>
           <Delta change={changeOver(series, 7)} label="7 days" />
           <Delta change={changeOver(series, 30)} label="30 days" />
-          <Sparkline values={trend(series, 30)} label={`30-day ${metric} trend (sample data), from ${formatCount(trend(series, 30)[0])} to ${formatCount(latest.count)}`} />
+          <Sparkline values={trend(series, 30)} label={`30-day ${metric} trend (sample), from ${formatCount(trend(series, 30)[0])} to ${formatCount(latest.count)}`} />
         </div>
-      )}
-
-      <p className="pulse__foot">
-        {latest && fresh && (
-          <span>
-            Last updated <time dateTime={latest.at}>{when(latest.at)}</time> ({formatAge(fresh.ageMs)})
-          </span>
-        )}
-        <span>
-          {series?.source.kind === 'sample' && series.source.plannedUpdate === 'platform-api'
-            ? `When connected: refreshed on a schedule from the ${platform.name} API.`
-            : 'Updated by manual snapshot.'}
-        </span>
-      </p>
-
-      <p className="pulse__account">
-        <span>
-          <strong>{name(account.id)}</strong> <span className="muted">· {data.brands.find((b) => b.id === account.brandId)?.name}</span>
-        </span>
-        {account.profileUrl && <ExternalLink href={account.profileUrl}>Profile</ExternalLink>}
-        {account.analyticsUrl && <ExternalLink href={account.analyticsUrl}>{platform.name} analytics</ExternalLink>}
-      </p>
-      {account.identityNote && (
-        <p className={`pulse__identity ${account.identity === 'illustrative' ? 'pulse__identity--demo' : ''}`}>
-          <Icon name={account.identity === 'illustrative' ? 'shield' : 'alert'} size={13} />
-          <span>{account.identityNote}</span>
-        </p>
       )}
     </section>
   );

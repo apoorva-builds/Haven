@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { Icon } from './Icon';
 
 export function Modal({ title, onClose, children, footer, wide = false }: { title: string; onClose: () => void; children: ReactNode; footer?: ReactNode; wide?: boolean }) {
@@ -32,7 +33,8 @@ export function Modal({ title, onClose, children, footer, wide = false }: { titl
     };
   }, [onClose]);
 
-  return (
+  // Portal to <body> so no animated/transformed ancestor can trap the dialog below other layers.
+  return createPortal(
     <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className={`modal ${wide ? 'modal--wide' : ''}`} role="dialog" aria-modal="true" aria-labelledby="modal-title" ref={ref}>
         <header className="modal__head">
@@ -44,6 +46,7 @@ export function Modal({ title, onClose, children, footer, wide = false }: { titl
         <div className="modal__body">{children}</div>
         {footer && <footer className="modal__foot">{footer}</footer>}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

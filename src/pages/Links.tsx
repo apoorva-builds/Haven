@@ -52,6 +52,7 @@ export function LinksPage() {
     <div className="page">
       <PageHeader
         eyebrow="Links"
+        info="links"
         title="Every link you reach for"
         lede="Account pages, native analytics, live posts, affiliate URLs and brand resources in one place. Analytics links open the platform — Haven doesn’t pull numbers in."
       />

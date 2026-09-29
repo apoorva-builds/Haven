@@ -11,10 +11,10 @@ import { chromium } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 
 const outputs = [
-  { file: 'public/demo-media/street-food-vertical.webm', w: 360, h: 640, title: 'Street food phrases', sub: 'Sample video · 9:16', hue: 18, hue2: 185 },
-  { file: 'public/demo-media/morning-vertical.webm', w: 360, h: 640, title: '6 AM study morning', sub: 'Sample video · 9:16', hue: 28, hue2: 250 },
-  { file: 'public/demo-media/morning-wide.webm', w: 640, h: 360, title: '6 AM study morning', sub: 'Sample long cut · 16:9', hue: 30, hue2: 235 },
-  { file: 'public/demo-media/study-spots-vertical.webm', w: 360, h: 640, title: 'Quiet study spots', sub: 'Sample video · 9:16', hue: 245, hue2: 200 },
+  { file: 'public/demo-media/market-vertical.webm', w: 360, h: 640, title: 'Night market phrases', sub: 'Sample video · 9:16', hue: 18, hue2: 185 },
+  { file: 'public/demo-media/morning-vertical.webm', w: 360, h: 640, title: 'A quiet morning', sub: 'Sample video · 9:16', hue: 28, hue2: 250 },
+  { file: 'public/demo-media/morning-wide.webm', w: 640, h: 360, title: 'A quiet morning', sub: 'Sample long cut · 16:9', hue: 30, hue2: 235 },
+  { file: 'public/demo-media/quiet-places-vertical.webm', w: 360, h: 640, title: 'Quiet places to work', sub: 'Sample video · 9:16', hue: 245, hue2: 200 },
 ];
 
 await mkdir('public/demo-media', { recursive: true });

@@ -55,6 +55,7 @@ export function IdeasPage() {
     <div className="page">
       <PageHeader
         eyebrow="Ideas"
+        info="ideas"
         title="Every idea, every version"
         lede="One tile per idea. Each carries its source media and the versions planned for your accounts."
         actions={

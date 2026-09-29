@@ -4,6 +4,8 @@ import type { Account, IdeaStatus, Person, Platform, VersionStatus } from '../da
 import { useStore } from '../state/store';
 import { platformOf } from '../state/selectors';
 import { Icon, type IconName } from './Icon';
+import { InfoButton } from './InfoButton';
+import type { HelpKey } from '../lib/help';
 
 /** Honest marker for anything that only works in this demo session. */
 export function DemoTag({ children = 'Demo only', title }: { children?: ReactNode; title?: string }) {
@@ -78,11 +80,16 @@ export function AvatarStack({ people }: { people: Person[] }) {
   );
 }
 
-export function PageHeader({ eyebrow, title, lede, actions }: { eyebrow?: string; title: ReactNode; lede?: ReactNode; actions?: ReactNode }) {
+export function PageHeader({ eyebrow, title, lede, actions, info }: { eyebrow?: string; title: ReactNode; lede?: ReactNode; actions?: ReactNode; info?: HelpKey }) {
   return (
     <header className="page-header">
       <div>
-        {eyebrow && <p className="eyebrow">{eyebrow}</p>}
+        {eyebrow && (
+          <p className="eyebrow">
+            {eyebrow}
+            {info && <InfoButton k={info} />}
+          </p>
+        )}
         <h1 className="display">{title}</h1>
         {lede && <p className="lede">{lede}</p>}
       </div>

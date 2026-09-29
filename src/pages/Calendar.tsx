@@ -94,6 +94,7 @@ export function CalendarPage() {
     <div className="page calendar-page">
       <PageHeader
         eyebrow="Calendar"
+        info="calendar"
         title={monthLabel}
         lede={
           perspective === 'content' ? (

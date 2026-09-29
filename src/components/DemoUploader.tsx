@@ -125,7 +125,7 @@ export function DemoUploader({ ideaId, toLibrary = false }: { ideaId?: string; t
 
   const sample = () =>
     addFiles([
-      { name: 'Phone clip — lantern street.webm', size: 640 * 1024 * 1024, sampleUrl: '/demo-media/street-food-vertical.webm' },
+      { name: 'Phone clip — lantern street.webm', size: 640 * 1024 * 1024, sampleUrl: '/demo-media/market-vertical.webm' },
       { name: 'Phone photo — shelf.heic', size: 4.2 * 1024 * 1024 },
     ]);
 

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import type { DemoData, Task } from '../data/types';
 import { useAccountName } from '../components/AccountSelector';
 import { Cover } from '../components/Cover';
+import { InfoButton } from '../components/InfoButton';
 import { Icon } from '../components/Icon';
 import { useToast } from '../components/Toast';
 import { AccountBadge, Avatar, EmptyState, LoadingGrid, PlatformGlyph, SelectField, StatusPill, TextLink, useSimulatedLoad } from '../components/ui';
@@ -121,9 +122,12 @@ export function TodayPage() {
       <div className="today-grid">
         <section className="panel tasks-panel" aria-labelledby="tasks-h">
           <div className="panel__head">
-            <h2 id="tasks-h" className="h2">
-              Work
-            </h2>
+            <span className="with-info">
+              <h2 id="tasks-h" className="h2">
+                Work
+              </h2>
+              <InfoButton k="work" />
+            </span>
             <div className="tabs tabs--pill" role="tablist" aria-label="Task groups">
               {(
                 [

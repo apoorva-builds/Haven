@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import type { Asset, Version } from '../../data/types';
 import { localVideoUrl } from '../../components/DemoUploader';
 import { Icon } from '../../components/Icon';
+import { InfoButton } from '../../components/InfoButton';
 import { useToast } from '../../components/Toast';
 import { AccountBadge } from '../../components/ui';
 import { MediaSourceNote, VideoPlayer } from '../../components/VideoPlayer';
@@ -57,9 +58,12 @@ export function FinishedVideoField({ version }: { version: Version }) {
   return (
     <section className="field-group finished" aria-labelledby={`fv-${version.id}`}>
       <div className="field-group__head">
-        <h3 id={`fv-${version.id}`} className="h3">
-          Finished video
-        </h3>
+        <span className="with-info">
+          <h3 id={`fv-${version.id}`} className="h3">
+            Finished video
+          </h3>
+          <InfoButton k="finished" />
+        </span>
         <Link to={`/gallery/${version.id}`} className="text-link">
           View in Creation Gallery <Icon name="arrowRight" size={14} />
         </Link>

@@ -43,18 +43,11 @@ export interface Person {
 
 export type AccountKind = 'Personal' | 'Business' | 'Creator' | 'Brand' | 'Channel';
 
-/** A creator brand that owns one or more accounts, e.g. a main name and a spin-off series. */
+/** A creator brand that owns one or more accounts, e.g. a main channel and a spin-off series. */
 export interface Brand {
   id: string;
   name: string;
 }
-
-/**
- * How an account in the demo relates to a real one.
- * - public: a publicly listed handle, used for illustration only; not connected.
- * - illustrative: a made-up demo account with no real handle or link.
- */
-export type AccountIdentity = 'public' | 'illustrative';
 
 export interface Account {
   id: string;
@@ -63,10 +56,7 @@ export interface Account {
   handle: string;
   displayName: string;
   kind: AccountKind;
-  identity: AccountIdentity;
-  /** Where the handle was found, for public accounts. */
-  identityNote?: string;
-  /** External profile page. Haven stores the link only. Absent for illustrative accounts. */
+  /** External profile page. Haven stores the link only. Sample accounts have none. */
   profileUrl?: string;
   /** Native analytics page on the platform. Haven never imports analytics. */
   analyticsUrl?: string;

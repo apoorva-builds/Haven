@@ -4,7 +4,7 @@ import { useStore } from '../state/store';
 import { Icon } from './Icon';
 import { PlatformGlyph, useDismiss } from './ui';
 
-/** Label used wherever an account is named. Illustrative accounts carry "(demo)" in their handle. */
+/** Label used wherever an account is named. */
 export function useAccountName() {
   const { data } = useStore();
   return (id: string) => accountOf(data, id)?.handle ?? '';
@@ -25,12 +25,12 @@ export function AccountSelector({ value, onChange }: { value: string; onChange: 
 
   return (
     <div className="acct-select" ref={ref}>
-      <button type="button" className="acct-select__btn" aria-haspopup="menu" aria-expanded={open} aria-label={`Account: ${current ? name(current.id) : 'All accounts'}`} onClick={() => setOpen((o) => !o)}>
+      <button type="button" className="acct-select__btn" aria-haspopup="menu" aria-expanded={open} aria-label={`Account: ${current ? `${data.brands.find((b) => b.id === current.brandId)?.name} ${platformOf(data, current.platform).name}` : 'All accounts'}`} onClick={() => setOpen((o) => !o)}>
         {current ? <PlatformGlyph platform={platformOf(data, current.platform)} size="md" /> : <span className="acct-select__all" aria-hidden="true"><Icon name="grid" size={16} /></span>}
         <span className="acct-select__text">
-          <span className="acct-select__name">{current ? name(current.id) : 'All accounts'}</span>
+          <span className="acct-select__name">{current ? `${data.brands.find((b) => b.id === current.brandId)?.name} · ${platformOf(data, current.platform).name}` : 'All accounts'}</span>
           <span className="acct-select__sub">
-            {current ? `${data.brands.find((b) => b.id === current.brandId)?.name} · ${platformOf(data, current.platform).name}` : `${data.accounts.length} accounts · ${data.brands.length} brands`}
+            {current ? name(current.id) : `${data.accounts.length} accounts · ${data.brands.length} brands`}
           </span>
         </span>
         <Icon name="chevronDown" size={16} />
@@ -52,8 +52,8 @@ export function AccountSelector({ value, onChange }: { value: string; onChange: 
                 .map((a) => (
                   <button key={a.id} type="button" role="menuitemradio" aria-checked={value === a.id} className="popover__item" onClick={() => pick(a.id)}>
                     <PlatformGlyph platform={platformOf(data, a.platform)} size="sm" />
-                    <span className="acct-select__opt">{name(a.id)}</span>
-                    {a.identity === 'illustrative' && <span className="soon">Illustrative</span>}
+                    <span className="acct-select__opt">{platformOf(data, a.platform).name}</span>
+                    <span className="muted acct-select__handle">{name(a.id)}</span>
                     {value === a.id && <Icon name="check" size={14} className="acct-select__tick" />}
                   </button>
                 ))}
