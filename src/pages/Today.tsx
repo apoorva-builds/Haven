@@ -182,7 +182,7 @@ export function TodayPage() {
                             <Icon name="refresh" size={12} /> {t.recurring}
                           </span>
                         )}
-                        <span className="tag">{t.stage}</span>
+                        <span className="tag" data-stage={t.stage}>{t.stage}</span>
                       </p>
                     </div>
                     <span className={`task__due ${overdue ? 'is-overdue' : ''}`}>{relativeDay(t.due, data.today)}</span>

@@ -13,9 +13,9 @@ import { sampleSnapshots } from '../lib/audience';
 import type { Account, Asset, AudienceSeries, Campaign, ChecklistItem, DemoData, Idea, LinkItem, MarketingEvent, Notification, Person, Platform, Task, Version } from './types';
 
 export const PLATFORMS: Platform[] = [
-  { id: 'youtube', name: 'YouTube', glyph: 'YT', hue: 8, tier: 'core' },
-  { id: 'instagram', name: 'Instagram', glyph: 'IG', hue: 330, tier: 'core' },
-  { id: 'tiktok', name: 'TikTok', glyph: 'TT', hue: 175, tier: 'core' },
+  { id: 'youtube', name: 'YouTube', glyph: 'YT', hue: 10, tier: 'core' },
+  { id: 'instagram', name: 'Instagram', glyph: 'IG', hue: 338, tier: 'core' },
+  { id: 'tiktok', name: 'TikTok', glyph: 'TT', hue: 168, tier: 'core' },
   { id: 'linkedin', name: 'LinkedIn', glyph: 'in', hue: 210, tier: 'core' },
   { id: 'snapchat', name: 'Snapchat', glyph: 'SC', hue: 52, tier: 'core' },
   { id: 'x', name: 'X', glyph: 'X', hue: 230, tier: 'core' },
@@ -116,7 +116,7 @@ export function createDemoData(now: Date = new Date()): DemoData {
       series: 'Phrase guides',
       status: 'Editing',
       due: d(2),
-      art: { motif: 'city', hue: 18, hue2: 175, image: '/demo-media/market-wide.jpg' },
+      art: { motif: 'city', hue: 18, hue2: 175, image: '/demo-media/market-vertical.jpg' },
       concept: 'A walk through a lantern-lit market with five phrases on screen, each said slowly and then at speed. One vertical edit serves every short-form account.',
       script: 'OPEN: Market noise, lanterns.\nPHRASE 1: “One of these, please.”\nPHRASE 2: “Not too spicy.”\nPHRASE 3: “How much is it?”\nPHRASE 4: “To go, please.”\nPHRASE 5: “That was delicious!”',
       shotList: [
@@ -133,7 +133,7 @@ export function createDemoData(now: Date = new Date()): DemoData {
       series: 'Study routines',
       status: 'In review',
       due: d(1),
-      art: { motif: 'sunrise', hue: 28, hue2: 250, image: '/demo-media/morning-wide.jpg' },
+      art: { motif: 'sunrise', hue: 28, hue2: 250, image: '/demo-media/morning-vertical.jpg' },
       concept: 'The first quiet hour: window light, tea, three priorities. A long cut for YouTube and a vertical cut for short-form.',
       shotList: [
         { id: 's1', label: 'Window light, locked off', done: true },
@@ -157,7 +157,7 @@ export function createDemoData(now: Date = new Date()): DemoData {
       title: 'Books on focus',
       status: 'Idea',
       due: d(16),
-      art: { motif: 'horizon', hue: 40, hue2: 262 },
+      art: { motif: 'horizon', hue: 32, hue2: 14 },
       concept: 'Five books, one idea from each.',
       updatedAt: d(-4),
     }),

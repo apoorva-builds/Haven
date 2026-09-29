@@ -56,11 +56,24 @@ docs/screenshots/      Review screenshots (light/dark × desktop/phone)
 - **Sample content.** Two fictional brands, **Pine & Paper** and **Little Atlas**, with five accounts (two YouTube, two Instagram, one TikTok). Handles end in `.sample` and none link to a real profile. Six ideas, a handful of posts and files, and two placeholder links on example.com. Every still and clip in `public/demo-media/` is painted on a canvas by `scripts/demo-media/scenes.js` (a night market, a desk in morning light, a reading room, desks and café tables from above). None are real photos or footage, and each carries a small burned-in “Haven sample · not a real photo / not real footage” mark. Regenerate with `node scripts/make-demo-media.mjs`.
 - **ⓘ buttons.** Main sections and less familiar features have an ⓘ button: Creation Gallery, account filter, post status, tiles and platform borders, Audience Pulse, Raw Library, finished video, Work, Ideas, Calendar and Links. The explanation appears on click or tap, one at a time, and closes on Escape (focus returns to the button), on an outside click, or when another opens. Panels stay inside the screen on phones and are announced to screen readers. The wording lives in `src/lib/help.ts`.
 
+## Colour: an editorial palette (in review)
+
+Warm ivory and ink are the foundation in both themes (layered warm charcoal in dark). Each accent has one job, everywhere:
+
+| Accent | Job | Where you see it |
+| --- | --- | --- |
+| **Cobalt** | Act and select | Primary actions, links, focus rings, the selected navigation item, active tabs, active filters |
+| **Jade** | Done | Ready and Posted, finished tasks, audience growth |
+| **Amber** | Needs your eyes | In review, out-of-date figures, review tasks, the sample-data marker |
+| **Burnt coral** | Time | Today's date and row, overdue, unread notifications |
+
+Platform marks (YT, IG, TT) are deep, flat versions of each platform's own colour. Collections get a tone only in larger moments: *Phrase guides* is cobalt, *Study routines* is jade, and ideas outside a collection use a quiet ink panel. Media stays the strongest colour in the Creation Gallery. Text accents meet WCAG AA contrast (4.5:1) on their backgrounds in both themes. Captures: [`docs/redesign/colour/`](docs/redesign/colour/) (before: [`colour-before/`](docs/redesign/colour-before/)).
+
 ## Design direction: private creative studio (in review)
 
 Applied so far to **Ideas** and the **Creation Gallery** only; the rest of Haven follows once the direction is approved.
 
-- **Palette**: luminous warm porcelain (light) and layered charcoal (dark); one deep-cobalt action colour; a curated collection palette (cobalt, coral, rose, amber, sky) used in larger moments such as the Up next panel and text-only covers. Colourful media glows softly in dark mode.
+- **Palette**: see *Colour* above. Colourful media glows softly in dark mode.
 - **Type**: Instrument Serif for major titles, Inter for the interface.
 - **Ideas**: an editorial title with a small count and one *New idea* action; one **Up next** feature (media still, due date, stage, account versions, *Continue*); then **All ideas** as composed rows (thumbnail, title, quiet detail, stage with a six-step meter, due date, version count). Search is the page's one prominent search field; status, campaign, account and sort sit in **Filters**; *Archived* is a quiet toggle.
 - **Creation Gallery**: *Coming up* and *Posted* in justified rows that keep each format's real proportions (9:16, 16:9, 4:5), concise titles and a small platform/format mark.

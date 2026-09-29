@@ -2,23 +2,19 @@ import type { DemoData, Idea, IdeaStatus } from '../data/types';
 import { daysBetween } from './dates';
 
 /**
- * Haven's curated collection colours. Colour marks a collection (campaign or
- * series) in larger, intentional places, never as scattered dots.
+ * Haven's collection colours. Colour marks a collection (campaign or series)
+ * in larger, intentional places: the Up next panel and text-only covers.
  */
-export type Tone = 'cobalt' | 'coral' | 'rose' | 'amber' | 'sky';
+export type Tone = 'cobalt' | 'jade' | 'ink';
 
-const TONES: Tone[] = ['cobalt', 'coral', 'rose', 'amber', 'sky'];
 const COLLECTION_TONE: Record<string, Tone> = {
   'phrase-guides': 'cobalt',
-  routines: 'coral',
+  routines: 'jade',
 };
 
-export function toneOf(idea: Pick<Idea, 'campaignId' | 'series' | 'title'>): Tone {
-  if (idea.campaignId && COLLECTION_TONE[idea.campaignId]) return COLLECTION_TONE[idea.campaignId];
-  const key = idea.campaignId ?? idea.series ?? idea.title;
-  let h = 0;
-  for (const ch of key) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  return TONES[2 + (h % 3)];
+export function toneOf(idea: Pick<Idea, 'campaignId'>): Tone {
+  // Coral and amber keep their own jobs (time, attention); other ideas stay ink.
+  return (idea.campaignId && COLLECTION_TONE[idea.campaignId]) || 'ink';
 }
 
 /** The still that represents an idea: its own cover, else its first finished media. */

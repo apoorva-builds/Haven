@@ -11,6 +11,7 @@ test.skip(!out, 'Set COMPARE_OUT to capture before/after screenshots.');
 const only = process.env.COMPARE_SCREENS?.split(',');
 const onlyDevice = process.env.COMPARE_DEVICES?.split(',');
 const allScreens = [
+  { name: 'today', path: '/', fullPage: true },
   { name: 'ideas', path: '/ideas', fullPage: true },
   { name: 'gallery', path: '/gallery', fullPage: true },
   { name: 'version', path: '/ideas/market-phrases/versions?v=v-ig-atlas' },
@@ -35,14 +36,23 @@ for (const theme of ['light', 'dark'] as const) {
           // Bring lazy images in before a full-page capture.
           await page.evaluate(async () => {
             for (let y = 0; y < document.body.scrollHeight; y += 600) {
-              window.scrollTo(0, y);
+              window.scrollTo({ top: y, behavior: 'instant' });
               await new Promise((r) => setTimeout(r, 60));
             }
-            window.scrollTo(0, 0);
+            window.scrollTo({ top: 0, behavior: 'instant' });
           });
           await page.waitForFunction(() => [...document.images].every((i) => i.complete), null, { timeout: 5_000 }).catch(() => {});
           await page.waitForFunction(() => [...document.querySelectorAll('video')].every((v) => v.readyState >= 2), null, { timeout: 5_000 }).catch(() => {});
-          await page.screenshot({ path: `docs/redesign/${out}/${theme}-${device.name}-${screen.name}.jpg`, type: 'jpeg', quality: 82, fullPage: 'fullPage' in screen });
+          const file = `docs/redesign/${out}/${theme}-${device.name}-${screen.name}`;
+          if (device.isMobile) {
+            // Phones: screen-sized captures (fixed bars stay where they belong).
+            await page.screenshot({ path: `${file}.jpg`, type: 'jpeg', quality: 82 });
+            await page.evaluate(() => window.scrollTo({ top: window.innerHeight * 0.9, behavior: 'instant' }));
+            await page.waitForTimeout(200);
+            await page.screenshot({ path: `${file}-2.jpg`, type: 'jpeg', quality: 82 });
+          } else {
+            await page.screenshot({ path: `${file}.jpg`, type: 'jpeg', quality: 82, fullPage: 'fullPage' in screen });
+          }
         });
       }
     });

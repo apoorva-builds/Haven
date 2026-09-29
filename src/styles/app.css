@@ -5319,59 +5319,6 @@ body {
   font-synthesis-weight: none;
 }
 
-/* Collection tones: a tint for small covers, a deep panel for features */
-.tone--cobalt {
-  --tint: #e4e9fc;
-  --tint-ink: #2d46c6;
-  --panel: #22358f;
-  --panel-ink: #f7f3ec;
-}
-.tone--coral {
-  --tint: #fbe4dd;
-  --tint-ink: #b8452f;
-  --panel: #b8452f;
-  --panel-ink: #fff7f2;
-}
-.tone--rose {
-  --tint: #f9e2e9;
-  --tint-ink: #a4405f;
-  --panel: #9c3d5c;
-  --panel-ink: #fff5f8;
-}
-.tone--amber {
-  --tint: #f9edd4;
-  --tint-ink: #8f5d0c;
-  --panel: #e3a33a;
-  --panel-ink: #241703;
-}
-.tone--sky {
-  --tint: #e1eefa;
-  --tint-ink: #2b5d8a;
-  --panel: #bfdcf4;
-  --panel-ink: #0f2238;
-}
-:root[data-theme='dark'] .tone--cobalt {
-  --tint: #1f2758;
-  --tint-ink: #aebcff;
-  --panel: #1f2d80;
-}
-:root[data-theme='dark'] .tone--coral {
-  --tint: #3a221c;
-  --tint-ink: #f3a590;
-}
-:root[data-theme='dark'] .tone--rose {
-  --tint: #3a1f2a;
-  --tint-ink: #eca3ba;
-}
-:root[data-theme='dark'] .tone--amber {
-  --tint: #382a14;
-  --tint-ink: #f0c579;
-}
-:root[data-theme='dark'] .tone--sky {
-  --tint: #172a3b;
-  --tint-ink: #a3cdf0;
-}
-
 /* Shell: a quiet, narrow sidebar and a small top bar */
 .sidebar {
   gap: 22px;
@@ -6244,5 +6191,413 @@ body {
 @media (max-width: 720px) {
   .app {
     background: none;
+  }
+}
+
+/* ==========================================================================
+   Colour pass — an editorial palette on warm ivory and ink.
+   Every accent has one job:
+     Cobalt       act and select: primary actions, links, focus, selected
+                  navigation, active tabs and filters
+     Jade         done: Ready, Posted, finished tasks, growth
+     Amber        needs your eyes: In review, out of date, sample markers
+     Burnt coral  time pressure: today, overdue, unread
+   Platform marks use deep, flat versions of each platform's own colour.
+   ========================================================================== */
+:root,
+:root[data-theme='light'] {
+  --canvas: #faf6ee;
+  --canvas-2: #f4eee3;
+  --surface: #fffcf7;
+  --surface-2: #f3ece0;
+  --surface-3: #e9e0d1;
+  --ink: #1c1a1f;
+  --ink-2: #46414a;
+  --ink-3: #736d77;
+  --line: #e6dccd;
+  --line-2: #d5c9b7;
+  --hairline: #ece4d7;
+
+  --cobalt: #2a44b0;
+  --cobalt-fill: #2a44b0;
+  --cobalt-hover: #22398f;
+  --cobalt-soft: #e6eaf8;
+  --jade: #1b6e59;
+  --jade-fill: #1f7a63;
+  --jade-soft: #e0efe8;
+  --amber: #93600a;
+  --amber-fill: #e0a33a;
+  --amber-soft: #f8ebd0;
+  --coral: #a63c23;
+  --coral-fill: #cf5a3b;
+  --coral-soft: #f8e2d9;
+
+  --accent: var(--cobalt-fill);
+  --accent-hover: var(--cobalt-hover);
+  --accent-ink: #ffffff;
+  --accent-soft: var(--cobalt-soft);
+  --accent-text: var(--cobalt);
+  --focus: var(--cobalt);
+  --ok: var(--jade);
+  --ok-soft: var(--jade-soft);
+  --warn: var(--amber);
+  --warn-soft: var(--amber-soft);
+  --danger: var(--coral);
+  --danger-soft: var(--coral-soft);
+  --overdue: var(--coral);
+  --glyph-l: 40%;
+  --glyph-s: 52%;
+  --sidebar-bg: var(--canvas-2);
+}
+:root[data-theme='dark'] {
+  --canvas: #141311;
+  --canvas-2: #1a1816;
+  --surface: #201e1b;
+  --surface-2: #282521;
+  --surface-3: #332f2a;
+  --ink: #f6f0e5;
+  --ink-2: #d2c9bb;
+  --ink-3: #9d9486;
+  --line: #312d28;
+  --line-2: #413c35;
+  --hairline: #2a2723;
+
+  --cobalt: #a7b6ff;
+  --cobalt-fill: #4e68e6;
+  --cobalt-hover: #5f78f0;
+  --cobalt-soft: #232a4d;
+  --jade: #6fd0ae;
+  --jade-fill: #2f9a7c;
+  --jade-soft: #173029;
+  --amber: #f2c067;
+  --amber-fill: #e0a33a;
+  --amber-soft: #352914;
+  --coral: #f5a184;
+  --coral-fill: #d9664a;
+  --coral-soft: #3a211a;
+
+  --accent: var(--cobalt-fill);
+  --accent-hover: var(--cobalt-hover);
+  --accent-ink: #ffffff;
+  --accent-soft: var(--cobalt-soft);
+  --accent-text: var(--cobalt);
+  --focus: var(--cobalt);
+  --ok: var(--jade);
+  --ok-soft: var(--jade-soft);
+  --warn: var(--amber);
+  --warn-soft: var(--amber-soft);
+  --danger: var(--coral);
+  --danger-soft: var(--coral-soft);
+  --overdue: var(--coral);
+  --glyph-l: 50%;
+  --glyph-s: 46%;
+  --sidebar-bg: var(--canvas-2);
+}
+
+/* Collection tones: rich panels for Up next and text-only covers */
+.tone--cobalt {
+  --tint: var(--cobalt-soft);
+  --tint-ink: var(--cobalt);
+  --panel: #22388f;
+  --panel-ink: #f8f3ea;
+}
+.tone--jade {
+  --tint: var(--jade-soft);
+  --tint-ink: var(--jade);
+  --panel: #1d6552;
+  --panel-ink: #f6f2e9;
+}
+.tone--coral {
+  --tint: var(--coral-soft);
+  --tint-ink: var(--coral);
+  --panel: #b04a2f;
+  --panel-ink: #fff6f0;
+}
+.tone--amber {
+  --tint: var(--amber-soft);
+  --tint-ink: var(--amber);
+  --panel: #dc9f38;
+  --panel-ink: #221603;
+}
+.tone--ink {
+  --tint: var(--surface-3);
+  --tint-ink: var(--ink);
+  --panel: #2a2622;
+  --panel-ink: #f6f0e5;
+}
+:root[data-theme='dark'] .tone--ink {
+  --panel: #2c2925;
+}
+:root[data-theme='dark'] .tone--cobalt {
+  --panel: #243a9a;
+}
+:root[data-theme='dark'] .tone--jade {
+  --panel: #1f6b57;
+}
+
+/* Selected navigation: cobalt */
+.sidebar {
+  background: var(--sidebar-bg);
+}
+.nav__item {
+  position: relative;
+}
+.nav__item:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.nav__item.active,
+:root[data-theme='dark'] .nav__item.active {
+  background: var(--cobalt-soft);
+  color: var(--ink);
+  font-weight: 600;
+}
+.nav__item.active svg {
+  color: var(--cobalt);
+}
+.nav__item.active::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--cobalt-fill);
+}
+.tabbar__item.active {
+  color: var(--cobalt);
+}
+.haven-mark rect {
+  fill: var(--ink);
+}
+.haven-mark path,
+.haven-mark circle {
+  stroke: var(--canvas);
+}
+.haven-mark circle {
+  fill: var(--coral-fill);
+  stroke: none;
+}
+.ws__avatar {
+  background: var(--jade-fill);
+  color: #fff;
+}
+
+/* Top bar: sample marker amber, unread coral */
+.preview-chip__dot {
+  background: var(--amber-fill);
+}
+.notif__dot {
+  background: var(--coral-fill);
+  box-shadow: 0 0 0 2px var(--canvas);
+}
+
+/* Actions: cobalt, calm shadow */
+.btn--primary {
+  background: var(--cobalt-fill);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 10px 22px -14px var(--cobalt-fill);
+}
+.btn--primary:hover:not(:disabled) {
+  background: var(--cobalt-hover);
+}
+.text-link,
+.link-btn {
+  color: var(--cobalt);
+}
+.text-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Selection in tabs, segments and filters: cobalt tint, never a black pill */
+.tabs--pill button.is-active,
+.segmented button.is-active {
+  background: var(--cobalt-soft);
+  color: var(--cobalt);
+  box-shadow: none;
+  font-weight: 600;
+}
+.tabs--pill button.is-active .count {
+  color: var(--cobalt);
+}
+.tabs--pill button {
+  border-radius: var(--radius-ctl);
+}
+.quiet-btn.is-active {
+  border-color: var(--cobalt);
+  color: var(--cobalt);
+  background: var(--cobalt-soft);
+}
+.filters-control__count {
+  background: var(--cobalt-fill);
+}
+.acct-select__all {
+  background: var(--cobalt-soft);
+  color: var(--cobalt);
+}
+
+/* Status: consistent meaning, text plus a small mark */
+.status--neutral,
+.status--sand,
+.status--violet {
+  --status-fg: var(--ink-3);
+}
+.status--violet {
+  --status-fg: var(--ink-2);
+}
+.status--amber,
+:root[data-theme='dark'] .status--amber {
+  --status-fg: var(--amber);
+}
+.status--green,
+.status--blue,
+:root[data-theme='dark'] .status--blue {
+  --status-fg: var(--jade);
+}
+.status {
+  color: var(--status-fg);
+}
+.ctile__status--planned {
+  color: var(--ink-3);
+}
+.ctile__status--review {
+  color: var(--amber);
+  font-weight: 560;
+}
+.ctile__status--ready,
+.ctile__status--posted {
+  color: var(--jade);
+  font-weight: 560;
+}
+
+/* Platform identity: deep, flat marks */
+.pglyph,
+:root[data-theme='dark'] .pglyph {
+  background: hsl(var(--hue) var(--glyph-s) var(--glyph-l));
+  color: #fff;
+}
+.abadge__glyph,
+:root[data-theme='dark'] .abadge__glyph {
+  color: hsl(var(--hue) var(--glyph-s) var(--glyph-l));
+}
+:root[data-theme='dark'] .abadge__glyph {
+  color: hsl(var(--hue) 60% 68%);
+}
+.ctile__label::before {
+  background: hsl(var(--hue) var(--glyph-s) var(--glyph-l));
+}
+
+/* Today */
+.today .eyebrow {
+  color: var(--coral);
+}
+.week__day.is-today {
+  margin: 0 -12px;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: var(--radius-ctl);
+  background: var(--coral-soft);
+  border-top-color: transparent;
+}
+.week__day.is-today + .week__day {
+  border-top-color: transparent;
+}
+.week__day.is-today .week__date,
+.week__day.is-today .week__date strong {
+  color: var(--coral);
+}
+.week__item {
+  transition: color var(--dur) var(--ease);
+}
+.week__item:hover {
+  color: var(--cobalt);
+}
+.task {
+  transition: background var(--dur) var(--ease);
+}
+.task:hover .task__title {
+  color: var(--cobalt);
+}
+.check:hover {
+  border-color: var(--jade-fill);
+  color: var(--jade-fill);
+}
+.task.is-done .check {
+  background: var(--jade-fill);
+  border-color: var(--jade-fill);
+  color: #fff;
+}
+.task__due.is-overdue {
+  color: var(--coral);
+}
+.task__meta .tag {
+  background: none;
+  border: 0;
+  padding: 0;
+  border-radius: 0;
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.task__meta .tag[data-stage='Review'] {
+  color: var(--amber);
+}
+.panel {
+  background: var(--surface);
+  border-color: var(--hairline);
+}
+.cover--photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Creation Gallery: section counts carry their role; hover lifts to cobalt */
+.gallery__sections > section:first-child .gallery__seccount {
+  color: var(--cobalt);
+  font-weight: 600;
+}
+.gallery__sections > section#sec-posted .gallery__seccount,
+.gallery__section[aria-labelledby='sec-posted'] .gallery__seccount {
+  color: var(--jade);
+  font-weight: 600;
+}
+.ctile__title {
+  transition: color var(--dur) var(--ease);
+}
+.ctile:hover .ctile__title,
+.ctile:focus-visible .ctile__title {
+  color: var(--cobalt);
+}
+.ctile__media .tcover {
+  background: var(--panel, var(--surface-3));
+  color: var(--panel-ink, var(--ink));
+}
+.ctile__media .tcover .tcover__kicker {
+  opacity: 0.8;
+}
+
+/* Audience Pulse: growth jade, decline coral, stale amber */
+.pulse__delta-value--up .pulse__arrow {
+  color: var(--jade);
+}
+.pulse__delta-value--down .pulse__arrow {
+  color: var(--coral);
+}
+.spark__dot {
+  fill: var(--cobalt-fill);
+}
+
+@media (max-width: 720px) {
+  .ctile__when {
+    white-space: normal;
+  }
+  .nav__item.active::before {
+    left: -4px;
   }
 }

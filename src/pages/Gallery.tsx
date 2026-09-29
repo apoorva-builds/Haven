@@ -62,7 +62,7 @@ function JustifiedFlow({ versions }: { versions: Version[] }) {
     return () => ro.disconnect();
   }, []);
   const gap = width < 720 ? 14 : 22;
-  const target = width < 520 ? 250 : width < 900 ? 300 : 380;
+  const target = width < 520 ? 320 : width < 900 ? 300 : 380;
   const ratios = versions.map((v) => tileRatio(data, v));
   const rows = width ? justify(ratios, width, target, gap) : [];
   return (
