@@ -8,14 +8,20 @@ import { expect, test } from '@playwright/test';
 const out = process.env.COMPARE_OUT;
 test.skip(!out, 'Set COMPARE_OUT to capture before/after screenshots.');
 
-const screens = [
+const only = process.env.COMPARE_SCREENS?.split(',');
+const onlyDevice = process.env.COMPARE_DEVICES?.split(',');
+const allScreens = [
+  { name: 'ideas', path: '/ideas' },
   { name: 'gallery', path: '/gallery' },
+  { name: 'gallery-full', path: '/gallery', fullPage: true },
   { name: 'version', path: '/ideas/market-phrases/versions?v=v-ig-atlas' },
 ];
-const devices = [
+const screens = only ? allScreens.filter((s) => only.includes(s.name)) : allScreens;
+const allDevices = [
   { name: 'desktop', viewport: { width: 1440, height: 900 }, isMobile: false },
   { name: 'phone', viewport: { width: 390, height: 844 }, isMobile: true },
 ];
+const devices = onlyDevice ? allDevices.filter((d) => onlyDevice.includes(d.name)) : allDevices;
 
 for (const theme of ['light', 'dark'] as const) {
   for (const device of devices) {
@@ -28,7 +34,7 @@ for (const theme of ['light', 'dark'] as const) {
           await expect(page.locator('main h1').first()).toBeVisible();
           await page.evaluate(() => document.fonts.ready);
           await page.waitForFunction(() => [...document.querySelectorAll('video')].every((v) => v.readyState >= 2), null, { timeout: 5_000 }).catch(() => {});
-          await page.screenshot({ path: `docs/redesign/${out}/${theme}-${device.name}-${screen.name}.jpg`, type: 'jpeg', quality: 82 });
+          await page.screenshot({ path: `docs/redesign/${out}/${theme}-${device.name}-${screen.name}.jpg`, type: 'jpeg', quality: 82, fullPage: 'fullPage' in screen });
         });
       }
     });

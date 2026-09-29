@@ -486,7 +486,7 @@ export function createDemoData(now: Date = new Date()): DemoData {
   return {
     today,
     generatedAt: now.toISOString(),
-    workspace: { id: 'preview', name: 'Haven Preview', planLabel: 'Preview · sample data', storageLimitGB: 1024, otherStorageGB: 240 },
+    workspace: { id: 'preview', name: 'Haven Preview', planLabel: 'Workspace', storageLimitGB: 1024, otherStorageGB: 240 },
     currentUserId: 'me',
     brands,
     audience,

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import type { Asset, Version, VersionStatus } from '../data/types';
 import { Cover } from '../components/Cover';
+import { TypeCover } from '../components/TypeCover';
 import { Icon } from '../components/Icon';
 import { AccountSelector, useAccountName } from '../components/AccountSelector';
 import { QuickAddModal } from '../components/Shell';
@@ -49,7 +50,6 @@ export function CreationTile({ version }: { version: Version }) {
   const media = assetOf(data, version.mediaAssetId);
   const kind = creationMedia(version);
   const photos = kind === 'photos' ? photosOf(data, version) : [];
-  const art = (photos[0] ?? assetOf(data, version.coverAssetId) ?? media)?.art ?? idea?.art;
   const playable = kind === 'video' && media?.videoUrl;
   const group = STATUS_GROUP[version.status];
 
@@ -63,9 +63,9 @@ export function CreationTile({ version }: { version: Version }) {
     >
       <div className="ctile__media">
         {playable ? (
-          <video className="ctile__video" src={media!.videoUrl} muted playsInline preload="metadata" aria-hidden="true" tabIndex={-1} />
+          <video className="ctile__video" src={`${media!.videoUrl}#t=1.5`} muted playsInline preload="auto" aria-hidden="true" tabIndex={-1} />
         ) : (
-          art && <Cover art={art} ratio="4 / 5" />
+          <TypeCover title={version.title ?? idea?.title ?? ''} kicker={kind === 'photos' ? `${photos.length || 1} photo${photos.length === 1 ? '' : 's'}` : 'No media yet'} />
         )}
         {kind === 'photos' && photos.length > 1 && (
           <span className="ctile__badge" aria-hidden="true">

@@ -165,23 +165,29 @@ test('posting is honest: Posted needs a live URL added by the creator', async ({
   await expect(page.getByRole('link', { name: /Five phrases for a night market — Pine & Paper Clip/ })).toBeVisible();
 });
 
-test('ideas grid filters and shows an empty state', async ({ page }) => {
+test('ideas list filters and shows an empty state', async ({ page }) => {
   await open(page, '/ideas');
-  await expect(page.locator('.idea-tile')).toHaveCount(6);
-  await page.getByLabel('Account', { exact: true }).selectOption('yt-pine');
-  await expect(page.locator('.idea-tile')).toHaveCount(3);
+  await expect(page.locator('.idea-row')).toHaveCount(6);
+  // Less-used controls live behind one Filters button.
+  await page.getByRole('button', { name: 'Filters' }).click();
+  const filters = page.getByRole('group', { name: 'Filters' });
+  await filters.getByLabel('Account', { exact: true }).selectOption('yt-pine');
+  await filters.getByRole('button', { name: 'Done' }).click();
+  await expect(filters).toBeHidden();
+  await expect(page.getByRole('button', { name: /Filters/ })).toContainText('1');
+  await expect(page.locator('.idea-row')).toHaveCount(3);
   await page.getByLabel('Filter ideas by text').fill('nothing like this');
   await expect(page.getByText('No ideas match these filters')).toBeVisible();
   await page.getByRole('button', { name: 'Clear filters' }).click();
-  await expect(page.locator('.idea-tile')).toHaveCount(6);
+  await expect(page.locator('.idea-row')).toHaveCount(6);
   await page.getByRole('radio', { name: 'Archived' }).click();
-  await expect(page.locator('.idea-tile')).toHaveCount(1);
+  await expect(page.locator('.idea-row')).toHaveCount(1);
 });
 
 test('loading state appears before content', async ({ page }) => {
   await page.goto('/ideas');
   await expect(page.getByRole('status', { name: 'Loading ideas' })).toBeVisible();
-  await expect(page.locator('.idea-tile').first()).toBeVisible();
+  await expect(page.locator('.idea-row').first()).toBeVisible();
 });
 
 test('quick capture creates a session-only idea with versions', async ({ page }) => {
@@ -196,7 +202,7 @@ test('quick capture creates a session-only idea with versions', async ({ page })
   await dialog.getByRole('button', { name: /Instagram @littleatlas\.sample/ }).click();
   await dialog.getByRole('button', { name: 'Capture idea' }).click();
   await expect(page).toHaveURL(/\/ideas$/);
-  await page.locator('.idea-tile', { hasText: 'Train station phrases' }).click();
+  await page.locator('.idea-row', { hasText: 'Train station phrases' }).getByRole('link').click();
   await page.getByRole('tab', { name: /Versions/ }).click();
   await expect(page.locator('.vrow')).toHaveCount(2);
 });
