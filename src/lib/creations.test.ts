@@ -12,18 +12,16 @@ const label = (versionId: string) => {
 
 describe('creations', () => {
   it('labels tiles by platform and format', () => {
-    expect(label('v-ig-personal')).toBe('Instagram · Reel');
-    expect(label('v-blues-ig')).toBe('Instagram · Carousel');
-    expect(label('v-yt')).toBe('YouTube · Long video');
-    expect(label('v-tt')).toBe('TikTok · Video');
-    const short = { ...data.versions.find((v) => v.id === 'v-yt')!, aspect: '9:16' as const };
-    const yt = data.accounts.find((a) => a.id === 'yt-main')!;
-    expect(creationLabel(short, yt, data.platforms.find((p) => p.id === 'youtube')!)).toBe('YouTube · Short');
+    expect(label('v-ig-explore')).toBe('Instagram · Reel');
+    expect(label('v-ig-mia-desk')).toBe('Instagram · Carousel');
+    expect(label('v-yt-mia')).toBe('YouTube · Long video');
+    expect(label('v-yt-explore-short')).toBe('YouTube · Short');
+    expect(label('v-tt-explore')).toBe('TikTok · Video');
   });
 
   it('names the posted link by what you open', () => {
-    expect(postedLinkLabel(data.versions.find((v) => v.id === 'v-market-ig')!)).toBe('Open posted video');
-    expect(postedLinkLabel(data.versions.find((v) => v.id === 'v-blues-ig')!)).toBe('Open posted post');
+    expect(postedLinkLabel(data.versions.find((v) => v.id === 'v-yt-mia-spots')!)).toBe('Open posted video');
+    expect(postedLinkLabel(data.versions.find((v) => v.id === 'v-ig-explore-tea')!)).toBe('Open posted post');
   });
 
   it('groups by day, newest first, keeping an idea’s versions together', () => {
@@ -45,6 +43,6 @@ describe('creations', () => {
 
   it('keeps the Raw Library and finished videos apart', () => {
     expect(rawLibrary(data).some((a) => a.kind === 'final')).toBe(false);
-    expect(finishedVideos(data).map((a) => a.id).sort()).toEqual(['a-final-vertical', 'a-final-wide']);
+    expect(finishedVideos(data).map((a) => a.id).sort()).toEqual(['a-morning-vertical', 'a-morning-wide', 'a-spots-vertical', 'a-street-vertical']);
   });
 });

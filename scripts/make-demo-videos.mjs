@@ -1,6 +1,6 @@
 /**
  * Generates the small sample videos bundled with the Milestone 1 demo
- * (public/demo-media/*.webm). They are synthetic animations with
+ * (public/demo-media/*.webm). They are original synthetic animations with
  * "HAVEN DEMO SAMPLE" burned in — no real creator footage.
  *
  * Uses headless Chromium's canvas + MediaRecorder, so no ffmpeg is needed.
@@ -8,19 +8,22 @@
  * (Set PLAYWRIGHT_CHROMIUM_EXECUTABLE if Playwright's browser isn't installed.)
  */
 import { chromium } from '@playwright/test';
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 
 const outputs = [
-  { file: 'public/demo-media/slow-mornings-vertical.webm', w: 360, h: 640, title: 'Slow mornings', sub: 'Vertical cut · 9:16' },
-  { file: 'public/demo-media/slow-mornings-wide.webm', w: 640, h: 360, title: 'Slow mornings in the studio', sub: 'Long-form cut · 16:9' },
+  { file: 'public/demo-media/street-food-vertical.webm', w: 360, h: 640, title: 'Street food phrases', sub: 'Sample video · 9:16', hue: 18, hue2: 185 },
+  { file: 'public/demo-media/morning-vertical.webm', w: 360, h: 640, title: '6 AM study morning', sub: 'Sample video · 9:16', hue: 28, hue2: 250 },
+  { file: 'public/demo-media/morning-wide.webm', w: 640, h: 360, title: '6 AM study morning', sub: 'Sample long cut · 16:9', hue: 30, hue2: 235 },
+  { file: 'public/demo-media/study-spots-vertical.webm', w: 360, h: 640, title: 'Quiet study spots', sub: 'Sample video · 9:16', hue: 245, hue2: 200 },
 ];
 
+await mkdir('public/demo-media', { recursive: true });
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || undefined;
 const browser = await chromium.launch(executablePath ? { executablePath } : {});
 const page = await browser.newPage();
 
 for (const o of outputs) {
-  const base64 = await page.evaluate(async ({ w, h, title, sub }) => {
+  const base64 = await page.evaluate(async ({ w, h, title, sub, hue, hue2 }) => {
     const canvas = document.createElement('canvas');
     canvas.width = w;
     canvas.height = h;
@@ -35,8 +38,8 @@ for (const o of outputs) {
     for (let f = 0; f < frames; f++) {
       const t = f / frames;
       const sky = ctx.createLinearGradient(0, 0, 0, h);
-      sky.addColorStop(0, `hsl(${28 + t * 10} 72% ${58 + t * 8}%)`);
-      sky.addColorStop(1, `hsl(250 45% ${20 + t * 6}%)`);
+      sky.addColorStop(0, `hsl(${hue + t * 10} 72% ${58 + t * 8}%)`);
+      sky.addColorStop(1, `hsl(${hue2} 45% ${20 + t * 6}%)`);
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, w, h);
       // rising sun
@@ -67,14 +70,14 @@ for (const o of outputs) {
       ctx.fillStyle = 'rgba(255,255,255,0.95)';
       ctx.font = `600 ${Math.round(Math.min(w, h) * 0.075)}px Georgia, serif`;
       ctx.textAlign = 'center';
-      ctx.fillText(title, w / 2, h * 0.86);
+      ctx.fillText(title, w / 2, h * 0.8);
       ctx.font = `500 ${Math.round(Math.min(w, h) * 0.04)}px sans-serif`;
-      ctx.fillText(sub, w / 2, h * 0.92);
+      ctx.fillText(sub, w / 2, h * 0.86);
       ctx.fillStyle = 'rgba(0,0,0,0.45)';
-      ctx.fillRect(0, 0, w, 26);
+      ctx.fillRect(0, h - 26, w, 26);
       ctx.fillStyle = '#fff';
       ctx.font = '600 12px sans-serif';
-      ctx.fillText('HAVEN DEMO SAMPLE — not real footage', w / 2, 17);
+      ctx.fillText('HAVEN DEMO SAMPLE — not real footage', w / 2, h - 9);
       await new Promise((r) => setTimeout(r, 1000 / 30));
     }
     rec.stop();

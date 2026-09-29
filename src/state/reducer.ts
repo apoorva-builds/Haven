@@ -6,7 +6,7 @@
  */
 import { READY_CHECKS } from '../data/demo';
 import { addDays, daysBetween } from '../lib/dates';
-import type { Account, Asset, DemoData, IdeaStatus, ISODate, LinkItem, Task, Version, VersionStatus } from '../data/types';
+import type { Asset, DemoData, IdeaStatus, ISODate, LinkItem, Task, Version, VersionStatus } from '../data/types';
 
 export type Action =
   | { type: 'task/toggle'; taskId: string }
@@ -28,7 +28,6 @@ export type Action =
   | { type: 'asset/promote'; assetId: string }
   | { type: 'asset/add-session'; asset: Asset }
   | { type: 'asset/dismiss-duplicate'; assetId: string }
-  | { type: 'account/add'; account: Omit<Account, 'id'> }
   | { type: 'link/add'; link: Omit<LinkItem, 'id'> }
   | { type: 'notifications/read' };
 
@@ -189,15 +188,6 @@ export function reducer(state: DemoData, action: Action): DemoData {
 
     case 'asset/dismiss-duplicate':
       return mapAsset(state, action.assetId, (a) => ({ ...a, duplicateOfId: undefined }));
-
-    case 'account/add': {
-      const id = uid('acct');
-      const account: Account = { ...action.account, id };
-      const links: LinkItem[] = [{ id: `l-profile-${id}`, category: 'account', label: `${account.displayName} (${account.handle})`, url: account.profileUrl, accountId: id }];
-      if (account.analyticsUrl)
-        links.push({ id: `l-analytics-${id}`, category: 'analytics', label: `${account.displayName} — native analytics`, url: account.analyticsUrl, accountId: id, note: 'Opens the platform. Haven does not import analytics.' });
-      return { ...state, accounts: [...state.accounts, account], links: [...state.links, ...links] };
-    }
 
     case 'link/add':
       return { ...state, links: [...state.links, { ...action.link, id: uid('link') }] };

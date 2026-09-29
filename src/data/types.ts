@@ -43,14 +43,31 @@ export interface Person {
 
 export type AccountKind = 'Personal' | 'Business' | 'Creator' | 'Brand' | 'Channel';
 
+/** A creator brand that owns one or more accounts, e.g. a main name and a spin-off series. */
+export interface Brand {
+  id: string;
+  name: string;
+}
+
+/**
+ * How an account in the demo relates to a real one.
+ * - public: a publicly listed handle, used for illustration only; not connected.
+ * - illustrative: a made-up demo account with no real handle or link.
+ */
+export type AccountIdentity = 'public' | 'illustrative';
+
 export interface Account {
   id: string;
+  brandId: string;
   platform: PlatformId;
   handle: string;
   displayName: string;
   kind: AccountKind;
-  /** External profile page. Haven stores the link only. */
-  profileUrl: string;
+  identity: AccountIdentity;
+  /** Where the handle was found, for public accounts. */
+  identityNote?: string;
+  /** External profile page. Haven stores the link only. Absent for illustrative accounts. */
+  profileUrl?: string;
   /** Native analytics page on the platform. Haven never imports analytics. */
   analyticsUrl?: string;
   analyticsNote?: string;
@@ -278,8 +295,38 @@ export interface Workspace {
   otherStorageGB: number;
 }
 
+/**
+ * Where an audience count came from. Real accounts will refresh on a schedule
+ * from an authorized platform API, or take manual snapshots when they can't
+ * connect. The demo ships sample snapshots only.
+ */
+export type AudienceSource =
+  | { kind: 'sample'; plannedUpdate: 'platform-api' | 'manual' }
+  | { kind: 'platform-api'; provider: PlatformId; refreshEveryHours: number }
+  | { kind: 'manual'; enteredBy: string };
+
+export interface AudienceSnapshot {
+  /** ISO 8601 timestamp of when the count was observed. */
+  at: string;
+  count: number;
+}
+
+export interface AudienceSeries {
+  accountId: string;
+  metric: 'followers' | 'subscribers';
+  source: AudienceSource;
+  /** Oldest first. */
+  snapshots: AudienceSnapshot[];
+  /** After this long without a new snapshot, the count is shown as out of date, never as current. */
+  staleAfterHours: number;
+}
+
 export interface DemoData {
   today: ISODate;
+  /** When the demo data was generated; the reference "now" for sample snapshots. */
+  generatedAt: string;
+  brands: Brand[];
+  audience: AudienceSeries[];
   workspace: Workspace;
   currentUserId: string;
   people: Person[];

@@ -292,9 +292,11 @@ function VersionDetail({ version, idea }: { version: Version; idea: Idea }) {
               <button type="button" className="btn btn--ghost btn--sm" onClick={() => toast('Demo: no bundle is created. Ready-to-post bundles arrive in Milestone 3.', 'demo')}>
                 <Icon name="download" size={14} /> Ready-to-post bundle <DemoTag>Demo</DemoTag>
               </button>
-              <ExternalLink href={account.profileUrl} className="btn btn--ghost btn--sm">
-                Open {account.handle}
-              </ExternalLink>
+              {account.profileUrl && (
+                <ExternalLink href={account.profileUrl} className="btn btn--ghost btn--sm">
+                  Open {account.handle}
+                </ExternalLink>
+              )}
             </div>
             <form
               className="live-url"

@@ -6,19 +6,17 @@ import { expect, test } from '@playwright/test';
  * Run with: npm run screenshots
  */
 const screens = [
+  { name: 'gallery', path: '/gallery' },
+  { name: 'gallery-account', path: '/gallery?account=yt-mia' },
+  { name: 'gallery-account-stale', path: '/gallery?account=ig-explore' },
+  { name: 'creation', path: '/gallery/v-tt-explore' },
+  { name: 'creation-posted', path: '/gallery/v-yt-mia-spots' },
+  { name: 'library', path: '/library' },
   { name: 'today', path: '/' },
   { name: 'ideas', path: '/ideas' },
-  { name: 'idea-versions', path: '/ideas/slow-mornings/versions?v=v-ig-studio' },
-  { name: 'idea-assets', path: '/ideas/slow-mornings/assets' },
-  { name: 'accounts', path: '/accounts' },
-  { name: 'gallery', path: '/gallery' },
-  { name: 'gallery-account', path: '/gallery?account=ig-studio' },
-  { name: 'creation', path: '/gallery/v-ig-personal' },
-  { name: 'creation-posted', path: '/gallery/v-market-ig' },
+  { name: 'idea-versions', path: '/ideas/street-food/versions?v=v-ig-explore' },
   { name: 'calendar', path: '/calendar' },
-  { name: 'library', path: '/library' },
-  { name: 'links', path: '/links' },
-];
+]
 
 const devices = [
   { name: 'desktop', viewport: { width: 1440, height: 900 }, isMobile: false },

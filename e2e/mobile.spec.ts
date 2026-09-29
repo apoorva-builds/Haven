@@ -5,7 +5,21 @@ import { expect, test, type Page } from '@playwright/test';
 const open = (page: Page, path: string) => page.goto(`${path}${path.includes('?') ? '&' : '?'}instant`);
 
 test('phone layout uses the tab bar and never scrolls sideways', async ({ page }) => {
-  for (const path of ['/', '/ideas', '/ideas/slow-mornings/versions', '/ideas/slow-mornings/assets', '/accounts', '/gallery', '/gallery?account=tt-main', '/gallery/v-ig-personal', '/gallery/v-blues-ig', '/accounts/ig-studio', '/calendar', '/library', '/campaigns', '/links']) {
+  for (const path of [
+    '/',
+    '/gallery',
+    '/gallery?account=yt-mia',
+    '/gallery?account=ig-explore',
+    '/gallery/v-ig-explore',
+    '/gallery/v-ig-mia-desk',
+    '/ideas',
+    '/ideas/street-food/versions',
+    '/ideas/street-food/assets',
+    '/calendar',
+    '/library',
+    '/campaigns',
+    '/links',
+  ]) {
     await open(page, path);
     await expect(page.locator('main h1').first()).toBeVisible();
     await expect(page.getByRole('navigation', { name: 'Primary (mobile)' })).toBeVisible();
@@ -18,9 +32,9 @@ test('phone layout uses the tab bar and never scrolls sideways', async ({ page }
 test('quick capture from the tab bar', async ({ page }) => {
   await open(page, '/');
   await page.getByRole('button', { name: 'Capture a new idea' }).click();
-  await page.getByLabel('Working title').fill('Phone idea: shelf light at dusk');
+  await page.getByLabel('Working title').fill('Phone idea: tea house phrases');
   await page.getByRole('button', { name: 'Capture idea' }).click();
-  await expect(page.getByRole('link', { name: /Phone idea: shelf light at dusk/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Phone idea: tea house phrases/ })).toBeVisible();
 });
 
 test('calendar becomes an agenda and the drawer reaches every section', async ({ page }) => {
@@ -34,18 +48,22 @@ test('calendar becomes an agenda and the drawer reaches every section', async ({
 });
 
 test('review a version on the phone', async ({ page }) => {
-  await open(page, '/ideas/slow-mornings/versions?v=v-ig-personal');
+  await open(page, '/ideas/street-food/versions?v=v-ig-explore');
   await expect(page.getByRole('figure', { name: /Approximate Instagram preview/ })).toBeVisible();
   await page.getByRole('checkbox', { name: 'Music rights noted' }).check();
-  await expect(page.locator('.vrow.is-active')).toContainText('4/6');
+  await expect(page.locator('.vrow.is-active')).toContainText('5/6');
 });
 
-test('Creation Gallery on the phone: tab bar, account filter, opened creation', async ({ page }) => {
+test('Creation Gallery on the phone: account selector, Audience Pulse, opened creation', async ({ page }) => {
   await open(page, '/');
-  await page.getByRole('navigation', { name: 'Primary (mobile)' }).getByRole('link', { name: 'Gallery' }).click();
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Everything you’re making, day by day');
-  await page.getByRole('radio', { name: /@mira\.lane\.demo/ }).click();
-  await page.locator('.ctile[data-version="v-ig-personal"]').click();
-  await expect(page.locator('.creation__stage video')).toBeVisible();
+  const tabbar = page.getByRole('navigation', { name: 'Primary (mobile)' });
+  await expect(tabbar.getByRole('link')).toHaveCount(3);
+  await tabbar.getByRole('link', { name: 'Gallery' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Creation Gallery');
+  await page.getByRole('button', { name: /^Account:/ }).click();
+  await page.getByRole('menuitemradio', { name: /@mia_yilin_/ }).click();
+  await expect(page.getByTestId('audience-pulse')).toContainText('Sample data');
+  await page.locator('.ctile[data-version="v-ig-mia-desk"]').click();
+  await expect(page.getByRole('figure', { name: 'Photo 1 of 3' })).toBeVisible();
   await expect(page.getByText(/Not published/)).toBeVisible();
 });

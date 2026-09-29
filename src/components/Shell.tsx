@@ -10,12 +10,10 @@ import { Avatar, DemoTag, useDismiss } from './ui';
 
 export const NAV: { to: string; label: string; icon: IconName }[] = [
   { to: '/', label: 'Today', icon: 'today' },
-  { to: '/ideas', label: 'Ideas', icon: 'ideas' },
   { to: '/gallery', label: 'Creation Gallery', icon: 'grid' },
+  { to: '/ideas', label: 'Ideas', icon: 'ideas' },
   { to: '/calendar', label: 'Calendar', icon: 'calendar' },
-  { to: '/accounts', label: 'Accounts', icon: 'accounts' },
   { to: '/library', label: 'Raw Library', icon: 'library' },
-  { to: '/campaigns', label: 'Campaigns', icon: 'campaigns' },
   { to: '/links', label: 'Links', icon: 'links' },
 ];
 
@@ -56,7 +54,7 @@ export function AppShell() {
         <div className="sidebar__foot">
           <StorageMini />
           <p className="sidebar__note">
-            <Icon name="shield" size={14} /> Demo session — changes reset on reload.
+            <Icon name="shield" size={14} /> Illustrative workspace, not affiliated with Mia Yilin. Sample data; changes reset on reload.
           </p>
         </div>
       </aside>
@@ -69,7 +67,7 @@ export function AppShell() {
       </div>
 
       <nav className="tabbar" aria-label="Primary (mobile)">
-        {NAV.slice(0, 2).map((n) => (
+        {NAV.filter((n) => n.to === '/' || n.to === '/ideas').map((n) => (
           <NavLink key={n.to} to={n.to} end={n.to === '/'} className="tabbar__item">
             <Icon name={n.icon} size={21} />
             <span>{n.label}</span>
@@ -122,7 +120,7 @@ function WorkspaceSwitcher() {
   return (
     <div className="ws" ref={ref}>
       <button type="button" className="ws__btn" aria-expanded={open} aria-haspopup="menu" onClick={() => setOpen((o) => !o)}>
-        <span className="ws__avatar">LS</span>
+        <span className="ws__avatar">MY</span>
         <span className="ws__text">
           <span className="ws__name">{data.workspace.name}</span>
           <span className="ws__plan">{data.workspace.planLabel}</span>
@@ -133,7 +131,7 @@ function WorkspaceSwitcher() {
         <div className="popover ws__menu" role="menu">
           <p className="popover__label">Workspaces</p>
           <button type="button" role="menuitemradio" aria-checked="true" className="popover__item is-active" onClick={close}>
-            <span className="ws__avatar ws__avatar--sm">LS</span> {data.workspace.name}
+            <span className="ws__avatar ws__avatar--sm">MY</span> {data.workspace.name}
             <Icon name="check" size={14} />
           </button>
           <div className="popover__sep" />
@@ -218,7 +216,7 @@ function SearchBox() {
     });
     data.accounts.forEach((a) => {
       if ([a.handle, a.displayName, platformOf(data, a.platform).name].some((s) => s.toLowerCase().includes(term)))
-        hits.push({ href: `/accounts/${a.id}`, label: `${a.displayName} ${a.handle}`, kind: platformOf(data, a.platform).name });
+        hits.push({ href: `/gallery?account=${a.id}`, label: `${a.displayName} ${a.handle}`, kind: platformOf(data, a.platform).name });
     });
     data.assets.forEach((a) => {
       if ([a.name, ...a.tags].some((s) => s.toLowerCase().includes(term)))
@@ -352,7 +350,7 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
           </NavLink>
         ))}
         <p className="sidebar__note">
-          <Icon name="shield" size={14} /> Demo session — changes reset on reload.
+          <Icon name="shield" size={14} /> Illustrative workspace, not affiliated with Mia Yilin. Sample data; changes reset on reload.
         </p>
       </nav>
     </div>

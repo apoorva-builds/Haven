@@ -43,59 +43,73 @@ src/
   state/theme.tsx      Remembered light/dark appearance
   components/          Shell, cover art, post preview, uploader, asset card, primitives
   lib/creations.ts     Creation Gallery labels ("Instagram · Reel"), day grouping (unit tested)
-  pages/               Today, Ideas, Idea workspace (4 tabs), Creation Gallery, Calendar, Accounts, Raw Library, Campaigns, Links
+  lib/audience.ts      Audience Pulse maths: freshness, 7/30-day change, trend (unit tested)
+  pages/               Today, Ideas, Idea workspace (4 tabs), Creation Gallery, Calendar, Raw Library, Campaigns, Links
 e2e/                   Playwright flow checks + screenshot capture
 docs/screenshots/      Review screenshots (light/dark × desktop/phone)
 ```
+
+## Demo workspace (illustrative)
+
+The seeded workspace uses creator **Mia Yilin** and her two brands, **Mia Yilin** and **Explore with Mia**, to show a real multi-account setup. It is **not affiliated with or endorsed by Mia Yilin**. Every post, caption, file, task, teammate and audience number is a **sample made for this demo**, not her real drafts, media or figures. Artwork is generated and the videos are original synthetic samples.
+
+| Brand | Account | Status in the demo |
+| --- | --- | --- |
+| Mia Yilin | YouTube `@miayilin` | Public handle, linked to the public profile |
+| Mia Yilin | Instagram `@mia_yilin_` | Public handle as listed on creator-stats sites; not confirmed from the profile |
+| Mia Yilin | TikTok `@mia_yilin` | Public handle |
+| Mia Yilin | LinkedIn | **Illustrative demo account**: no handle, no link |
+| Explore with Mia | YouTube `@explorewith_mia` | Public handle |
+| Explore with Mia | Instagram | **Illustrative demo account**: no confirmed handle, so no handle or link |
+| Explore with Mia | TikTok `@explorewithmia__` | Public handle |
+
+The four sample videos in `public/demo-media/` (“HAVEN DEMO SAMPLE — not real footage” burned in) are regenerated with `node scripts/make-demo-videos.mjs`.
+
+Public handles were identified from search results. The profile pages couldn't be opened from the build environment, so they weren't checked directly. Nothing is connected to any platform.
 
 ## Routes
 
 | Route | Screen |
 | --- | --- |
-| `/` | **Today** — date, one next action, "Needs you / Assigned to others / Upcoming", next seven days, accounts used today, recently active ideas, focus by account or campaign |
-| `/ideas` | **Ideas** — media-led grid; filter by status, campaign, account, text; sort; active/archived |
-| `/ideas/:id` | **Idea · Overview** — concept, script, shot list, versions summary, people, references, live links & learning notes |
-| `/ideas/:id/assets` | **Idea · Assets** — raw/cutaway/photo/audio/cover (plus any finished videos this idea uses, marked *Finished · Creation Gallery*), selects, moments, duplicates, music rights, promote to Raw Library, demo uploader |
-| `/ideas/:id/versions?v=` | **Idea · Versions** — one row per account, grouped by platform; **finished-video picker** (an existing finished video, or one from this device, session only) with an in-page player; approximate post preview, cover pick, captions per language, on-screen text plan, checklist, schedule, honest posting |
-| `/ideas/:id/tasks` | **Idea · Tasks** — owner, stage, due, per-version tasks, stage progress |
-| `/gallery` | **Creation Gallery** — finished posts and planned versions by day across all platforms and accounts; rounded tiles with a platform-coloured border, a top label (“Instagram · Reel”, “YouTube · Long video”, “Instagram · Carousel”…), account, status and parent idea; *All accounts* + one filter per account (`?account=<id>`), status filter, order (*From today* / newest / oldest) |
-| `/gallery/:versionId` | **Opened creation** — plays the finished video or pages through the photos inside Haven; account, caption (per language), date, status, related idea and its other versions; **Open posted video/post** only when the version is Posted with a saved live URL |
-| `/accounts` | **Accounts** — notebook by platform, several accounts per platform, empty platforms, room for more channels, planned-next with account filter |
-| `/accounts/:id` | **Account** — this account's latest creations (gallery tiles), profile + native analytics links, sibling accounts on the same platform, planned and published versions, links |
-| `/calendar` | **Calendar** — content and marketing perspectives, filters (account, platform, campaign, status, person), legend, drag to reschedule; agenda on phones |
-| `/library` | **Raw Library** — source material only: original photos, audio/music, unedited clips, brand assets. In-page players for clips, storage meter, duplicate warning, search + filters (type/brand kit, campaign, platform, person, date), selection → download package. Finished posts are never listed here. |
-| `/campaigns` | **Campaigns** — launches, series, sponsorships and their ideas |
-| `/links` | **Links** — account pages, native analytics, published posts, affiliate/campaign, brand resources |
+| `/gallery` | **Creation Gallery**, the account home. One compact **account selector** (All accounts, or one account grouped by brand), a status filter, an **Audience Pulse** for the selected account, then finished and planned posts by day. Tiles show a rounded cover or playable video, a platform-coloured border, a top label (“Instagram · Reel”, “YouTube · Short”, “YouTube · Long video”, “Instagram · Carousel”), the account, status and parent idea. `?account=<id>` selects an account. |
+| `/gallery/:versionId` | **Opened creation.** Plays the finished video or pages through the photos inside Haven; shows account, caption, date, status, related idea and its other versions. **Open posted video/post** appears only when the version is Posted with a saved live URL. |
+| `/` | **Today**: one next action, task groups, next seven days, accounts used today, recent ideas |
+| `/ideas`, `/ideas/:id[/assets|/versions|/tasks]` | **Ideas** and the **Idea workspace**; the Versions tab holds the finished-video picker |
+| `/calendar` | Content and marketing perspectives, filters, drag to reschedule; agenda on phones |
+| `/library` | **Raw Library**: source files only (original photos, audio/music, unedited clips, brand assets). Finished posts are never listed here. |
+| `/links`, `/campaigns` | Saved links; campaigns (reachable from ideas) |
+| `/accounts`, `/accounts/:id` | Redirect to the Creation Gallery (and its account selector) |
 
 ## The review path
 
-Follow **“Slow mornings in the studio”** from Today → *Continue* → Versions. It has four versions: **Instagram personal (@mira.lane.demo)**, **Instagram business (@lanestudio.demo)**, **TikTok** and **YouTube** — two platforms plus two accounts on one platform, each with its own cover, caption, checklist and status.
+1. **Creation Gallery**: *All accounts* shows everything together. Pick **@miayilin** in the selector for its Audience Pulse and posts, then **Explore with Mia (demo)** to see an out-of-date pulse.
+2. Open a tile to play it inside Haven. Open **Quiet study spots** to see the *Open posted video* button on a posted sample.
+3. From Today, **Continue “Five phrases for ordering street food”** → Versions. One finished file serves four versions across TikTok, Instagram (both brands) and YouTube (a Short).
+4. **Raw Library** holds only source files.
 
-### Two spaces: Creation Gallery and Raw Library
+## Audience Pulse
 
-- **Creation Gallery** (`/gallery`) is where finished and planned posts live, day by day, for every account. Each account's version is its own tile and names the idea it came from. Open a tile to watch the video or page through the photos inside Haven. A version marked *Posted* with a saved live URL gets an **Open posted video/post** button; nothing else suggests it has been published.
-- **Raw Library** (`/library`) holds source material only: original photos, audio and music, unedited clips and brand assets.
+Each account shows its follower/subscriber count, the change over 7 and 30 days, a small 30-day trend, and a *Last updated* time. In the demo every count is **sample data**, labelled as such, and rendered statically; nothing animates as if live.
 
-### Finished-video flow
+The data is structured for real use later (`src/data/types.ts`, `src/lib/audience.ts`):
 
-1. **Idea → Versions → Finished video.** Pick a finished video another version already uses, or choose one *From this device*. The device file plays from a browser-local URL and is labelled *From this device · session only. Not uploaded or stored online.*
-2. **One file, many accounts.** The three vertical versions of “Slow mornings” (both Instagram accounts and TikTok) share **one** finished file. Picking the same video for another account adds a reference, never a copy, and the version lists the other accounts using it.
-3. **Creation Gallery.** Every account's tile plays that same file. Filter to one account, or open a tile to play it with its caption, status and idea.
-
-Two small sample videos (`public/demo-media/*.webm`, “HAVEN DEMO SAMPLE — not real footage” burned in) are bundled so the seeded creations have something to play. They are regenerated with `node scripts/make-demo-videos.mjs`.
+- `AudienceSeries` holds timestamped `snapshots` per account and a `source`: `platform-api` (periodic refresh from an authorized platform API, with a refresh interval) or `manual` (snapshots entered by the creator for accounts that can't connect). Demo series are `sample` with the update method they would use.
+- `staleAfterHours` sets how old a count may be. Past that, the pulse shows **Out of date** with the last known figure and its age, **never as the current count**, and hides the 7/30-day change.
+- 7- and 30-day change compares the latest snapshot with the one at or before the start of the window. With too little history it says so rather than estimating.
 
 ## Screenshots
 
-All 48 review screenshots (12 screens × light/dark × desktop/phone) are in [`docs/screenshots/`](docs/screenshots/). Regenerate with `npm run screenshots`.
+All 40 review screenshots (10 screens × light/dark × desktop/phone) are in [`docs/screenshots/`](docs/screenshots/). Regenerate with `npm run screenshots`.
 
 | Light | Dark |
 | --- | --- |
-| ![Today, light](docs/screenshots/light-desktop-today.jpg) | ![Today, dark](docs/screenshots/dark-desktop-today.jpg) |
-| ![Creation Gallery, light](docs/screenshots/light-desktop-gallery.jpg) | ![Creation Gallery filtered to one account, dark](docs/screenshots/dark-desktop-gallery-account.jpg) |
-| ![Opened creation, light](docs/screenshots/light-desktop-creation.jpg) | ![Opened creation, dark](docs/screenshots/dark-desktop-creation.jpg) |
-| ![Raw Library, light](docs/screenshots/light-desktop-library.jpg) | ![Versions, dark](docs/screenshots/dark-desktop-idea-versions.jpg) |
+| ![Creation Gallery, all accounts](docs/screenshots/light-desktop-gallery.jpg) | ![Creation Gallery, all accounts](docs/screenshots/dark-desktop-gallery.jpg) |
+| ![One account with Audience Pulse](docs/screenshots/light-desktop-gallery-account.jpg) | ![One account with Audience Pulse](docs/screenshots/dark-desktop-gallery-account.jpg) |
+| ![Out-of-date pulse](docs/screenshots/light-desktop-gallery-account-stale.jpg) | ![Out-of-date pulse](docs/screenshots/dark-desktop-gallery-account-stale.jpg) |
+| ![Opened creation](docs/screenshots/light-desktop-creation.jpg) | ![Opened creation](docs/screenshots/dark-desktop-creation.jpg) |
+| ![Raw Library](docs/screenshots/light-desktop-library.jpg) | ![Raw Library](docs/screenshots/dark-desktop-library.jpg) |
 
-| Phone · Gallery | Phone · One account | Phone · Opened creation | Phone · Raw Library |
+| Phone · All accounts | Phone · One account | Phone · Opened creation | Phone · Raw Library |
 | --- | --- | --- | --- |
 | ![](docs/screenshots/light-phone-gallery.jpg) | ![](docs/screenshots/dark-phone-gallery-account.jpg) | ![](docs/screenshots/light-phone-creation.jpg) | ![](docs/screenshots/dark-phone-library.jpg) |
 
@@ -109,8 +123,9 @@ The prototype never implies something happened that didn't:
 - **Downloads and download packages** show what would be produced but produce no files.
 - **Storage** numbers are labelled *Demo figures*. "Add storage" is disabled until billing exists. Nothing is ever deleted automatically.
 - **Posting**: Haven doesn't publish. A version becomes *Posted* only when you paste the live URL after posting natively; the link is then recorded in Links.
-- **Analytics** links open the platform. Haven doesn't import or display analytics.
-- **Accounts** are links only — no sign-in, no connection.
+- **Audience Pulse** numbers are sample data, labelled on every pulse, static, and shown as *Out of date* once older than the series allows. Native analytics links open the platform.
+- **Illustrative workspace**: the sidebar and gallery say the workspace isn't affiliated with Mia Yilin and that posts are samples. Opened creations say *Sample post made for this demo, not a real draft.* Sample posted links point at example.com.
+- **Accounts** are links only — no sign-in, no connection. Illustrative accounts have no handle or link.
 - **Deleting an idea** lists which files are kept (Raw Library originals and files shared with other ideas) and which go with it.
 - The **post preview** is labelled approximate.
 

@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { DemoData, Task } from '../data/types';
+import { useAccountName } from '../components/AccountSelector';
 import { Cover } from '../components/Cover';
 import { Icon } from '../components/Icon';
 import { useToast } from '../components/Toast';
-import { AccountBadge, Avatar, EmptyState, ExternalLink, LoadingGrid, PlatformGlyph, SelectField, StatusPill, TextLink, useSimulatedLoad } from '../components/ui';
+import { AccountBadge, Avatar, EmptyState, LoadingGrid, PlatformGlyph, SelectField, StatusPill, TextLink, useSimulatedLoad } from '../components/ui';
 import { addDays, formatDay, formatLongDate, relativeDay } from '../lib/dates';
 import { accountOf, ideaOf, personOf, platformOf, taskMatchesFocus, versionMatchesFocus, type Focus } from '../state/selectors';
 import { useStore } from '../state/store';
@@ -43,6 +44,7 @@ export function TodayPage() {
   const [tab, setTab] = useState<TaskTab>('mine');
   const focus = parseFocus(focusValue);
   const me = personOf(data, data.currentUserId)!;
+  const accountName = useAccountName();
 
   const buckets = useMemo(() => bucketTasks(data, focus), [data, focus]);
   const nextTask = buckets.mine.find((t) => !t.done) ?? buckets.upcoming.find((t) => !t.done && t.ownerId === data.currentUserId);
@@ -234,21 +236,18 @@ export function TodayPage() {
               <h2 id="accts-h" className="h2">
                 Accounts today
               </h2>
-              <TextLink to="/accounts">All accounts</TextLink>
+              <TextLink to="/gallery">Creation Gallery</TextLink>
             </div>
             <ul className="acct-quick">
               {todaysAccounts.map((a) => (
                 <li key={a.id}>
-                  <Link to={`/accounts/${a.id}`} className="acct-quick__main">
+                  <Link to={`/gallery?account=${a.id}`} className="acct-quick__main">
                     <PlatformGlyph platform={platformOf(data, a.platform)} />
                     <span>
-                      <strong>{a.handle}</strong>
-                      <span className="muted">{a.kind}</span>
+                      <strong>{accountName(a.id)}</strong>
+                      <span className="muted">{data.brands.find((b) => b.id === a.brandId)?.name}</span>
                     </span>
                   </Link>
-                  <ExternalLink href={a.profileUrl} className="acct-quick__ext">
-                    Open
-                  </ExternalLink>
                 </li>
               ))}
             </ul>

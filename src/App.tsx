@@ -1,7 +1,6 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { AppShell } from './components/Shell';
 import { ToastProvider } from './components/Toast';
-import { AccountsPage } from './pages/Accounts';
 import { CalendarPage } from './pages/Calendar';
 import { CampaignsPage } from './pages/Campaigns';
 import { GalleryPage } from './pages/Gallery';
@@ -13,6 +12,12 @@ import { NotFoundPage } from './pages/NotFound';
 import { TodayPage } from './pages/Today';
 import { StoreProvider } from './state/store';
 import { ThemeProvider } from './state/theme';
+
+/** Accounts now live in the Creation Gallery's account selector. */
+function AccountRedirect() {
+  const { accountId = '' } = useParams();
+  return <Navigate to={`/gallery?account=${encodeURIComponent(accountId)}`} replace />;
+}
 
 export function App() {
   return (
@@ -26,8 +31,8 @@ export function App() {
                 <Route path="ideas" element={<IdeasPage />} />
                 <Route path="ideas/:ideaId" element={<IdeaWorkspacePage />} />
                 <Route path="ideas/:ideaId/:tab" element={<IdeaWorkspacePage />} />
-                <Route path="accounts" element={<AccountsPage />} />
-                <Route path="accounts/:accountId" element={<AccountsPage />} />
+                <Route path="accounts" element={<Navigate to="/gallery" replace />} />
+                <Route path="accounts/:accountId" element={<AccountRedirect />} />
                 <Route path="gallery" element={<GalleryPage />} />
                 <Route path="gallery/:versionId" element={<GalleryPage />} />
                 <Route path="calendar" element={<CalendarPage />} />
