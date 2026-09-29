@@ -20,6 +20,14 @@ export function Cover({
 }) {
   const id = useId().replace(/:/g, '');
   const { hue, hue2, motif } = art;
+  if (art.image) {
+    return (
+      <div className={`cover cover--photo ${className}`} style={{ aspectRatio: ratio }} role={label ? 'img' : undefined} aria-label={label}>
+        <img src={art.image} alt="" loading="lazy" decoding="async" />
+        {children}
+      </div>
+    );
+  }
   const c1 = `hsl(${hue} 72% 62%)`;
   const c2 = `hsl(${hue2} 55% 32%)`;
   const c3 = `hsl(${(hue + 20) % 360} 85% 82%)`;

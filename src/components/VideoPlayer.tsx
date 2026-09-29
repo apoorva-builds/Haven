@@ -35,7 +35,7 @@ export function VideoPlayer({ asset, compact = false }: { asset: Asset; compact?
   }
   return (
     <div className={`player ${compact ? 'player--compact' : ''}`}>
-      <video src={asset.videoUrl} controls playsInline preload="metadata" aria-label={`Play ${asset.name}`} data-asset={asset.id} />
+      <video src={asset.videoUrl} poster={asset.art.image} controls playsInline preload="metadata" aria-label={`Play ${asset.name}`} data-asset={asset.id} />
     </div>
   );
 }

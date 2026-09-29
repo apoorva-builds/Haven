@@ -11,9 +11,8 @@ test.skip(!out, 'Set COMPARE_OUT to capture before/after screenshots.');
 const only = process.env.COMPARE_SCREENS?.split(',');
 const onlyDevice = process.env.COMPARE_DEVICES?.split(',');
 const allScreens = [
-  { name: 'ideas', path: '/ideas' },
-  { name: 'gallery', path: '/gallery' },
-  { name: 'gallery-full', path: '/gallery', fullPage: true },
+  { name: 'ideas', path: '/ideas', fullPage: true },
+  { name: 'gallery', path: '/gallery', fullPage: true },
   { name: 'version', path: '/ideas/market-phrases/versions?v=v-ig-atlas' },
 ];
 const screens = only ? allScreens.filter((s) => only.includes(s.name)) : allScreens;
@@ -33,6 +32,15 @@ for (const theme of ['light', 'dark'] as const) {
           await page.goto(`${screen.path}${screen.path.includes('?') ? '&' : '?'}instant`);
           await expect(page.locator('main h1').first()).toBeVisible();
           await page.evaluate(() => document.fonts.ready);
+          // Bring lazy images in before a full-page capture.
+          await page.evaluate(async () => {
+            for (let y = 0; y < document.body.scrollHeight; y += 600) {
+              window.scrollTo(0, y);
+              await new Promise((r) => setTimeout(r, 60));
+            }
+            window.scrollTo(0, 0);
+          });
+          await page.waitForFunction(() => [...document.images].every((i) => i.complete), null, { timeout: 5_000 }).catch(() => {});
           await page.waitForFunction(() => [...document.querySelectorAll('video')].every((v) => v.readyState >= 2), null, { timeout: 5_000 }).catch(() => {});
           await page.screenshot({ path: `docs/redesign/${out}/${theme}-${device.name}-${screen.name}.jpg`, type: 'jpeg', quality: 82, fullPage: 'fullPage' in screen });
         });

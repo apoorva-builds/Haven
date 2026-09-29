@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import type { Asset, Version, VersionStatus } from '../data/types';
 import { Cover } from '../components/Cover';
 import { TypeCover } from '../components/TypeCover';
+import { toneOf } from '../lib/studio';
+import { justify } from '../lib/justify';
 import { Icon } from '../components/Icon';
 import { AccountSelector, useAccountName } from '../components/AccountSelector';
 import { QuickAddModal } from '../components/Shell';
@@ -10,8 +12,8 @@ import { AudiencePulse } from '../components/AudiencePulse';
 import { InfoButton } from '../components/InfoButton';
 import { EmptyState, ExternalLink, LoadingGrid, PlatformGlyph, SelectField, StatusPill, useSimulatedLoad } from '../components/ui';
 import { MediaSourceNote, VideoPlayer } from '../components/VideoPlayer';
-import { creationLabel, creationMedia, groupByDay, postedLinkLabel } from '../lib/creations';
-import { formatDay, formatLongDate, relativeDay } from '../lib/dates';
+import { creationLabel, creationMedia, postedLinkLabel } from '../lib/creations';
+import { formatLongDate, relativeDay } from '../lib/dates';
 import { accountOf, assetOf, ideaOf, platformOf, versionsForIdea } from '../state/selectors';
 import { useStore } from '../state/store';
 
@@ -40,8 +42,46 @@ const STATUS_TEXT: Record<VersionStatus, string> = {
   Posted: 'Posted',
 };
 
+/** Each tile keeps its format's real proportions. */
+function tileRatio(data: ReturnType<typeof useStore>['data'], version: Version): number {
+  const media = assetOf(data, version.mediaAssetId);
+  if (creationMedia(version) !== 'video' || !media?.videoUrl) return 4 / 5;
+  return version.aspect === '16:9' ? 16 / 9 : 9 / 16;
+}
+
+/** Justified rows: full-width rows at close to a target height. */
+function JustifiedFlow({ versions }: { versions: Version[] }) {
+  const { data } = useStore();
+  const ref = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(0);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => setWidth(Math.floor(entry.contentRect.width)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const gap = width < 720 ? 14 : 22;
+  const target = width < 520 ? 250 : width < 900 ? 300 : 380;
+  const ratios = versions.map((v) => tileRatio(data, v));
+  const rows = width ? justify(ratios, width, target, gap) : [];
+  return (
+    <div className="gallery__flow" ref={ref} data-justified={width ? '' : undefined}>
+      {width
+        ? rows.map((r) => (
+            <div className="gallery__row" key={r.start} style={{ gap }}>
+              {versions.slice(r.start, r.end).map((v, i) => (
+                <CreationTile key={v.id} version={v} width={Math.floor(ratios[r.start + i] * r.height)} />
+              ))}
+            </div>
+          ))
+        : versions.map((v) => <CreationTile key={v.id} version={v} />)}
+    </div>
+  );
+}
+
 /** One account's version as a gallery tile. Opens inside Haven. */
-export function CreationTile({ version }: { version: Version }) {
+export function CreationTile({ version, width }: { version: Version; width?: number }) {
   const { data } = useStore();
   const name = useAccountName();
   const account = accountOf(data, version.accountId)!;
@@ -52,20 +92,25 @@ export function CreationTile({ version }: { version: Version }) {
   const photos = kind === 'photos' ? photosOf(data, version) : [];
   const playable = kind === 'video' && media?.videoUrl;
   const group = STATUS_GROUP[version.status];
+  const still = playable ? media!.art.image : photos[0]?.art.image;
+  const ratio = tileRatio(data, version);
 
   return (
     <Link
       to={`/gallery/${version.id}`}
       className="ctile"
-      style={{ ['--hue' as string]: platform.hue }}
+      style={{ ['--hue' as string]: platform.hue, ['--r' as string]: ratio, width }}
       data-version={version.id}
       aria-label={`${creationLabel(version, account, platform)} for ${name(account.id)}: ${idea?.title ?? ''}, ${version.status}`}
     >
       <div className="ctile__media">
+        {still && <img className="ctile__glow" src={still} alt="" aria-hidden="true" loading="lazy" />}
         {playable ? (
-          <video className="ctile__video" src={`${media!.videoUrl}#t=1.5`} muted playsInline preload="auto" aria-hidden="true" tabIndex={-1} />
+          <video className="ctile__video" src={media!.videoUrl} poster={still} muted playsInline preload="none" aria-hidden="true" tabIndex={-1} />
+        ) : still ? (
+          <img className="ctile__img" src={still} alt="" loading="lazy" />
         ) : (
-          <TypeCover title={version.title ?? idea?.title ?? ''} kicker={kind === 'photos' ? `${photos.length || 1} photo${photos.length === 1 ? '' : 's'}` : 'No media yet'} />
+          <TypeCover title={version.title ?? idea?.title ?? ''} kicker="No media yet" className={idea ? `tone--${toneOf(idea)}` : ''} />
         )}
         {kind === 'photos' && photos.length > 1 && (
           <span className="ctile__badge" aria-hidden="true">
@@ -82,7 +127,10 @@ export function CreationTile({ version }: { version: Version }) {
         <span className="ctile__title">{version.title ?? idea?.title}</span>
         <span className="ctile__row">
           <span className="ctile__label">{creationLabel(version, account, platform)}</span>
-          <span className={`ctile__status ctile__status--${group}`}>{STATUS_TEXT[version.status]}</span>
+          <span className="ctile__when">
+            <span className={`ctile__status ctile__status--${group}`}>{STATUS_TEXT[version.status]}</span>
+            <span className="ctile__date">{relativeDay(version.scheduledFor, data.today)}</span>
+          </span>
         </span>
       </div>
     </Link>
@@ -96,6 +144,7 @@ export function GalleryPage() {
 
 function GalleryIndex() {
   const { data } = useStore();
+  const name = useAccountName();
   const [adding, setAdding] = useState(false);
   const ready = useSimulatedLoad();
   const [params, setParams] = useSearchParams();
@@ -114,16 +163,24 @@ function GalleryIndex() {
     if (status !== 'all' && STATUS_GROUP[v.status] !== status) return false;
     return true;
   });
-  const days = groupByDay(versions, 'from-today', data.today);
-  const firstPast = days.findIndex((d) => d.day < data.today);
+  const byDate = (x: Version, y: Version) => x.scheduledFor.localeCompare(y.scheduledFor) || x.ideaId.localeCompare(y.ideaId);
+  const sections = [
+    { id: 'coming', title: 'Coming up', items: versions.filter((v) => v.status !== 'Posted').sort(byDate) },
+    { id: 'posted', title: 'Posted', items: versions.filter((v) => v.status === 'Posted').sort((x, y) => byDate(y, x)) },
+  ].filter((sec) => sec.items.length > 0);
 
   return (
     <div className="page gallery">
-      <header className="gallery__head">
-        <span className="with-info">
-          <h1 className="display gallery__title">Creation Gallery</h1>
-          <InfoButton k="gallery" />
-        </span>
+      <header className="studio-head">
+        <div className="studio-head__title">
+          <span className="with-info">
+            <h1 className="studio-head__h">Creation Gallery</h1>
+            <InfoButton k="gallery" />
+          </span>
+          <p className="studio-head__count">
+            {versions.length} creation{versions.length === 1 ? '' : 's'} · {account === 'all' ? `${data.accounts.length} accounts` : name(account)}
+          </p>
+        </div>
         <button type="button" className="btn btn--primary" onClick={() => setAdding(true)}>
           <Icon name="plus" size={16} /> New idea
         </button>
@@ -150,7 +207,7 @@ function GalleryIndex() {
 
       {!ready ? (
         <LoadingGrid count={6} label="Loading creations" />
-      ) : days.length === 0 ? (
+      ) : sections.length === 0 ? (
         <EmptyState
           icon="grid"
           title="No creations here yet"
@@ -163,22 +220,17 @@ function GalleryIndex() {
           Plan a version for this account from any idea and it appears here.
         </EmptyState>
       ) : (
-        <div className="gallery__days">
-          {days.map(({ day, items }, index) => (
-            <section key={day} className="gallery__day" aria-labelledby={`day-${day}`}>
-              {index === firstPast && index > 0 && <p className="gallery__earlier">Earlier</p>}
-              <div className="gallery__dayhead">
-                <h2 id={`day-${day}`} className="gallery__date">
-                  <span>{relativeDay(day, data.today)}</span>
-                  {relativeDay(day, data.today) !== formatDay(day) && <span className="muted">{formatDay(day, { weekday: 'long', month: 'long', day: 'numeric' })}</span>}
+        <div className="gallery__sections">
+          {sections.map((sec, index) => (
+            <section key={sec.id} className="gallery__section" aria-labelledby={`sec-${sec.id}`}>
+              <div className="gallery__sechead">
+                <h2 id={`sec-${sec.id}`} className="gallery__sech">
+                  {sec.title}
                 </h2>
+                <span className="gallery__seccount">{sec.items.length}</span>
                 {index === 0 && <InfoButton k="tiles" />}
               </div>
-              <div className="gallery__grid">
-                {items.map((v) => (
-                  <CreationTile key={v.id} version={v} />
-                ))}
-              </div>
+              <JustifiedFlow versions={sec.items} />
             </section>
           ))}
         </div>

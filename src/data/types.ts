@@ -84,6 +84,8 @@ export interface Art {
   motif: ArtMotif;
   hue: number;
   hue2: number;
+  /** A bundled sample still (public/demo-media). Covers use it in place of generated art. */
+  image?: string;
 }
 
 export type IdeaStatus = 'Idea' | 'Gathering' | 'Editing' | 'In review' | 'Ready' | 'Posted';

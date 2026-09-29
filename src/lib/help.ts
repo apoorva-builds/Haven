@@ -5,7 +5,7 @@
 export const HELP = {
   gallery: {
     topic: 'Creation Gallery',
-    text: 'Every post you’re making, finished or planned, grouped by day. Each tile is one account’s version of an idea. Open a tile to watch it or page through its photos without leaving Haven.',
+    text: 'Every post you’re making: what’s coming up, then what’s posted. Each tile is one account’s version of an idea, shown in its real proportions. Open a tile to watch it or page through its photos without leaving Haven.',
   },
   accounts: {
     topic: 'Account filter',
@@ -16,8 +16,8 @@ export const HELP = {
     text: 'Planned: scheduled, still being made. In review: waiting for approval. Ready: checklist done, ready to post. Posted: you posted it yourself and saved the live link. Haven never posts for you.',
   },
   tiles: {
-    topic: 'Tiles and platform borders',
-    text: 'The label on each tile names the platform and format, like “Instagram · Reel”. The border colour matches the platform. Underneath: the account, the status and the idea the post came from.',
+    topic: 'Tiles and platform marks',
+    text: 'Under each tile: its title, the platform and format (like “Instagram · Reel”, with a small mark in the platform’s colour), its status and date. The account and the idea it came from are in the opened view.',
   },
   pulse: {
     topic: 'Audience Pulse',

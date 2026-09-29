@@ -62,7 +62,7 @@ test('ⓘ buttons explain sections on request and stay out of the way', async ({
   await expect(galleryInfo).toHaveAttribute('aria-expanded', 'false');
   await galleryInfo.click();
   await expect(galleryInfo).toHaveAttribute('aria-expanded', 'true');
-  await expect(page.getByRole('region', { name: 'About Creation Gallery' })).toContainText('grouped by day');
+  await expect(page.getByRole('region', { name: 'About Creation Gallery' })).toContainText('what’s coming up, then what’s posted');
 
   // Opening another closes the first; only one explanation at a time.
   await page.getByRole('button', { name: 'About Post status' }).click();
@@ -81,8 +81,8 @@ test('ⓘ buttons explain sections on request and stay out of the way', async ({
   await page.mouse.click(5, 5);
   await expect(page.getByRole('region', { name: /^About / })).toHaveCount(0);
 
-  await page.getByRole('button', { name: 'About Tiles and platform borders' }).click();
-  await expect(page.getByRole('region', { name: 'About Tiles and platform borders' })).toContainText('border colour matches the platform');
+  await page.getByRole('button', { name: 'About Tiles and platform marks' }).click();
+  await expect(page.getByRole('region', { name: 'About Tiles and platform marks' })).toContainText('in the platform’s colour');
   await page.keyboard.press('Escape');
 
   await chooseAccount(page, 'Pine & Paper', 'YouTube');
@@ -180,7 +180,7 @@ test('ideas list filters and shows an empty state', async ({ page }) => {
   await expect(page.getByText('No ideas match these filters')).toBeVisible();
   await page.getByRole('button', { name: 'Clear filters' }).click();
   await expect(page.locator('.idea-row')).toHaveCount(6);
-  await page.getByRole('radio', { name: 'Archived' }).click();
+  await page.getByRole('button', { name: /^Archived/ }).click();
   await expect(page.locator('.idea-row')).toHaveCount(1);
 });
 

@@ -224,7 +224,7 @@ function SearchBox() {
         <input
           ref={inputRef}
           type="search"
-          placeholder="Search ideas, accounts, assets, links"
+          placeholder="Search"
           aria-label="Search the workspace"
           value={q}
           onChange={(e) => {

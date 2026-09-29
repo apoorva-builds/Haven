@@ -53,10 +53,20 @@ docs/screenshots/      Review screenshots (light/dark × desktop/phone)
 ## The preview
 
 - **Label.** The top bar carries a **Preview · sample data** chip (“Preview” on phones). It opens the single **About this preview** panel: sample content is fictional; uploads are session-only; follower counts are sample figures; nothing is published and no accounts are connected; changes reset on reload.
-- **Sample content.** Two fictional brands, **Pine & Paper** and **Little Atlas**, with five accounts (two YouTube, two Instagram, one TikTok). Handles end in `.sample` and none link to a real profile. Six ideas, a handful of posts and files, and two placeholder links on example.com. Artwork is generated; the four videos in `public/demo-media/` are original synthetic samples with “HAVEN DEMO SAMPLE — not real footage” burned in (regenerate with `node scripts/make-demo-videos.mjs`).
+- **Sample content.** Two fictional brands, **Pine & Paper** and **Little Atlas**, with five accounts (two YouTube, two Instagram, one TikTok). Handles end in `.sample` and none link to a real profile. Six ideas, a handful of posts and files, and two placeholder links on example.com. Every still and clip in `public/demo-media/` is painted on a canvas by `scripts/demo-media/scenes.js` (a night market, a desk in morning light, a reading room, desks and café tables from above). None are real photos or footage, and each carries a small burned-in “Haven sample · not a real photo / not real footage” mark. Regenerate with `node scripts/make-demo-media.mjs`.
 - **ⓘ buttons.** Main sections and less familiar features have an ⓘ button: Creation Gallery, account filter, post status, tiles and platform borders, Audience Pulse, Raw Library, finished video, Work, Ideas, Calendar and Links. The explanation appears on click or tap, one at a time, and closes on Escape (focus returns to the button), on an outside click, or when another opens. Panels stay inside the screen on phones and are announced to screen readers. The wording lives in `src/lib/help.ts`.
 
-## Design pass: calm, media-first
+## Design direction: private creative studio (in review)
+
+Applied so far to **Ideas** and the **Creation Gallery** only; the rest of Haven follows once the direction is approved.
+
+- **Palette**: luminous warm porcelain (light) and layered charcoal (dark); one deep-cobalt action colour; a curated collection palette (cobalt, coral, rose, amber, sky) used in larger moments such as the Up next panel and text-only covers. Colourful media glows softly in dark mode.
+- **Type**: Instrument Serif for major titles, Inter for the interface.
+- **Ideas**: an editorial title with a small count and one *New idea* action; one **Up next** feature (media still, due date, stage, account versions, *Continue*); then **All ideas** as composed rows (thumbnail, title, quiet detail, stage with a six-step meter, due date, version count). Search is the page's one prominent search field; status, campaign, account and sort sit in **Filters**; *Archived* is a quiet toggle.
+- **Creation Gallery**: *Coming up* and *Posted* in justified rows that keep each format's real proportions (9:16, 16:9, 4:5), concise titles and a small platform/format mark.
+- Captures: [`docs/redesign/studio/`](docs/redesign/studio/). Regenerate with `COMPARE_OUT=studio COMPARE_SCREENS=ideas,gallery COMPARE_DEVICES=desktop npm run screenshots`.
+
+## Earlier design pass: calm, media-first
 
 - **Creation Gallery**: one title and one primary action (*New idea*); a quiet toolbar (account selector, status); at most three large, rounded covers per row on desktop (two on tablet, one on phone) with generous spacing. Tiles show only the title, platform/format (with a thin platform-colour mark) and status; captions, account details and actions live in the opened view.
 - **Version screen**: the finished video (or carousel photos) is the focal point. The platform mock is a small, labelled *Approximate* preview beside it, collapsed on phones. The idea header is compact and the version list is a quiet list (a scrolling row on phones).
