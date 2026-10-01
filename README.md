@@ -53,8 +53,20 @@ docs/screenshots/      Review screenshots (light/dark × desktop/phone)
 ## The preview
 
 - **Label.** The top bar carries a **Preview · sample data** chip (“Preview” on phones). It opens the single **About this preview** panel: sample content is fictional; uploads are session-only; follower counts are sample figures; nothing is published and no accounts are connected; changes reset on reload.
-- **Sample content.** Two fictional brands, **Pine & Paper** and **Little Atlas**, with five accounts (two YouTube, two Instagram, one TikTok). Handles end in `.sample` and none link to a real profile. Six ideas, a handful of posts and files, and two placeholder links on example.com. Every still and clip in `public/demo-media/` is painted on a canvas by `scripts/demo-media/scenes.js` (a night market, a desk in morning light, a reading room, desks and café tables from above). None are real photos or footage, and each carries a small burned-in “Haven sample · not a real photo / not real footage” mark. Regenerate with `node scripts/make-demo-media.mjs`.
+- **Sample content.** Two fictional brands, **Pine & Paper** and **Little Atlas**, with five accounts (two YouTube, two Instagram, one TikTok). Handles end in `.sample` and none link to a real profile. Six ideas, a handful of posts and files, and two placeholder links on example.com. Every still and clip in `public/demo-media/` is painted on a canvas by `scripts/demo-media/scenes.js` (a night market, a desk in morning light, a reading room, desks and café tables from above). None are real photos or footage, and each carries a small burned-in “Haven sample · not a real photo / not real footage” mark. Regenerate with `node scripts/make-demo-media.mjs` (add `--only=packing.jpg` for one file).
 - **ⓘ buttons.** Main sections and less familiar features have an ⓘ button: Creation Gallery, account filter, post status, tiles and platform borders, Audience Pulse, Raw Library, finished video, Work, Ideas, Calendar and Links. The explanation appears on click or tap, one at a time, and closes on Escape (focus returns to the button), on an outside click, or when another opens. Panels stay inside the screen on phones and are announced to screen readers. The wording lives in `src/lib/help.ts`.
+
+## Today: a creator's dashboard
+
+Today opens on the creator's own work, then what's next.
+
+- **Memories:** posted creations they can open come back as a playable video or a photo post, with the post's caption and an *Open creation* link. One leads each day in rotation, and *Another memory* walks through the rest. A post from this day in an earlier year leads with *On this day*. Memories are never invented: with nothing posted, Today says so (`src/lib/memories.ts`, unit tested).
+- **Look what you've made:** a film strip of posted, then ready, creations; videos play quietly on hover or focus.
+- **What's next:** the next task with *Continue*, quick actions (New idea, Creation Gallery, Calendar), *Needs attention* (tasks with Focus), *Coming up* (seven days) and *Pick up where you left off*.
+- **Personal photo (optional):** each person can add one from the photo circle. Preview: it's kept in this browser only (localStorage) and never uploaded. Without one, initials keep the page complete.
+- **Wordmark:** a temporary typographic placeholder at the top of Today. Replace it by putting your SVGs in `public/brand/` and setting the two paths at the top of `src/components/Wordmark.tsx`.
+- **Access:** everything comes from the viewer's own data, so *Preview as* a collaborator shows only their memories and work, and never the owner's photo.
+- Motion is subtle (rise-in, film-strip lift, memory crossfade) and switches off with *reduce motion*. Captures: [`docs/redesign/today/`](docs/redesign/today/).
 
 ## Team & access (preview)
 
@@ -102,7 +114,7 @@ Applied so far to **Ideas** and the **Creation Gallery** only; the rest of Haven
 | `/gallery` | **Creation Gallery**: one compact **account selector** (All accounts, or one account grouped by brand), a status filter, an **Audience Pulse** for the selected account, then posts by day. Tiles show a rounded cover or playable video, a platform-coloured border, a top label (“Instagram · Reel”, “YouTube · Short”, “YouTube · Long video”, “Instagram · Carousel”), the account, status and parent idea. `?account=<id>` selects an account. |
 | `/gallery/:versionId` | **Opened creation**: plays the video or pages through the photos inside Haven; account, caption, date, status, related idea and its other versions. **Open posted video/post** appears only for Posted versions with a saved live URL. |
 | `/library` | **Raw Library**: source files only (original photos, audio/music, unedited clips, brand assets). Finished posts are never listed here. |
-| `/` | **Today**: one next action, task groups, next seven days, recent ideas |
+| `/` | **Today**: memories of posted work, look what you've made, the next action, needs attention, coming up, pick up where you left off |
 | `/ideas`, `/ideas/:id[/assets|/versions|/tasks]` | **Ideas** and the **Idea workspace**; the Versions tab holds the finished-video picker |
 | `/calendar` | Content and marketing perspectives, filters, drag to reschedule; agenda on phones |
 | `/links`, `/campaigns` | Saved links; campaigns (reachable from ideas) |

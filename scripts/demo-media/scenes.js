@@ -1425,7 +1425,148 @@
     vignette(ctx, w, h, 0.36);
   }
 
-  const SCENES = { market, morning, readingRoom, deskNotebook, deskLamp, deskPlant, cafeCup, cafeTable };
+  function packing(ctx, w, h) {
+    const u = Math.min(w, h);
+    const r = rng(91);
+    // Sky-blue linen bedspread from above.
+    const g = ctx.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, '#d9e6ef');
+    g.addColorStop(1, '#bccfdd');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+    ctx.save();
+    ctx.globalAlpha = 0.06;
+    ctx.strokeStyle = '#2b4a63';
+    for (let i = 0; i < h; i += 4) {
+      ctx.beginPath();
+      ctx.moveTo(0, i + r() * 2);
+      ctx.lineTo(w, i + r() * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+    sunBand(ctx, w, h, u);
+
+    // Packing list on a notepad.
+    ctx.save();
+    ctx.translate(w * 0.36, h * 0.38);
+    ctx.rotate(-0.08);
+    const nw = w * 0.46;
+    const nh = w * 0.58;
+    shadow(ctx, (c) => c.rect(-nw / 2, -nh / 2, nw, nh), u * 0.02, 0.35, u * 0.015, u * 0.02);
+    ctx.fillStyle = '#fbf7ee';
+    ctx.fillRect(-nw / 2, -nh / 2, nw, nh);
+    ctx.fillStyle = '#d65c48';
+    ctx.fillRect(-nw / 2, -nh / 2, nw, nh * 0.06);
+    ctx.strokeStyle = 'rgba(40,44,58,0.55)';
+    ctx.lineWidth = u * 0.003;
+    for (let i = 0; i < 7; i++) {
+      const y = -nh / 2 + nh * (0.18 + i * 0.11);
+      ctx.strokeRect(-nw / 2 + nw * 0.1, y - nh * 0.025, nh * 0.045, nh * 0.045);
+      if (i < 4) {
+        ctx.beginPath();
+        ctx.moveTo(-nw / 2 + nw * 0.11, y);
+        ctx.lineTo(-nw / 2 + nw * 0.14, y + nh * 0.02);
+        ctx.lineTo(-nw / 2 + nw * 0.19, y - nh * 0.03);
+        ctx.stroke();
+      }
+    }
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(-nw / 2 + nw * 0.24, -nh / 2, nw * 0.68, nh);
+    ctx.clip();
+    scribble(ctx, -nw / 2 + nw * 0.26, -nh / 2 + nh * 0.18, nw * 0.5, nh * 0.11, 7, r, 'rgba(34,40,58,0.6)', u * 0.003);
+    ctx.restore();
+    ctx.restore();
+
+    // Passport.
+    ctx.save();
+    ctx.translate(w * 0.74, h * 0.3);
+    ctx.rotate(0.2);
+    const pw = w * 0.24;
+    const ph = w * 0.33;
+    shadow(ctx, (c) => c.roundRect(-pw / 2, -ph / 2, pw, ph, u * 0.012), u * 0.02, 0.4, u * 0.015, u * 0.02);
+    const pg = ctx.createLinearGradient(-pw / 2, 0, pw / 2, 0);
+    pg.addColorStop(0, '#2c46b8');
+    pg.addColorStop(1, '#1f3388');
+    ctx.fillStyle = pg;
+    ctx.beginPath();
+    ctx.roundRect(-pw / 2, -ph / 2, pw, ph, u * 0.012);
+    ctx.fill();
+    ctx.strokeStyle = '#e3b85c';
+    ctx.lineWidth = u * 0.004;
+    ctx.beginPath();
+    ctx.arc(0, -ph * 0.05, pw * 0.2, 0, TAU);
+    ctx.stroke();
+    ctx.fillStyle = '#e3b85c';
+    ctx.fillRect(-pw * 0.28, ph * 0.25, pw * 0.56, ph * 0.025);
+    ctx.restore();
+
+    // Amber luggage tag with its string.
+    ctx.save();
+    ctx.translate(w * 0.72, h * 0.66);
+    ctx.rotate(-0.35);
+    const tw = w * 0.17;
+    const th = w * 0.27;
+    shadow(ctx, (c) => c.roundRect(-tw / 2, -th / 2, tw, th, u * 0.02), u * 0.015, 0.35, u * 0.012, u * 0.016);
+    ctx.fillStyle = '#e0a33a';
+    ctx.beginPath();
+    ctx.roundRect(-tw / 2, -th / 2, tw, th, u * 0.02);
+    ctx.fill();
+    ctx.fillStyle = '#d9e6ef';
+    ctx.beginPath();
+    ctx.arc(0, -th * 0.38, tw * 0.09, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = '#fbf7ee';
+    ctx.fillRect(-tw * 0.36, -th * 0.15, tw * 0.72, th * 0.5);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(-tw * 0.34, -th * 0.15, tw * 0.68, th * 0.5);
+    ctx.clip();
+    scribble(ctx, -tw * 0.3, -th * 0.03, tw * 0.45, th * 0.1, 3, r, 'rgba(34,40,58,0.55)', u * 0.0025);
+    ctx.restore();
+    ctx.strokeStyle = '#7a4a1c';
+    ctx.lineWidth = u * 0.004;
+    ctx.beginPath();
+    ctx.moveTo(0, -th * 0.38);
+    ctx.bezierCurveTo(-tw * 0.4, -th * 0.9, tw * 0.6, -th * 1.1, tw * 0.2, -th * 1.6);
+    ctx.stroke();
+    ctx.restore();
+
+    // Sunglasses.
+    ctx.save();
+    ctx.translate(w * 0.3, h * 0.82);
+    ctx.rotate(0.1);
+    const lr = w * 0.075;
+    shadow(ctx, (c) => {
+      c.ellipse(-lr * 1.15, 0, lr, lr * 0.8, 0, 0, TAU);
+      c.ellipse(lr * 1.15, 0, lr, lr * 0.8, 0, 0, TAU);
+    }, u * 0.015, 0.4, u * 0.015, u * 0.02);
+    [-1, 1].forEach((side) => {
+      const lg = ctx.createRadialGradient(side * lr * 1.15 - lr * 0.3, -lr * 0.3, 0, side * lr * 1.15, 0, lr);
+      lg.addColorStop(0, '#5a4a40');
+      lg.addColorStop(1, '#1c1714');
+      ctx.fillStyle = lg;
+      ctx.beginPath();
+      ctx.ellipse(side * lr * 1.15, 0, lr, lr * 0.8, 0, 0, TAU);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      ctx.beginPath();
+      ctx.ellipse(side * lr * 1.15 - lr * 0.35, -lr * 0.3, lr * 0.25, lr * 0.1, -0.5, 0, TAU);
+      ctx.fill();
+    });
+    ctx.strokeStyle = '#1c1714';
+    ctx.lineWidth = u * 0.008;
+    ctx.beginPath();
+    ctx.moveTo(-lr * 0.2, -lr * 0.2);
+    ctx.quadraticCurveTo(0, -lr * 0.45, lr * 0.2, -lr * 0.2);
+    ctx.stroke();
+    ctx.restore();
+
+    wash(ctx, w, h, '#f4dcc0', 0.08, 'soft-light');
+    vignette(ctx, w, h, 0.2);
+  }
+
+  const SCENES = { market, morning, readingRoom, deskNotebook, deskLamp, deskPlant, cafeCup, cafeTable, packing };
 
   function paint(ctx, scene, w, h, t, frame, mark) {
     SCENES[scene](ctx, w, h, t);

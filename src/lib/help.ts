@@ -43,8 +43,12 @@ export const HELP = {
     topic: 'Finished video',
     text: 'The final edit for this account’s version. Several accounts can use the same file without copies. A file chosen from this device plays only in this tab and isn’t uploaded.',
   },
+  memories: {
+    topic: 'Memories',
+    text: 'Memories come only from your creations marked as posted, with media you can open. One leads each day, in rotation; a post from this day in an earlier year comes first. Nothing is made up: with nothing posted, there are no memories.',
+  },
   work: {
-    topic: 'Work',
+    topic: 'Needs attention',
     text: 'Tasks due today or tomorrow: yours, other people’s, and what’s coming up. Tick a task to mark it done for this session.',
   },
   ideas: {

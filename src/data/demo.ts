@@ -44,6 +44,12 @@ export const READY_CHECKS = [
 export function createDemoData(now: Date = new Date()): DemoData {
   const today = toISODate(now);
   const d = (offset: number) => addDays(today, offset);
+  /** The same calendar day one year earlier, so the sample has an honest "on this day" memory. */
+  const yearAgo = (() => {
+    const t = new Date(now);
+    t.setFullYear(t.getFullYear() - 1);
+    return toISODate(t);
+  })();
   const t = now.getTime();
 
   const people: Person[] = [
@@ -225,10 +231,10 @@ export function createDemoData(now: Date = new Date()): DemoData {
       title: 'Carry-on packing list',
       spaceId: 'atlas',
       status: 'Posted',
-      due: d(-40),
-      art: { motif: 'grain', hue: 30, hue2: 330 },
-      concept: 'Archived sample idea.',
-      updatedAt: d(-38),
+      due: yearAgo,
+      art: { motif: 'grain', hue: 30, hue2: 330, image: '/demo-media/packing.jpg' },
+      concept: 'Archived sample idea: one photo of everything that fits in a carry-on, posted a year ago.',
+      updatedAt: yearAgo,
       archived: true,
     }),
   ];
@@ -340,6 +346,7 @@ export function createDemoData(now: Date = new Date()): DemoData {
     photo('a-desk-3', 'Desk — slide 3.jpg', 'desk-setup', 'bloom', 245, 'desk-plant.jpg'),
     photo('a-cafe-1', 'Café words — slide 1.jpg', 'cafe-words', 'bloom', 110, 'cafe-cup.jpg'),
     photo('a-cafe-2', 'Café words — slide 2.jpg', 'cafe-words', 'waves', 90, 'cafe-table.jpg'),
+    { ...photo('a-packing-1', 'Carry-on — flat lay.jpg', 'packing-list', 'grain', 200, 'packing.jpg'), uploadedAt: yearAgo },
     {
       ...base,
       id: 'a-brand-kit',
@@ -493,6 +500,20 @@ export function createDemoData(now: Date = new Date()): DemoData {
       scheduledFor: d(-3),
       status: 'Posted',
       liveUrl: 'https://example.com/sample-posted-carousel',
+      done: 6,
+    }),
+    v({
+      id: 'v-ig-atlas-packing',
+      ideaId: 'packing-list',
+      accountId: 'ig-atlas',
+      format: 'Post',
+      aspect: '4:5',
+      coverAssetId: 'a-packing-1',
+      photoAssetIds: ['a-packing-1'],
+      captions: { en: 'Everything in one carry-on. Sample post from a year ago.' },
+      scheduledFor: yearAgo,
+      status: 'Posted',
+      liveUrl: 'https://example.com/sample-posted-packing',
       done: 6,
     }),
   ];

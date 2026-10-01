@@ -1,14 +1,20 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { DemoData, Task } from '../data/types';
+import type { DemoData, Task, Version } from '../data/types';
 import { useAccountName } from '../components/AccountSelector';
-import { Cover } from '../components/Cover';
 import { InfoButton } from '../components/InfoButton';
 import { Icon } from '../components/Icon';
+import { PersonalPhoto } from '../components/PersonalPhoto';
+import { QuickAddModal, useCanCreateIdea } from '../components/Shell';
 import { useToast } from '../components/Toast';
-import { AccountBadge, Avatar, EmptyState, LoadingGrid, PlatformGlyph, SelectField, StatusPill, TextLink, useSimulatedLoad } from '../components/ui';
-import { addDays, formatDay, formatLongDate, relativeDay } from '../lib/dates';
-import { accountOf, ideaOf, personOf, platformOf, taskMatchesFocus, versionMatchesFocus, type Focus } from '../state/selectors';
+import { TypeCover } from '../components/TypeCover';
+import { AccountBadge, Avatar, EmptyState, PlatformGlyph, SelectField, StatusPill, TextLink, useSimulatedLoad } from '../components/ui';
+import { Wordmark } from '../components/Wordmark';
+import { creationLabel, creationMedia } from '../lib/creations';
+import { addDays, daysBetween, formatDay, formatLongDate, relativeDay } from '../lib/dates';
+import { memoriesFor, rotateMemories, type Memory } from '../lib/memories';
+import { ideaImage, toneOf } from '../lib/studio';
+import { accountOf, assetOf, ideaOf, personOf, platformOf, taskMatchesFocus, versionMatchesFocus, type Focus } from '../state/selectors';
 import { useStore } from '../state/store';
 
 type TaskTab = 'mine' | 'others' | 'upcoming';
@@ -41,6 +47,8 @@ export function TodayPage() {
   const { data, dispatch, allowed } = useStore();
   const toast = useToast();
   const ready = useSimulatedLoad();
+  const canCreate = useCanCreateIdea();
+  const [adding, setAdding] = useState(false);
   const [focusValue, setFocusValue] = useState('all');
   const [tab, setTab] = useState<TaskTab>('mine');
   const focus = parseFocus(focusValue);
@@ -50,44 +58,135 @@ export function TodayPage() {
   const buckets = useMemo(() => bucketTasks(data, focus), [data, focus]);
   const nextTask = buckets.mine.find((t) => !t.done) ?? buckets.upcoming.find((t) => !t.done && t.ownerId === data.currentUserId);
   const nextIdea = ideaOf(data, nextTask?.ideaId);
+  const memories = useMemo(() => rotateMemories(memoriesFor(data), data.today), [data]);
 
   const week = Array.from({ length: 7 }, (_, i) => addDays(data.today, i));
-  const recent = [...data.ideas].filter((i) => !i.archived).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 5);
+  const recent = [...data.ideas].filter((i) => !i.archived).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 4);
   const todaysAccounts = data.accounts.filter((a) => a.usedToday);
   const shown = buckets[tab];
 
+  // Honest numbers from the viewer's own data.
+  const postedRecently = data.versions.filter((v) => v.status === 'Posted' && daysBetween(v.scheduledFor, data.today) <= 30 && v.scheduledFor <= data.today).length;
+  const readyToGo = data.versions.filter((v) => v.status === 'Ready to post').length;
+  const made = useMemo(() => madeWork(data), [data]);
+
   if (!ready) {
     return (
-      <div className="page">
-        <div className="today-hero today-hero--loading" aria-hidden="true" />
-        <LoadingGrid count={3} label="Loading today" />
+      <div className="page today today--loading" role="status" aria-label="Loading today">
+        <div className="t-skeleton t-skeleton--hero" />
+        <div className="t-skeleton t-skeleton--strip" />
       </div>
     );
   }
 
   return (
     <div className="page today">
-      <section className="today-hero">
-        <div className="today-hero__text">
-          <p className="eyebrow">{formatLongDate(data.today)}</p>
-          <h1 className="display display--xl">
-            {greeting()}, {me.name.split(' ')[0]}.
-          </h1>
-          {nextTask ? (
-            <p className="lede">
-              One thing first: <strong>{nextTask.title.charAt(0).toLowerCase() + nextTask.title.slice(1)}</strong>
-              {nextIdea && <> for “{nextIdea.title}”</>}.
+      <header className="t-top t-rise" style={{ ['--i' as string]: 0 }}>
+        <Wordmark />
+        <p className="t-top__date">{formatLongDate(data.today)}</p>
+      </header>
+
+      <section className="t-hero" aria-labelledby="hello-h">
+        <div className="t-hello">
+          <div className="t-hello__who t-rise" style={{ ['--i' as string]: 1 }}>
+            <PersonalPhoto person={me} />
+            <div>
+              <h1 id="hello-h" className="t-hello__h">
+                {greeting()}, {me.name.split(' ')[0]}.
+              </h1>
+              <p className="t-hello__lede">
+                {postedRecently > 0 ? (
+                  <>
+                    Look what you’ve made: <strong>{postedRecently} posted</strong> in the last 30 days
+                    {readyToGo > 0 && (
+                      <>
+                        , <strong>{readyToGo} ready to go</strong>
+                      </>
+                    )}
+                    . Keep doing what you love.
+                  </>
+                ) : readyToGo > 0 ? (
+                  <>
+                    <strong>{readyToGo} ready to go</strong>. Keep doing what you love.
+                  </>
+                ) : (
+                  <>Keep doing what you love. Here’s what’s next.</>
+                )}
+              </p>
+            </div>
+          </div>
+
+          <div className="t-next t-rise" style={{ ['--i' as string]: 2 }}>
+            <p className="t-next__eyebrow">
+              <span className={nextTask && nextTask.due <= data.today ? 'is-due' : ''}>{nextTask ? `Next · ${relativeDay(nextTask.due, data.today)}` : 'Next'}</span>
             </p>
-          ) : (
-            <p className="lede">Nothing needs you right now. A good morning to capture something new.</p>
-          )}
-          <div className="today-hero__actions">
-            {nextTask && nextIdea && (
-              <Link className="btn btn--primary btn--lg" to={`/ideas/${nextIdea.id}/${nextTask.versionId ? 'versions' : 'tasks'}`}>
-                Continue “{nextIdea.title}”
-                <Icon name="arrowRight" size={16} />
-              </Link>
+            {nextTask && nextIdea ? (
+              <>
+                <div className="t-next__row">
+                  <IdeaThumb data={data} ideaId={nextIdea.id} />
+                  <div>
+                    <p className="t-next__task">{nextTask.title}</p>
+                    <p className="t-next__idea">{nextIdea.title}</p>
+                  </div>
+                </div>
+                <div className="t-next__actions">
+                  <Link className="btn btn--primary" to={`/ideas/${nextIdea.id}/${nextTask.versionId ? 'versions' : 'tasks'}`}>
+                    Continue “{nextIdea.title}”
+                    <Icon name="arrowRight" size={16} />
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <p className="t-next__task">Nothing needs you right now. A good moment to start something new.</p>
             )}
+            <div className="t-quick" role="group" aria-label="Quick actions">
+              {canCreate && (
+                <button type="button" className="t-quick__item" onClick={() => setAdding(true)}>
+                  <Icon name="plus" size={16} /> New idea
+                </button>
+              )}
+              <Link className="t-quick__item" to="/gallery">
+                <Icon name="grid" size={16} /> Creation Gallery
+              </Link>
+              <Link className="t-quick__item" to="/calendar">
+                <Icon name="calendar" size={16} /> Calendar
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <MemoryCard memories={memories} />
+      </section>
+
+      <section className="t-made t-rise" style={{ ['--i' as string]: 3 }} aria-labelledby="made-h">
+        <div className="t-section-head">
+          <h2 id="made-h" className="t-section-h">
+            Look what you’ve made
+          </h2>
+          <TextLink to="/gallery">Creation Gallery</TextLink>
+        </div>
+        {made.length === 0 ? (
+          <p className="t-empty">Posted and ready creations will gather here. Nothing is ready or posted yet.</p>
+        ) : (
+          <ul className="t-film">
+            {made.map((v) => (
+              <li key={v.id}>
+                <FilmTile data={data} version={v} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <div className="today-grid">
+        <section className="panel tasks-panel" aria-labelledby="tasks-h">
+          <div className="panel__head">
+            <span className="with-info">
+              <h2 id="tasks-h" className="h2">
+                Needs attention
+              </h2>
+              <InfoButton k="work" />
+            </span>
             <SelectField label="Focus" value={focusValue} onChange={setFocusValue}>
               <option value="all">Everything</option>
               <optgroup label="Account">
@@ -106,41 +205,18 @@ export function TodayPage() {
               </optgroup>
             </SelectField>
           </div>
-        </div>
-        {nextIdea && (
-          <Link to={`/ideas/${nextIdea.id}`} className="today-hero__media" aria-label={`Open ${nextIdea.title}`}>
-            <Cover art={nextIdea.art} ratio="4 / 5">
-              <span className="cover__caption">
-                <StatusPill status={nextIdea.status} />
-                <span>{nextIdea.title}</span>
-              </span>
-            </Cover>
-          </Link>
-        )}
-      </section>
-
-      <div className="today-grid">
-        <section className="panel tasks-panel" aria-labelledby="tasks-h">
-          <div className="panel__head">
-            <span className="with-info">
-              <h2 id="tasks-h" className="h2">
-                Work
-              </h2>
-              <InfoButton k="work" />
-            </span>
-            <div className="tabs tabs--pill" role="tablist" aria-label="Task groups">
-              {(
-                [
-                  ['mine', 'Needs you', buckets.mine],
-                  ['others', 'Assigned to others', buckets.others],
-                  ['upcoming', 'Upcoming', buckets.upcoming],
-                ] as const
-              ).map(([key, label, list]) => (
-                <button key={key} role="tab" type="button" aria-selected={tab === key} className={tab === key ? 'is-active' : ''} onClick={() => setTab(key)}>
-                  {label} <span className="count">{list.filter((t) => !t.done).length}</span>
-                </button>
-              ))}
-            </div>
+          <div className="tabs tabs--pill" role="tablist" aria-label="Task groups">
+            {(
+              [
+                ['mine', 'Needs you', buckets.mine],
+                ['others', 'Assigned to others', buckets.others],
+                ['upcoming', 'Upcoming', buckets.upcoming],
+              ] as const
+            ).map(([key, label, list]) => (
+              <button key={key} role="tab" type="button" aria-selected={tab === key} className={tab === key ? 'is-active' : ''} onClick={() => setTab(key)}>
+                {label} <span className="count">{list.filter((t) => !t.done).length}</span>
+              </button>
+            ))}
           </div>
           {shown.length === 0 ? (
             <EmptyState icon="check" title="Clear for now">
@@ -183,11 +259,13 @@ export function TodayPage() {
                             <Icon name="refresh" size={12} /> {t.recurring}
                           </span>
                         )}
-                        <span className="tag" data-stage={t.stage}>{t.stage}</span>
+                        <span className="tag" data-stage={t.stage}>
+                          {t.stage}
+                        </span>
                       </p>
                     </div>
                     <span className={`task__due ${overdue ? 'is-overdue' : ''}`}>{relativeDay(t.due, data.today)}</span>
-                    {t.ownerId !== data.currentUserId && <Avatar person={owner} size={26} />}
+                    {t.ownerId !== data.currentUserId && owner && <Avatar person={owner} size={26} />}
                   </li>
                 );
               })}
@@ -199,7 +277,7 @@ export function TodayPage() {
           <section className="panel" aria-labelledby="week-h">
             <div className="panel__head">
               <h2 id="week-h" className="h2">
-                Next seven days
+                Coming up
               </h2>
               <TextLink to="/calendar">Calendar</TextLink>
             </div>
@@ -236,49 +314,213 @@ export function TodayPage() {
             </ol>
           </section>
 
-          <section className="panel" aria-labelledby="accts-h">
-            <div className="panel__head">
-              <h2 id="accts-h" className="h2">
-                Accounts today
-              </h2>
-              <TextLink to="/gallery">Creation Gallery</TextLink>
-            </div>
-            <ul className="acct-quick">
-              {todaysAccounts.map((a) => (
-                <li key={a.id}>
-                  <Link to={`/gallery?account=${a.id}`} className="acct-quick__main">
-                    <PlatformGlyph platform={platformOf(data, a.platform)} />
-                    <span>
-                      <strong>{accountName(a.id)}</strong>
-                      <span className="muted">{data.brands.find((b) => b.id === a.brandId)?.name}</span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
+          {todaysAccounts.length > 0 && (
+            <section className="panel" aria-labelledby="accts-h">
+              <div className="panel__head">
+                <h2 id="accts-h" className="h2">
+                  Accounts today
+                </h2>
+              </div>
+              <ul className="acct-quick">
+                {todaysAccounts.map((a) => (
+                  <li key={a.id}>
+                    <Link to={`/gallery?account=${a.id}`} className="acct-quick__main">
+                      <PlatformGlyph platform={platformOf(data, a.platform)} />
+                      <span>
+                        <strong>{accountName(a.id)}</strong>
+                        <span className="muted">{data.brands.find((b) => b.id === a.brandId)?.name}</span>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </aside>
       </div>
 
-      <section className="recent" aria-labelledby="recent-h">
-        <div className="panel__head">
-          <h2 id="recent-h" className="h2">
-            Recently active ideas
+      <section className="t-continue" aria-labelledby="continue-h">
+        <div className="t-section-head">
+          <h2 id="continue-h" className="t-section-h">
+            Pick up where you left off
           </h2>
           <TextLink to="/ideas">All ideas</TextLink>
         </div>
-        <div className="strip">
+        <ul className="t-continue__list">
           {recent.map((i) => (
-            <Link key={i.id} to={`/ideas/${i.id}`} className="strip__item">
-              <Cover art={i.art} ratio="3 / 4" />
-              <span className="strip__title">{i.title}</span>
-              <span className="strip__meta">
-                <StatusPill status={i.status} /> <span className="muted">{relativeDay(i.updatedAt, data.today)}</span>
-              </span>
-            </Link>
+            <li key={i.id}>
+              <Link to={`/ideas/${i.id}`} className="t-idea">
+                <IdeaThumb data={data} ideaId={i.id} large />
+                <span className="t-idea__title">{i.title}</span>
+                <span className="t-idea__meta">
+                  <StatusPill status={i.status} /> <span className="muted">{relativeDay(i.updatedAt, data.today)}</span>
+                </span>
+              </Link>
+            </li>
           ))}
+          {canCreate && (
+            <li>
+              <button type="button" className="t-idea t-idea--new" onClick={() => setAdding(true)}>
+                <span className="t-idea__plus">
+                  <Icon name="plus" size={22} />
+                </span>
+                <span className="t-idea__title">Start something new</span>
+                <span className="t-idea__meta muted">Capture an idea in seconds</span>
+              </button>
+            </li>
+          )}
+        </ul>
+      </section>
+      {adding && <QuickAddModal onClose={() => setAdding(false)} />}
+    </div>
+  );
+}
+
+/** Posted and ready creations with media, newest first: the creator's own work. */
+function madeWork(data: DemoData): Version[] {
+  return data.versions
+    .filter((v) => (v.status === 'Posted' || v.status === 'Ready to post') && !ideaOf(data, v.ideaId)?.archived)
+    .filter((v) => {
+      const media = assetOf(data, v.mediaAssetId);
+      return (creationMedia(v) === 'video' && !!media?.videoUrl) || (v.photoAssetIds ?? []).some((id) => assetOf(data, id));
+    })
+    // Posted work leads, newest first; then what's ready to go.
+    .sort((a, b) => Number(b.status === 'Posted') - Number(a.status === 'Posted') || b.scheduledFor.localeCompare(a.scheduledFor))
+    .slice(0, 8);
+}
+
+function IdeaThumb({ data, ideaId, large = false }: { data: DemoData; ideaId: string; large?: boolean }) {
+  const idea = ideaOf(data, ideaId);
+  if (!idea) return null;
+  const image = ideaImage(data, idea);
+  return (
+    <span className={`t-thumb ${large ? 't-thumb--large' : ''} tone--${toneOf(idea)}`} aria-hidden="true">
+      {image ? <img src={image} alt="" loading="lazy" /> : large ? <TypeCover title={idea.title} ratio="4 / 5" /> : <span className="t-thumb__type">{idea.title.charAt(0)}</span>}
+    </span>
+  );
+}
+
+/** One of the creator's creations; videos play quietly on hover or focus. */
+function FilmTile({ data, version }: { data: DemoData; version: Version }) {
+  const video = useRef<HTMLVideoElement>(null);
+  const account = accountOf(data, version.accountId)!;
+  const platform = platformOf(data, account.platform);
+  const media = assetOf(data, version.mediaAssetId);
+  const photo = assetOf(data, version.photoAssetIds?.[0]);
+  const still = media?.art.image ?? photo?.art.image;
+  const title = version.title ?? ideaOf(data, version.ideaId)?.title ?? '';
+  const play = () => {
+    const v = video.current;
+    if (!v || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    v.play().catch(() => {});
+  };
+  const stop = () => {
+    const v = video.current;
+    if (v) {
+      v.pause();
+      v.currentTime = 0;
+    }
+  };
+  return (
+    <Link to={`/gallery/${version.id}`} className="t-film__tile" onMouseEnter={play} onMouseLeave={stop} onFocus={play} onBlur={stop} aria-label={`${title}, ${creationLabel(version, account, platform)}, ${version.status === 'Posted' ? 'posted' : 'ready to post'}`}>
+      <span className="t-film__media">
+        {media?.videoUrl ? <video ref={video} src={media.videoUrl} poster={still} muted loop playsInline preload="none" tabIndex={-1} aria-hidden="true" /> : still && <img src={still} alt="" loading="lazy" />}
+        <span className={`t-film__badge ${version.status === 'Posted' ? 'is-posted' : 'is-ready'}`}>{version.status === 'Posted' ? 'Posted' : 'Ready'}</span>
+      </span>
+      <span className="t-film__title">{title}</span>
+      <span className="t-film__meta">{creationLabel(version, account, platform)}</span>
+    </Link>
+  );
+}
+
+const MEMORY_EYEBROW: Record<Memory['kind'], (ago: string) => string> = {
+  'on-this-day': (ago) => `On this day · ${ago}`,
+  recent: (ago) => `A memory · posted ${ago}`,
+  revisit: (ago) => `Worth revisiting · ${ago}`,
+};
+
+/** The creator's own posted work, brought back. Rotates daily; never invented. */
+function MemoryCard({ memories }: { memories: Memory[] }) {
+  const { data } = useStore();
+  const [index, setIndex] = useState(0);
+  const [photo, setPhoto] = useState(0);
+
+  if (memories.length === 0) {
+    return (
+      <section className="memory memory--empty t-rise" style={{ ['--i' as string]: 2 }} aria-labelledby="memory-h">
+        <div className="memory__body">
+          <p className="memory__eyebrow">Memories</p>
+          <h2 id="memory-h" className="memory__title">
+            Your posted work comes back here
+          </h2>
+          <p className="memory__meta">Once a creation is marked as posted, Haven can bring it back on days worth remembering. Nothing has been posted that you can see yet.</p>
+          <TextLink to="/gallery">Open the Creation Gallery</TextLink>
         </div>
       </section>
-    </div>
+    );
+  }
+
+  const m = memories[index % memories.length];
+  const v = m.version;
+  const account = accountOf(data, v.accountId)!;
+  const platform = platformOf(data, account.platform);
+  const media = assetOf(data, v.mediaAssetId);
+  const photos = (v.photoAssetIds ?? []).map((id) => assetOf(data, id)).filter((a) => !!a);
+  const shown = photos[photo % Math.max(1, photos.length)];
+  const title = v.title ?? ideaOf(data, v.ideaId)?.title ?? '';
+
+  return (
+    <section className={`memory memory--${m.kind} t-rise`} style={{ ['--i' as string]: 2 }} aria-labelledby="memory-h" aria-live="polite">
+      <div className="memory__media" key={v.id}>
+        {m.playable && media ? (
+          <video src={media.videoUrl} poster={media.art.image} controls playsInline preload="metadata" aria-label={`Play ${title}`} />
+        ) : shown ? (
+          <>
+            <img src={shown.art.image} alt={`${title}: ${shown.name}`} />
+            {photos.length > 1 && (
+              <div className="memory__dots" role="group" aria-label="Photos">
+                {photos.map((p, i) => (
+                  <button key={p.id} type="button" aria-label={`Photo ${i + 1} of ${photos.length}`} aria-pressed={i === photo % photos.length} onClick={() => setPhoto(i)} />
+                ))}
+              </div>
+            )}
+          </>
+        ) : null}
+      </div>
+      <div className="memory__body" key={`b-${v.id}`}>
+        <p className="memory__eyebrow with-info">
+          {MEMORY_EYEBROW[m.kind](m.ago)}
+          <InfoButton k="memories" />
+        </p>
+        <h2 id="memory-h" className="memory__title">
+          {title}
+        </h2>
+        <p className="memory__meta">
+          <PlatformGlyph platform={platform} size="sm" /> {creationLabel(v, account, platform)} · {account.handle}
+        </p>
+        {Object.values(v.captions).find((c) => c.trim()) && <blockquote className="memory__caption">“{Object.values(v.captions).find((c) => c.trim())}”</blockquote>}
+        <p className="memory__when">Posted {formatDay(v.scheduledFor, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</p>
+        <div className="memory__actions">
+          <Link className="btn btn--ghost btn--sm" to={`/gallery/${v.id}`}>
+            Open creation <Icon name="arrowRight" size={14} />
+          </Link>
+          {memories.length > 1 && (
+            <button
+              type="button"
+              className="memory__next"
+              onClick={() => {
+                setIndex((i) => (i + 1) % memories.length);
+                setPhoto(0);
+              }}
+            >
+              <Icon name="refresh" size={14} /> Another memory
+              <span className="memory__count">
+                {(index % memories.length) + 1} of {memories.length}
+              </span>
+            </button>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }
