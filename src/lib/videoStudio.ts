@@ -1,4 +1,4 @@
-import type { Asset, Chapter, Cut, DemoData, Person, TimeNote, VideoProject } from '../data/types';
+import type { Asset, Chapter, Cut, DemoData, Person, PlannedSection, TimeNote, VideoProject } from '../data/types';
 
 /*
  * Video Studio helpers: timecodes, which note is "now", earlier feedback to
@@ -199,8 +199,60 @@ export function stepsDone(data: DemoData, project: VideoProject): Record<StudioS
     Upload: cuts.length > 0,
     Annotate: notes.length > 0,
     Revise: cuts.filter((c) => c.kind !== 'footage').length > 1,
-    Approve: !!project.approvedCutId,
+    Approve: !!project.approvedCutId || cuts.some((c) => !!c.checklist?.readyAt),
     Post: posted,
     Revisit: posted,
   };
 }
+
+/* ------------------------------------------------------------------------
+ * The review booklet: a draft's notes organised by section.
+ * ---------------------------------------------------------------------- */
+
+export interface BookletSection {
+  id: string;
+  title: string;
+  start: number;
+  end: number;
+  notes: TimeNote[];
+}
+
+/**
+ * Sections for a draft: its chapters; else the plan's sections (when they
+ * have lengths); else the section names used in notes; else the whole video.
+ * Notes go to the section they name, or the one their time falls in.
+ */
+export function bookletSections(notes: TimeNote[], chapters: Chapter[], planned: PlannedSection[] | undefined, duration: number): BookletSection[] {
+  const end = Math.max(duration, ...notes.map((n) => n.endSec ?? n.startSec));
+  let sections: BookletSection[];
+  if (chapters.length) {
+    sections = chapters.map((c, i) => ({ id: c.id, title: c.title, start: c.startSec, end: chapters[i + 1]?.startSec ?? end, notes: [] }));
+  } else if (planned?.length && planned.every((p) => p.targetSec !== undefined)) {
+    let at = 0;
+    sections = planned.map((p, i) => {
+      const start = at;
+      at += p.targetSec!;
+      return { id: p.id, title: p.title, start, end: i === planned.length - 1 ? end : Math.min(at, end), notes: [] };
+    });
+  } else {
+    const named: BookletSection[] = [];
+    for (const n of [...notes].sort((a, b) => a.startSec - b.startSec)) {
+      const title = n.section?.trim();
+      if (title && !named.some((s) => s.title === title)) named.push({ id: `sec-${named.length}`, title, start: n.startSec, end, notes: [] });
+    }
+    named.forEach((s, i) => (s.end = named[i + 1]?.start ?? end));
+    if (named.length) named[0].start = 0;
+    sections = named.length ? named : [{ id: 'sec-all', title: 'Whole video', start: 0, end, notes: [] }];
+  }
+  for (const n of [...notes].sort((a, b) => a.startSec - b.startSec)) {
+    const byName = n.section && sections.find((s) => s.title === n.section);
+    const byTime = sections.find((s) => n.startSec >= s.start && n.startSec < s.end) ?? sections[sections.length - 1];
+    (byName || byTime).notes.push(n);
+  }
+  return sections;
+}
+
+export const sectionAtTime = (sections: BookletSection[], t: number) => sections.find((s) => t >= s.start && t < s.end) ?? sections[sections.length - 1];
+
+/** "7 of 10 review items done". */
+export const reviewProgress = (notes: TimeNote[]) => ({ done: notes.filter((n) => n.resolved).length, total: notes.length });

@@ -93,7 +93,7 @@ describe('drafts keep their own notes', () => {
   it('a new upload never replaces an earlier cut', () => {
     const asset = { ...data.assets.find((a) => a.id === 'a-market-draft1')!, id: 'a-d3', fingerprint: 'x3', sizeMB: 400 };
     const next = reducer(data, { type: 'studio/cut-add', cut: { id: 'c-3', projectId: market.id, label: 'Draft 3', kind: 'draft', assetId: 'a-d3', addedAt: new Date().toISOString(), addedById: 'me' }, asset, makeCurrent: true });
-    expect(next.cuts.filter((c) => c.projectId === market.id).map((c) => c.label)).toEqual(['Draft 1', 'Draft 2', 'Draft 3']);
+    expect(next.cuts.filter((c) => c.projectId === market.id).map((c) => c.label)).toEqual(['Draft 1', 'Draft 2', 'Final', 'Draft 3']);
     expect(next.projects.find((p) => p.id === market.id)!.currentCutId).toBe('c-3');
     // Going back to an older version.
     const back = reducer(next, { type: 'studio/cut-current', cutId: 'c-market-1' });
@@ -114,15 +114,46 @@ describe('drafts keep their own notes', () => {
   });
 });
 
+describe('final upload and its publishing checklist', () => {
+  const final = () => cut('c-market-final');
+  it('the sample final has two of three checks and is not ready', () => {
+    expect(final().checklist).toEqual({ done: ['version', 'details'] });
+    expect(market.approvedCutId).toBeUndefined();
+  });
+  it('can only be marked ready once every check is done, and ready is not posted', () => {
+    expect(reducer(data, { type: 'studio/ready', cutId: 'c-market-final', ready: true })).toBe(data);
+    const checked = reducer(data, { type: 'studio/check', cutId: 'c-market-final', check: 'thumbnail', done: true });
+    const ready = reducer(checked, { type: 'studio/ready', cutId: 'c-market-final', ready: true, at: '2026-10-01T10:00:00Z' });
+    expect(ready.cuts.find((c) => c.id === 'c-market-final')!.checklist).toMatchObject({ readyAt: '2026-10-01T10:00:00Z', readyById: 'me' });
+    expect(ready.projects.find((p) => p.id === market.id)!.approvedCutId).toBe('c-market-final');
+    // Nothing is posted: creations keep their status and have no new live links.
+    expect(ready.versions).toBe(data.versions);
+    expect(ready.links).toBe(data.links);
+    // Unticking a check takes "ready" away again.
+    const unticked = reducer(ready, { type: 'studio/check', cutId: 'c-market-final', check: 'details', done: false });
+    expect(unticked.cuts.find((c) => c.id === 'c-market-final')!.checklist!.readyAt).toBeUndefined();
+    expect(unticked.projects.find((p) => p.id === market.id)!.approvedCutId).toBeUndefined();
+  });
+  it('drafts have no publishing checklist', () => {
+    expect(reducer(data, { type: 'studio/check', cutId: 'c-market-2', check: 'version', done: true })).toBe(data);
+  });
+  it('a final upload keeps every draft and its notes', () => {
+    const asset = { ...data.assets.find((a) => a.id === 'a-market-draft1')!, id: 'a-f2', fingerprint: 'f2', kind: 'final' as const };
+    const next = reducer(data, { type: 'studio/cut-add', cut: { id: 'c-f2', projectId: morning.id, label: 'Final', kind: 'final', assetId: 'a-f2', addedAt: new Date().toISOString(), addedById: 'me' }, asset, makeCurrent: true });
+    expect(next.cuts.filter((c) => c.projectId === morning.id).map((c) => c.label)).toEqual(['Original footage', 'Draft 1', 'Draft 2', 'Final']);
+    expect(next.notes).toBe(data.notes);
+  });
+});
+
 describe('storage', () => {
   it('counts each file once, however many places use it', () => {
     const a = data.assets[0];
     const twice = [a, a, { ...a, id: 'copy-ref' } as Asset];
     expect(uniqueFiles(twice)).toHaveLength(a.fingerprint ? 1 : 2);
-    // Draft 2 is used by four creations and one cut: counted once.
+    // The final is used by four creations and one cut: counted once.
     const total = data.workspace.otherStorageGB + uniqueFiles(data.assets).reduce((s, x) => s + x.sizeMB, 0) / 1024;
     expect(workspaceUsedGB(data)).toBeCloseTo(total, 6);
-    expect(projectStorageMB(data, market.id)).toBe(410 + 380);
+    expect(projectStorageMB(data, market.id)).toBe(410 + 372 + 380);
   });
   it('a file added again with the same fingerprint adds nothing', () => {
     const dup = { ...data.assets.find((a) => a.id === 'a-market-vertical')!, id: 'again' };
@@ -135,11 +166,11 @@ describe('storage', () => {
     const deleted = reducer(data, { type: 'studio/cut-delete', cutId: 'c-market-1' });
     expect(workspaceUsedGB(data) - workspaceUsedGB(deleted)).toBeCloseTo(410 / 1024, 6);
     expect(deleted.notes.some((n) => n.cutId === 'c-market-1')).toBe(false);
-    // Draft 2 is used by the creations, so deleting its cut keeps the file.
-    expect(cutDeletion(data, 'c-market-2').freesMB).toBe(0);
-    const kept = reducer(data, { type: 'studio/cut-delete', cutId: 'c-market-2' });
+    // The final is used by the creations, so deleting its cut keeps the file.
+    expect(cutDeletion(data, 'c-market-final').freesMB).toBe(0);
+    const kept = reducer(data, { type: 'studio/cut-delete', cutId: 'c-market-final' });
     expect(kept.assets.some((a) => a.id === 'a-market-vertical')).toBe(true);
-    expect(kept.projects.find((p) => p.id === market.id)!.currentCutId).toBe('c-market-1');
+    expect(kept.projects.find((p) => p.id === market.id)!.currentCutId).toBe('c-market-2');
   });
   it('adding storage in the preview raises the allowance and charges nothing', () => {
     const next = reducer(data, { type: 'workspace/storage-add', gb: 500 });
@@ -160,7 +191,8 @@ describe('Studio access', () => {
   it('Sam can add notes and drafts but not approve or delete', () => {
     const note = { id: 'n', cutId: 'c-market-2', startSec: 1, text: 'x', resolved: false, authorId: 'sam', createdAt: '' };
     expect(authorize(data, 'sam', { type: 'studio/note-add', note }).ok).toBe(true);
-    expect(authorize(data, 'sam', { type: 'studio/approve', cutId: 'c-market-2', approved: true }).ok).toBe(false);
+    expect(authorize(data, 'sam', { type: 'studio/check', cutId: 'c-market-final', check: 'thumbnail', done: true }).ok).toBe(true);
+    expect(authorize(data, 'sam', { type: 'studio/ready', cutId: 'c-market-final', ready: true }).ok).toBe(false);
     expect(authorize(data, 'sam', { type: 'studio/cut-delete', cutId: 'c-market-1' }).ok).toBe(false);
     expect(authorize(data, 'sam', { type: 'studio/note-add', note: { ...note, cutId: 'c-morning-1' } }).ok).toBe(false);
     expect(authorize(data, 'sam', { type: 'studio/plan-update', ideaId: 'market-phrases', patch: { concept: 'x' } }).ok).toBe(false);

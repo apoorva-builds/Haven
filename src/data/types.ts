@@ -199,6 +199,27 @@ export interface Cut {
   addedById: string;
   /** Archived cuts stay in history and still use storage. */
   archived?: boolean;
+  /** Final uploads only: the short publishing checklist. */
+  checklist?: PublishChecklist;
+}
+
+/** What's confirmed before a final video is marked ready. */
+export type PublishCheck = 'version' | 'details' | 'thumbnail';
+
+export const PUBLISH_CHECKS: { key: PublishCheck; label: string }[] = [
+  { key: 'version', label: 'This is the correct version' },
+  { key: 'details', label: 'Title and caption reviewed' },
+  { key: 'thumbnail', label: 'Thumbnail or cover reviewed' },
+];
+
+/**
+ * "Ready to publish" is a decision in Haven. It is never the same as posting:
+ * posting happens on each platform, and is recorded separately.
+ */
+export interface PublishChecklist {
+  done: PublishCheck[];
+  readyAt?: string;
+  readyById?: string;
 }
 
 export interface Chapter {
@@ -232,6 +253,7 @@ export interface VideoProject {
   /** The account versions (creations) that will post this video. */
   versionIds: string[];
   currentCutId?: string;
+  /** The final upload marked Ready to publish, if any. */
   approvedCutId?: string;
 }
 

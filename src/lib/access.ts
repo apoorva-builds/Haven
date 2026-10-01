@@ -417,7 +417,13 @@ export function authorize(data: DemoData, personId: string, action: Action): Dec
       const idea = ideaById(data, p.ideaId);
       return full ? OK : idea ? needOnSpace(data, m, idea.spaceId, 'edit') : adminOnly;
     }
-    case 'studio/approve': {
+    case 'studio/check': {
+      const p = projectOfCut(data, data.cuts.find((c) => c.id === action.cutId));
+      if (!p || !canSeeProject(data, m, p)) return MISSING;
+      return mayGiveFeedback(data, m, p);
+    }
+    case 'studio/ready': {
+      // Deciding a video is ready to publish is a review decision.
       const p = projectOfCut(data, data.cuts.find((c) => c.id === action.cutId));
       if (!p || !canSeeProject(data, m, p)) return MISSING;
       return needOnProject(data, m, p, 'review');

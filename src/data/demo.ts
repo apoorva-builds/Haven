@@ -338,7 +338,17 @@ export function createDemoData(now: Date = new Date()): DemoData {
 
   const assets: Asset[] = [
     // Draft 2 of the market video is the finished edit every short-form account uses.
-    { ...finished('a-market-vertical', 'Night market phrases — Draft 2.webm', 'market-vertical.webm', [HERO_IDEA_ID], 18, 175, 380), durationSec: 26, videoUrl: '/demo-media/studio/market-draft2.webm', fingerprint: 'sample:market-draft2' },
+    // The final upload of the market video is what every short-form creation uses.
+    { ...finished('a-market-vertical', 'Night market phrases — Final.webm', 'market-vertical.webm', [HERO_IDEA_ID], 18, 175, 380), durationSec: 26, videoUrl: '/demo-media/studio/market-final.webm', fingerprint: 'sample:market-final' },
+    {
+      ...finished('a-market-draft2', 'Night market phrases — Draft 2.webm', 'market-vertical.webm', [HERO_IDEA_ID], 18, 175, 372),
+      kind: 'draft',
+      durationSec: 26,
+      videoUrl: '/demo-media/studio/market-draft2.webm',
+      uploadedAt: d(-2),
+      tags: ['draft', 'sample'],
+      fingerprint: 'sample:market-draft2',
+    },
     {
       ...finished('a-market-draft1', 'Night market phrases — Draft 1.webm', 'market-vertical.webm', [HERO_IDEA_ID], 18, 175, 410),
       kind: 'draft',
@@ -350,7 +360,15 @@ export function createDemoData(now: Date = new Date()): DemoData {
     },
     finished('a-morning-vertical', 'Quiet morning — vertical.webm', 'morning-vertical.webm', ['morning-routine'], 28, 250, 290),
     // A genuinely one-hour, seekable sample (3.9 MB on disk; 2.1 GB is the sample figure a real hour would take).
-    { ...finished('a-morning-wide', 'Quiet morning — long cut.webm', 'morning-wide.webm', ['morning-routine'], 30, 230, 2100), durationSec: 3600, videoUrl: '/demo-media/studio/morning-long.webm', fingerprint: 'sample:morning-long' },
+    { ...finished('a-morning-wide', 'Quiet morning — long cut, Draft 1.webm', 'morning-wide.webm', ['morning-routine'], 30, 230, 2100), durationSec: 3600, videoUrl: '/demo-media/studio/morning-long.webm', fingerprint: 'sample:morning-long' },
+    {
+      ...finished('a-morning-wide-2', 'Quiet morning — long cut, Draft 2.webm', 'morning-wide.webm', ['morning-routine'], 30, 230, 2065),
+      kind: 'draft',
+      durationSec: 3540,
+      videoUrl: '/demo-media/studio/morning-long-2.webm',
+      tags: ['draft', 'sample'],
+      fingerprint: 'sample:morning-long-2',
+    },
     finished('a-spots-vertical', 'Quiet places — Short.webm', 'quiet-places-vertical.webm', ['study-spots'], 250, 200, 260),
     {
       ...base,
@@ -689,39 +707,54 @@ export function createDemoData(now: Date = new Date()): DemoData {
    * chapters and notes near the beginning, middle and end.
    */
   const projects: VideoProject[] = [
-    { id: 'proj-market', ideaId: HERO_IDEA_ID, title: 'Night market phrases — vertical', aspect: '9:16', versionIds: ['v-tt-pine', 'v-ig-atlas', 'v-yt-atlas-short', 'v-ig-pine-cross'], currentCutId: 'c-market-2' },
-    { id: 'proj-morning', ideaId: 'morning-routine', title: 'A quiet morning — long cut', aspect: '16:9', versionIds: ['v-yt-pine'], currentCutId: 'c-morning-1' },
+    { id: 'proj-market', ideaId: HERO_IDEA_ID, title: 'Night market phrases — vertical', aspect: '9:16', versionIds: ['v-tt-pine', 'v-ig-atlas', 'v-yt-atlas-short', 'v-ig-pine-cross'], currentCutId: 'c-market-final' },
+    { id: 'proj-morning', ideaId: 'morning-routine', title: 'A quiet morning — long cut', aspect: '16:9', versionIds: ['v-yt-pine'], currentCutId: 'c-morning-2' },
   ];
   const cuts: Cut[] = [
     { id: 'c-market-1', projectId: 'proj-market', label: 'Draft 1', kind: 'draft', assetId: 'a-market-draft1', addedAt: at(d(-4), '16:20'), addedById: 'jonah' },
-    { id: 'c-market-2', projectId: 'proj-market', label: 'Draft 2', kind: 'draft', assetId: 'a-market-vertical', addedAt: at(d(-1), '11:05'), addedById: 'jonah' },
-    { id: 'c-morning-0', projectId: 'proj-morning', label: 'Original footage', kind: 'footage', assetId: 'a-desk-raw', addedAt: at(d(-4), '08:40'), addedById: 'me' },
-    { id: 'c-morning-1', projectId: 'proj-morning', label: 'Draft 1', kind: 'draft', assetId: 'a-morning-wide', addedAt: at(d(-1), '18:30'), addedById: 'jonah' },
+    { id: 'c-market-2', projectId: 'proj-market', label: 'Draft 2', kind: 'draft', assetId: 'a-market-draft2', addedAt: at(d(-2), '11:05'), addedById: 'jonah' },
+    // The final upload, part-way through its publishing checklist.
+    { id: 'c-market-final', projectId: 'proj-market', label: 'Final', kind: 'final', assetId: 'a-market-vertical', addedAt: at(d(-1), '17:40'), addedById: 'jonah', checklist: { done: ['version', 'details'] } },
+    { id: 'c-morning-0', projectId: 'proj-morning', label: 'Original footage', kind: 'footage', assetId: 'a-desk-raw', addedAt: at(d(-6), '08:40'), addedById: 'me' },
+    { id: 'c-morning-1', projectId: 'proj-morning', label: 'Draft 1', kind: 'draft', assetId: 'a-morning-wide', addedAt: at(d(-3), '18:30'), addedById: 'jonah' },
+    { id: 'c-morning-2', projectId: 'proj-morning', label: 'Draft 2', kind: 'draft', assetId: 'a-morning-wide-2', addedAt: at(d(-1), '09:15'), addedById: 'jonah' },
   ];
+  // Chapters: Draft 2 trimmed a minute from the welcome, so its chapters start earlier.
+  const chapterTitles = ['Welcome and the plan', 'Setting up the desk', 'Tea and the first quiet hour', 'Midpoint: what changed this week', 'Deep work, in real time', 'Wrap-up and next week'];
+  const starts1 = [0, 240, 840, 1680, 2040, 3120];
   const chapters: Chapter[] = [
-    ['Welcome and the plan', 0],
-    ['Setting up the desk', 240],
-    ['Tea and the first quiet hour', 840],
-    ['Midpoint: what changed this week', 1680],
-    ['Deep work, in real time', 2040],
-    ['Wrap-up and next week', 3120],
-  ].map(([title, startSec], i) => ({ id: `ch-morning-${i + 1}`, cutId: 'c-morning-1', title: title as string, startSec: startSec as number }));
-  const note = (id: string, cutId: string, startSec: number, endSec: number | undefined, section: string, text: string, authorId: string, resolved = false, day = -1): TimeNote => ({
-    id, cutId, startSec, endSec, section, text, authorId, resolved, createdAt: at(d(day), '15:00'),
+    ...chapterTitles.map((title, i) => ({ id: `ch-morning-${i + 1}`, cutId: 'c-morning-1', title, startSec: starts1[i] })),
+    ...chapterTitles.map((title, i) => ({ id: `ch-morning2-${i + 1}`, cutId: 'c-morning-2', title, startSec: i === 0 ? 0 : starts1[i] - 60 })),
+  ];
+  const note = (id: string, cutId: string, startSec: number, endSec: number | undefined, section: string, text: string, authorId: string, resolved = false, day = -1, carriedFrom?: string): TimeNote => ({
+    id, cutId, startSec, endSec, section, text, authorId, resolved, createdAt: at(d(day), '15:00'), carriedFrom,
   });
   const notes: TimeNote[] = [
     note('n-m1-1', 'c-market-1', 0, 3, 'Opening', 'Title card is hard to read over the lanterns. Darken behind it.', 'me', true, -3),
     note('n-m1-2', 'c-market-1', 9, 13, 'Phrases', 'Cut this pause. It loses people right after phrase 2.', 'me', true, -3),
     note('n-m1-3', 'c-market-1', 21, 26, 'Phrases', 'Replace this shot of the stall: the sign shows a real shop name.', 'jonah', false, -3),
-    note('n-m2-1', 'c-market-2', 0, 3, 'Opening', 'Hook lands now. Could the first phrase start half a second earlier?', 'me'),
-    note('n-m2-2', 'c-market-2', 6, undefined, 'Phrases', 'Caption overlaps the safe zone on TikTok here.', 'sam'),
-    note('n-m2-3', 'c-market-2', 22, 26, 'End card', 'End card: add “Save this for your next trip”.', 'priya', true),
-    note('n-l-1', 'c-morning-1', 45, 130, 'Welcome and the plan', 'Intro runs long. Keep the window shot, trim the talking to one minute.', 'priya'),
-    note('n-l-2', 'c-morning-1', 238, undefined, 'Setting up the desk', 'Chapter title appears two seconds late.', 'jonah'),
-    note('n-l-3', 'c-morning-1', 1680, 1890, 'Midpoint: what changed this week', 'Good honest check-in. Add a lower third with the three priorities.', 'me'),
-    note('n-l-4', 'c-morning-1', 1990, undefined, 'Midpoint: what changed this week', 'Music swell is too loud here.', 'priya'),
-    note('n-l-5', 'c-morning-1', 3320, 3480, 'Wrap-up and next week', 'Wrap-up repeats the intro. Cut to the next-week plan.', 'me'),
-    note('n-l-6', 'c-morning-1', 3580, undefined, 'Wrap-up and next week', 'End screen safe area checked.', 'jonah', true),
+    note('n-m2-1', 'c-market-2', 0, 3, 'Opening', 'Hook lands now. Could the first phrase start half a second earlier?', 'me', false, -2),
+    note('n-m2-2', 'c-market-2', 6, undefined, 'Phrases', 'Caption overlaps the safe zone on TikTok here.', 'sam', false, -2),
+    note('n-m2-3', 'c-market-2', 22, 26, 'End card', 'End card: add “Save this for your next trip”.', 'priya', true, -2),
+    note('n-mf-1', 'c-market-final', 6, undefined, 'Phrases', 'Captions sit inside the TikTok safe zone now.', 'sam', true),
+    // Long video, Draft 1: most feedback was addressed in Draft 2.
+    note('n-l-1', 'c-morning-1', 45, 130, 'Welcome and the plan', 'Intro runs long. Keep the window shot, trim the talking to one minute.', 'priya', true, -3),
+    note('n-l-2', 'c-morning-1', 238, undefined, 'Setting up the desk', 'Chapter title appears two seconds late.', 'jonah', true, -3),
+    note('n-l-3', 'c-morning-1', 1680, 1890, 'Midpoint: what changed this week', 'Good honest check-in. Add a lower third with the three priorities.', 'me', false, -3),
+    note('n-l-4', 'c-morning-1', 1990, undefined, 'Midpoint: what changed this week', 'Music swell is too loud here.', 'priya', false, -3),
+    note('n-l-5', 'c-morning-1', 3320, 3480, 'Wrap-up and next week', 'Wrap-up repeats the intro. Cut to the next-week plan.', 'me', true, -3),
+    note('n-l-6', 'c-morning-1', 3580, undefined, 'Wrap-up and next week', 'End screen safe area checked.', 'jonah', true, -3),
+    // Long video, Draft 2: ten review items, seven done.
+    note('n-l2-1', 'c-morning-2', 40, undefined, 'Welcome and the plan', 'Window shot now opens the video. Keep it.', 'priya', true),
+    note('n-l2-2', 'c-morning-2', 110, 160, 'Welcome and the plan', 'Welcome is one minute now. Good pace.', 'me', true),
+    note('n-l2-3', 'c-morning-2', 180, undefined, 'Setting up the desk', 'Chapter title lands on time.', 'jonah', true),
+    note('n-l2-4', 'c-morning-2', 440, 485, 'Setting up the desk', 'Planner close-up is soft. Use the second take.', 'me'),
+    note('n-l2-5', 'c-morning-2', 785, undefined, 'Tea and the first quiet hour', 'Tea pour sound sits well under the voice.', 'priya', true),
+    note('n-l2-6', 'c-morning-2', 1300, undefined, 'Tea and the first quiet hour', 'Clock in the background shows a brand name. Blur or swap the shot.', 'jonah', true),
+    note('n-l2-7', 'c-morning-2', 1620, 1830, 'Midpoint: what changed this week', 'Lower third with the three priorities is in. Reads well.', 'me', true, -1, 'n-l-3'),
+    note('n-l2-8', 'c-morning-2', 1930, undefined, 'Midpoint: what changed this week', 'Music swell is still a little loud.', 'priya', false, -1, 'n-l-4'),
+    note('n-l2-9', 'c-morning-2', 2700, 2760, 'Deep work, in real time', 'Timer overlay is easy to read.', 'jonah', true),
+    note('n-l2-10', 'c-morning-2', 3260, 3380, 'Wrap-up and next week', 'Wrap-up still repeats the intro. Go straight to next week’s plan.', 'me'),
   ];
 
   const tasks: Task[] = [

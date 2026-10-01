@@ -7,7 +7,7 @@
 import { READY_CHECKS } from '../data/demo';
 import { addDays, daysBetween } from '../lib/dates';
 import { toggleGrant } from '../lib/access';
-import type { AccessGrant, AccessScope, Aspect, Asset, Capability, Cut, DemoData, Idea, IdeaStatus, ISODate, LinkItem, Task, TimeNote, Version, VersionStatus, VideoPlan, WorkspaceRole } from '../data/types';
+import type { AccessGrant, AccessScope, Aspect, Asset, Capability, Cut, PublishCheck, DemoData, Idea, IdeaStatus, ISODate, LinkItem, Task, TimeNote, Version, VersionStatus, VideoPlan, WorkspaceRole } from '../data/types';
 
 export type Action =
   | { type: 'task/toggle'; taskId: string }
@@ -56,7 +56,8 @@ export type Action =
   | { type: 'studio/cut-current'; cutId: string }
   | { type: 'studio/cut-archive'; cutId: string; archived: boolean }
   | { type: 'studio/cut-delete'; cutId: string }
-  | { type: 'studio/approve'; cutId: string; approved: boolean }
+  | { type: 'studio/check'; cutId: string; check: PublishCheck; done: boolean }
+  | { type: 'studio/ready'; cutId: string; ready: boolean; at?: string }
   | { type: 'studio/note-add'; note: TimeNote }
   | { type: 'studio/note-update'; noteId: string; patch: Partial<Pick<TimeNote, 'text' | 'section' | 'startSec' | 'endSec' | 'resolved'>> }
   | { type: 'studio/note-delete'; noteId: string }
@@ -356,17 +357,32 @@ export function reducer(state: DemoData, action: Action): DemoData {
       };
     }
 
-    case 'studio/approve': {
+    case 'studio/check': {
+      // Ticking a check never changes the file; it records what someone confirmed.
       const cut = state.cuts.find((c) => c.id === action.cutId);
-      if (!cut) return state;
-      const projects = state.projects.map((p) => (p.id === cut.projectId ? { ...p, approvedCutId: action.approved ? cut.id : undefined } : p));
-      if (!action.approved) return { ...state, projects };
-      // An approved cut becomes a finished video the creations can use.
+      if (!cut || cut.kind !== 'final') return state;
+      const done = new Set(cut.checklist?.done ?? []);
+      if (action.done) done.add(action.check);
+      else done.delete(action.check);
+      const unready = !action.done;
       return {
         ...state,
-        projects: projects.map((p) => (p.id === cut.projectId ? { ...p, currentCutId: cut.id } : p)),
-        assets: state.assets.map((a) => (a.id === cut.assetId && a.kind === 'draft' ? { ...a, kind: 'final' } : a)),
-        cuts: state.cuts.map((c) => (c.id === cut.id ? { ...c, archived: false } : c)),
+        cuts: state.cuts.map((c) => (c.id === cut.id ? { ...c, checklist: { done: [...done], readyAt: unready ? undefined : c.checklist?.readyAt, readyById: unready ? undefined : c.checklist?.readyById } } : c)),
+        projects: unready ? state.projects.map((p) => (p.approvedCutId === cut.id ? { ...p, approvedCutId: undefined } : p)) : state.projects,
+      };
+    }
+
+    case 'studio/ready': {
+      // Ready to publish: a decision in Haven, not a post. Needs every check.
+      const cut = state.cuts.find((c) => c.id === action.cutId);
+      if (!cut || cut.kind !== 'final') return state;
+      if (action.ready && (cut.checklist?.done.length ?? 0) < 3) return state;
+      return {
+        ...state,
+        cuts: state.cuts.map((c) =>
+          c.id === cut.id ? { ...c, checklist: { done: c.checklist?.done ?? [], readyAt: action.ready ? (action.at ?? new Date().toISOString()) : undefined, readyById: action.ready ? state.currentUserId : undefined } } : c,
+        ),
+        projects: state.projects.map((p) => (p.id === cut.projectId ? { ...p, approvedCutId: action.ready ? cut.id : undefined, currentCutId: action.ready ? cut.id : p.currentCutId } : p)),
       };
     }
 

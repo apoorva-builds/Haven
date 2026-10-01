@@ -29,8 +29,13 @@ export const LONG_CHAPTERS = [
   { start: 3120, title: 'Wrap-up and next week' },
 ];
 
+/** Draft 2 of the long video: the editor trimmed a minute from the welcome. */
+export const LONG_CHAPTERS_2 = LONG_CHAPTERS.map((c, i) => ({ ...c, start: i === 0 ? 0 : c.start - 60 }));
+
 const jobs = [
-  { name: 'morning-long', kind: 'long', w: 640, h: 360, fps: 1, seconds: 3600, bitrate: 9_000, keyEvery: 30 },
+  { name: 'morning-long', kind: 'long', w: 640, h: 360, fps: 1, seconds: 3600, bitrate: 9_000, keyEvery: 30, chapters: LONG_CHAPTERS, tag: 'DRAFT 1' },
+  { name: 'morning-long-2', kind: 'long', w: 640, h: 360, fps: 1, seconds: 3540, bitrate: 9_000, keyEvery: 30, chapters: LONG_CHAPTERS_2, tag: 'DRAFT 2' },
+  { name: 'market-final', kind: 'short', w: 360, h: 640, fps: 24, seconds: 26, bitrate: 320_000, keyEvery: 48, draft: 'final' },
   { name: 'market-draft1', kind: 'short', w: 360, h: 640, fps: 24, seconds: 30, bitrate: 320_000, keyEvery: 48, draft: 1 },
   { name: 'market-draft2', kind: 'short', w: 360, h: 640, fps: 24, seconds: 26, bitrate: 320_000, keyEvery: 48, draft: 2 },
 ].filter((j) => !only || j.name === only);
@@ -46,7 +51,8 @@ await page.addScriptTag({ path: new URL('./demo-media/scenes.js', import.meta.ur
 
 for (const job of jobs) {
   const encoded = await page.evaluate(
-    async ({ job, chapters }) => {
+    async ({ job }) => {
+      const chapters = job.chapters ?? [];
       const canvas = document.createElement('canvas');
       canvas.width = job.w;
       canvas.height = job.h;
@@ -90,7 +96,7 @@ for (const job of jobs) {
         ctx.fill();
         ctx.fillStyle = 'rgba(255,255,255,0.72)';
         ctx.font = '600 13px Inter, Arial, sans-serif';
-        ctx.fillText(`CHAPTER ${ci + 1} OF ${chapters.length}`, 32, 48);
+        ctx.fillText(`CHAPTER ${ci + 1} OF ${chapters.length}  ·  ${job.tag}`, 32, 48);
         ctx.fillStyle = '#fff';
         ctx.font = '400 34px Georgia, serif';
         ctx.fillText(ch.title, 32, 92);
@@ -98,7 +104,7 @@ for (const job of jobs) {
         ctx.fillText(tc(sec), 32, h - 92);
         ctx.font = '500 13px Inter, Arial, sans-serif';
         ctx.fillStyle = 'rgba(255,255,255,0.7)';
-        ctx.fillText('of 01:00:00 · Haven long-form sample', 34, h - 66);
+        ctx.fillText(`of ${tc(job.seconds)} · Haven long-form sample`, 34, h - 66);
         // Progress with chapter ticks.
         ctx.fillStyle = 'rgba(255,255,255,0.18)';
         ctx.fillRect(32, h - 44, w - 64, 4);
@@ -135,7 +141,7 @@ for (const job of jobs) {
         ctx.fill();
         ctx.fillStyle = '#fff';
         ctx.font = '600 12px Inter, Arial, sans-serif';
-        ctx.fillText(`DRAFT ${job.draft} · ${tc(sec).slice(3)}`, w - 108, 32);
+        ctx.fillText(`${job.draft === 'final' ? 'FINAL' : `DRAFT ${job.draft}`} · ${tc(sec).slice(3)}`, w - 108, 32);
       };
 
       // One closing frame at the very end, so the reported duration is the full length.
@@ -152,7 +158,7 @@ for (const job of jobs) {
       await encoder.flush();
       return { chunks, decoderConfig };
     },
-    { job, chapters: LONG_CHAPTERS },
+    { job },
   );
 
   const muxer = new Muxer({

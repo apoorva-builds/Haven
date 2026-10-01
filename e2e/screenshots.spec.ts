@@ -21,6 +21,8 @@ const screens: { name: string; path: string; click?: string }[] = [
   { name: 'studio', path: '/studio' },
   { name: 'studio-short', path: '/studio/proj-market' },
   { name: 'studio-long', path: '/studio/proj-morning?t=1785' },
+  { name: 'studio-booklet', path: '/studio/proj-morning?t=440', click: 'Booklet' },
+  { name: 'studio-checklist', path: '/studio/proj-market', click: 'Finish the publishing checklist' },
   { name: 'studio-drafts', path: '/studio/proj-market/drafts' },
   { name: 'studio-plan', path: '/studio/proj-morning/plan' },
 ]

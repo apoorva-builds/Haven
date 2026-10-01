@@ -99,16 +99,24 @@ test('Creation Gallery on the phone: preview label, ⓘ, account selector, Audie
   await expect(page.getByText(/Not published/)).toBeVisible();
 });
 
-test('phone: review a video, tap a note to seek, and add a note at the playhead', async ({ page }) => {
+test('phone: the booklet is a slide-over; tap a note to seek, add a note, dismiss in one tap', async ({ page }) => {
   await open(page, '/studio/proj-morning');
   const video = page.getByTestId('studio-video');
-  await expect(video).toHaveJSProperty('duration', 3600);
-  const panel = page.getByTestId('notes-panel');
-  await panel.getByRole('button', { name: 'Jump to 0:55:20' }).tap();
-  await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime)).toBe(3320);
-  await expect(panel.locator('.tnote.is-now')).toContainText('Wrap-up repeats the intro');
+  await expect(video).toHaveJSProperty('duration', 3540);
+  await page.getByTestId('booklet-toggle').tap();
+  const booklet = page.getByTestId('booklet');
+  await expect(booklet).toBeVisible();
+  // It covers the screen as a readable sheet.
+  const box = (await booklet.boundingBox())!;
+  expect(box.width).toBeGreaterThan(380);
+  await booklet.getByRole('button', { name: 'Jump to 54:20' }).tap();
+  await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime)).toBe(3260);
+  await expect(booklet.locator('.bsec.is-now')).toContainText('Wrap-up');
+  await booklet.getByRole('button', { name: 'Close booklet' }).tap();
+  await expect(booklet).toHaveCount(0);
   await page.getByTestId('add-note').tap();
-  await page.getByTestId('note-composer').getByLabel('Note').fill('Keep this pause.');
-  await page.getByTestId('note-composer').getByRole('button', { name: 'Add note' }).tap();
-  await expect(panel.locator('.tnote', { hasText: 'Keep this pause.' })).toContainText('0:55:20');
+  await expect(booklet).toBeVisible();
+  await page.getByTestId('note-composer').getByLabel('What should change').fill('Keep this pause.');
+  await page.getByTestId('note-composer').getByRole('button', { name: 'Save note' }).tap();
+  await expect(booklet.locator('.bnote', { hasText: 'Keep this pause.' })).toContainText('54:20');
 });

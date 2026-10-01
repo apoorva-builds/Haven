@@ -42,6 +42,7 @@ All tables carry `workspace_id`. No table has a column for social account passwo
 | `activity_events` | Append-only: `actor_id`, `verb`, `subject_type`, `subject_id`, `space_id`, `account_id`, `summary`, `created_at` |
 | `video_projects` | `id`, `idea_id`, `title`, `aspect`, `current_cut_id`, `approved_cut_id`; `project_versions` links it to the versions (creations) it's made for |
 | `cuts` | `id`, `project_id`, `label`, `kind` (`footage` \| `draft` \| `final`), `asset_id`, `added_by`, `added_at`, `archived_at` |
+| `publish_checklists` | Final cuts only: `cut_id`, `checks` (`version`, `details`, `thumbnail`), `ready_at`, `ready_by`. Ready is a decision, never a post; posting stays on `versions` (`posted_at`, `post_source`) |
 | `chapters` | `id`, `cut_id`, `title`, `start_ms` |
 | `time_notes` | `id`, `cut_id`, `section`, `start_ms`, `end_ms` (null = a moment), `body`, `resolved_at`, `resolved_by`, `author_id`, `carried_from` (note id). Belongs to one cut; never re-timed automatically |
 | `storage_addons` | `workspace_id`, `gb`, `price_id`, `status`, `billing_ref`. Allowance = plan + active add-ons |
@@ -156,6 +157,7 @@ The Studio is for watching and reviewing drafts, not editing them: no trimming, 
 - **Notes and timing:** times are stored in milliseconds against one cut. Earlier feedback is offered on a new cut with its original times; carrying it forward writes a new note with `carried_from` at a time the person chose. Haven doesn't guess new timings.
 - **Storage accounting:** usage = sum of distinct `sha256` files in the workspace (archived cuts included), computed by the server and cached. Deleting a cut is a soft delete; the file's bytes are released only when no cut, version, library entry or other reference uses it, after the recovery window. Deleting notes or links never touches files. Uploads that would exceed the allowance are refused before any bytes are sent.
 - **Billing:** extra storage is a subscription add-on through the payment provider. The confirmation shows the price, proration and the new allowance before anything is charged; only owners and admins can change it; usage alerts at 80% and 95%. The preview's *Add storage* shows the same summary and charges nothing.
+- **Publishing checklist:** ticks need edit or review; *ready* needs review and every check. Unticking clears ready. Nothing here changes a version's status or records a post.
 - **Export:** the notes document is generated from the same data on the server (Markdown and PDF), including only notes on cuts the person can see.
 
 ## Phases

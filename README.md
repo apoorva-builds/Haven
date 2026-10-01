@@ -90,28 +90,32 @@ The workspace menu opens **Team & access** (`/team`). It shows sample members (o
 
 ## Video Studio (preview)
 
-`/studio` is for **watching and reviewing** videos, not editing them. The editor makes changes in their own tools and uploads the next draft; Haven keeps every draft of a Creation together with the notes on each one. There is no cutting, trimming, rearranging, filters, rendering or export of a modified video.
+`/studio` is a **review studio, not a video editor**: no cutting, trimming, effects, rendering or modified exports. The editor works in their own tools and uploads the next draft; Haven keeps every draft, its review booklet and the final video together.
 
-Path: **Plan → Upload → Annotate → Revise (outside Haven) → Approve → Post → Revisit**.
+**The default view is the video.** A large player, the draft switcher (Draft 1 · Draft 2 · Final, each with a quiet status) and one next action: *Upload final video*, *Finish the publishing checklist*, or *Ready to publish · not posted yet*.
 
-- **A precise player, short or an hour long.**
-  - Click or drag on the timeline to scrub; the time under the pointer is shown and you land on that exact second.
-  - **−1s / +1s** buttons, ← / → (Shift: 10 s), and **Go to** a typed time such as `00:14:32`, `14:32` or `872`. A time past the end says so.
-  - A large timecode, buffered ranges on the timeline, zoom up to 64× on long videos, chapters with previous/next, speed 0.5–2×.
-  - Loading and buffering are shown honestly (“Loading 0:45:00…”) until the frame is really there, so a seek never looks broken. A file that can't load says so with *Try again*.
-- **Comfortable viewing:** volume, mute and **brightness**. Brightness is a display filter on your own player only; it's remembered per person in this browser and never changes the file, anyone else's view, or the posted video.
-- **Notes for the next draft.** Pause at any second and press **N** (or *Note at 0:14:32*) to say what should change. Notes appear beside the player and as markers on the timeline; clicking either jumps to the note's exact second. As playback reaches a note, the optional Notes panel highlights it. Notes can be edited, resolved and saved, and optionally cover a stretch (“Until”).
-- **Export** the complete timestamped list for a draft as one document (Markdown download, copy or print), grouped by section.
-- **Drafts under one Creation:** original footage, Draft 1, Draft 2, final cut, then where it was posted. Upload as many drafts as storage allows; nothing is replaced. Notes belong to the draft being reviewed. Notes on earlier drafts stay at their own times for comparison (and in *Compare*, side by side); Haven never moves them. If one still applies, you can add it to the current draft at a second you choose.
-- **Storage:** each draft's size, the video's total and the workspace total, with a file counted once wherever it's used. Archived drafts still count; deleting a draft asks first and frees space only if nothing else uses the file. *Add storage* shows sample prices and the new allowance first and charges nothing in the preview.
-- **Access:** a video follows its idea's Space and the creations it's made for. Account-only collaborators see only videos for their accounts; notes need Edit or Review; approving needs Review; deleting a draft needs Edit on the whole Space.
-- **Samples:** `public/demo-media/studio/` holds a genuinely one-hour, seekable long cut (3.9 MB: one frame a second, a burned-in running timecode, six chapters) and two drafts of a short video, where Draft 2 is 4 seconds shorter. Rebuild with `node scripts/make-studio-media.mjs`.
+- **Familiar controls:** play/pause, a smooth draggable progress bar (the time and section under the pointer are shown; you land on that second), current time/duration, volume, fullscreen. Controls fade while playing and return on any movement. Keys: Space/K, ←/→ 5 s, Shift+←/→ 1 s, J/L 10 s, N note, B booklet, F fullscreen, M mute.
+- **Fine controls live in the settings menu:** ±1 second with the exact time, *Go to* a typed time (`00:14:32`, `14:32`, `872`), speed, brightness, note markers on the progress bar (off by default), *Export the full note list*, and the keyboard shortcuts.
+- **Honest loading:** “Loading 0:45:00…” while a seek or buffer is pending; a clear error with *Try again*.
+- **Viewer-only comfort:** volume and brightness. Brightness is a display filter on your own player, remembered per person in this browser; the file, other people's view and the posted video never change.
+- **The Booklet** (labelled button, or B): open or close it while the video plays; the choice is remembered for this viewing session. Beside the video on wide screens; a slide-over you dismiss in one tap (×, the backdrop or Esc) on smaller ones.
+  - Organised by the draft's sections (chapters, the plan's sections, or the sections notes name). The current section is subtly highlighted with its progress.
+  - It never scrolls while you read or write; *Follow playback* rejoins the current moment.
+  - Clicking a section or note seeks to its timestamp.
+  - **Add note at 3:18:** pause and the action names the exact second. Write what should change; optionally add a time range (“Until”) or a section. Saved notes say where they went (“Saved to Draft 2 at 3:18”).
+  - Each item is **Open or Done**. Done means the change was made in your editor; reopen it if it still needs work. Quiet progress: “7 of 10 review items done · 3 sections ready · 3 need attention”.
+  - Open notes on earlier drafts are kept at their original times, in a folded section, with *See it in Draft 1*. Haven never moves them; you can choose to add one to this draft at a second you pick.
+- **Fullscreen** holds the player and booklet: **Video only** or **Video + Booklet** (beside the video on desktop, a slide-over on small screens).
+- **Drafts to final:** upload as many drafts as you need; each keeps its own booklet. *Upload final video* adds a **Final** without touching the drafts. The Final gets its own **publishing checklist**: this is the correct version (with *Use it for N creations* if they still point elsewhere), title and caption reviewed, thumbnail or cover reviewed, then **Mark ready to publish**. Ready is a decision in Haven, not a post: creations keep their status, and nothing claims a platform was published to. Unticking a check takes “ready” away.
+- **Drafts & final tab:** history with sizes and storage, rename, archive, compare two drafts side by side, delete with confirmation (frees space only when nothing else uses the file), add storage (preview, no charge).
+- **Access:** a video follows its idea's Space and the creations it's made for. Notes and checklist ticks need Edit or Review; *Mark ready to publish* needs Review; deleting a draft needs Edit on the whole Space.
+- **Sample data (labelled “Sample data” / “Sample video”):** *A quiet morning — long cut* has original footage (placeholder), Draft 1 (1:00:00) and Draft 2 (59:00, a minute trimmed from the welcome), six chapters each, and a Draft 2 booklet with 7 of 10 items done. *Night market phrases* has Draft 1, Draft 2 and a Final part-way through its checklist. All media are painted and marked “Haven sample · not real footage”; rebuild with `node scripts/make-studio-media.mjs`.
 
-**Works now (preview):** everything above in this browser tab. Notes, drafts and storage changes last until reload; viewer settings are kept in this browser. Files you add play from your device and are never uploaded.
+**Works now (preview):** all of the above in this browser tab. Notes, ticks, drafts, the checklist and storage changes last until reload; booklet open/closed and note markers are remembered for the tab session; volume and brightness per person in this browser. Files you add play from your device and are never uploaded.
 
-**Needs real media storage and billing:** uploading and keeping files for the team (resumable uploads for long footage, streaming renditions so hour-long drafts seek instantly anywhere, thumbnails), notes saved on the server with access enforced there, server-side storage quotas, and real payment for extra storage. See [`docs/backend-plan.md`](docs/backend-plan.md#video-studio).
+**Demo-only / needs the backend:** real uploads and storage for the team (resumable uploads, streaming renditions so long drafts seek instantly anywhere), notes and checklists saved on the server with access enforced there, storage quotas and paid storage, and any actual publishing (posting stays manual until an official platform connection exists). See [`docs/backend-plan.md`](docs/backend-plan.md#video-studio).
 
-Tests: `src/lib/videoStudio.test.ts`, `e2e/studio.spec.ts` (typed times, one-second steps, scrubbing, a throttled-network seek, notes and markers at the beginning, middle and end of the one-hour sample, viewer-only brightness, export, drafts, access) and `e2e/mobile.spec.ts`.
+Tests: `src/lib/videoStudio.test.ts` (sections, progress, checklist rules, storage, access) and `e2e/studio.spec.ts` (default view, play and seek, typed times and notes near the beginning/middle/end of the one-hour sample, drag scrubbing, a throttled-network seek, fullscreen layouts, tick and reopen, add/edit/export, switching drafts, upload final and mark ready, viewer-only settings, restricted access), plus the phone slide-over in `e2e/mobile.spec.ts`.
 
 ## Colour: an editorial palette (in review)
 
@@ -152,7 +156,7 @@ Applied so far to **Ideas** and the **Creation Gallery** only; the rest of Haven
 | `/library` | **Raw Library**: source files only (original photos, audio/music, unedited clips, brand assets). Finished posts are never listed here. |
 | `/` | **Today**: memories of posted work, look what you've made, the next action, needs attention, coming up, pick up where you left off |
 | `/ideas`, `/ideas/:id[/assets|/versions|/tasks]` | **Ideas** and the **Idea workspace**; the Versions tab holds the finished-video picker |
-| `/studio`, `/studio/:id[/plan|/drafts|/compare]` | **Video Studio**: videos from plan to posted; watch a draft and leave timed notes for the next one (`?cut=`, `?t=` open a draft at a second) |
+| `/studio`, `/studio/:id[/drafts|/plan|/compare]` | **Video Studio**: videos from plan to posted; watch a draft with its review booklet; drafts, final and publishing checklist (`?cut=`, `?t=` open a draft at a second) |
 | `/calendar` | Visual publishing calendar: covers on days, Day View (`?day=`), months ribbon, filters, drag to reschedule; compact month and agenda on phones |
 | `/links`, `/campaigns` | Saved links; campaigns (reachable from ideas) |
 | `/team` | **Team & access** (preview): members, invitations, access by Space and account, preview as a collaborator |

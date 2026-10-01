@@ -15,7 +15,7 @@ type Phase =
   | { kind: 'error'; message: string; storage?: boolean }
   | { kind: 'done' };
 
-const KIND_LABEL: Record<CutKind, string> = { footage: 'Original footage', draft: 'Draft', final: 'Final cut' };
+const KIND_LABEL: Record<CutKind, string> = { footage: 'Original footage', draft: 'Draft', final: 'Final video' };
 
 /**
  * Fingerprint a file from evenly spaced samples plus its size, so the same
@@ -59,16 +59,20 @@ function probeDuration(url: string): Promise<number> {
   });
 }
 
-export function UploadCut({ project, onClose, onAdded }: { project: VideoProject; onClose: () => void; onAdded: (cut: Cut) => void }) {
+export function UploadCut({ project, onClose, onAdded, initialKind }: { project: VideoProject; onClose: () => void; onAdded: (cut: Cut) => void; initialKind?: CutKind }) {
   const { data, dispatch } = useStore();
   const cuts = cutsOf(data, project.id);
   const drafts = cuts.filter((c) => c.kind === 'draft').length;
   const current = cuts.find((c) => c.id === project.currentCutId);
-  const [kind, setKind] = useState<CutKind>(cuts.length === 0 ? 'footage' : 'draft');
-  const [label, setLabel] = useState(cuts.length === 0 ? 'Original footage' : `Draft ${drafts + 1}`);
+  const finals = cuts.filter((c) => c.kind === 'final').length;
+  const labelFor = (k: CutKind) => (k === 'draft' ? `Draft ${drafts + 1}` : k === 'final' ? (finals ? `Final ${finals + 1}` : 'Final') : KIND_LABEL[k]);
+  const [kind, setKind] = useState<CutKind>(initialKind ?? (cuts.length === 0 ? 'footage' : 'draft'));
+  const [label, setLabel] = useState(labelFor(initialKind ?? (cuts.length === 0 ? 'footage' : 'draft')));
   const [makeCurrent, setMakeCurrent] = useState(true);
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' });
-  const [file, setFile] = useState<{ name: string; size: number; blob?: Blob; url: string; sample?: boolean } | null>(null);
+  const [file, setFile] = useState<{ name: string; size: number; blob?: Blob; url: string; sample?: string } | null>(null);
+  // The sample button re-uses this video's latest bundled draft, so it links rather than copies.
+  const sampleAsset = [...cuts].reverse().map((c) => data.assets.find((a) => a.id === c.assetId)).find((a) => a?.mediaSource === 'bundled-sample' && a.fingerprint);
   const [linkedTo, setLinkedTo] = useState<Asset | null>(null);
   /** The version that was current when this upload started; it stays in the history. */
   const [previous, setPrevious] = useState<string | undefined>();
@@ -92,7 +96,7 @@ export function UploadCut({ project, onClose, onAdded }: { project: VideoProject
     try {
       setPhase({ kind: 'working', step: 'Reading the file on this device', progress: 0 });
       const blob = f.blob ?? (await (await fetch(f.url)).blob());
-      const print = f.sample ? 'sample:market-draft2' : await fingerprint(blob, (p) => setPhase({ kind: 'working', step: 'Reading the file on this device', progress: p * 0.7 }));
+      const print = f.sample ? f.sample : await fingerprint(blob, (p) => setPhase({ kind: 'working', step: 'Reading the file on this device', progress: p * 0.7 }));
       const existing = data.assets.find((a) => a.fingerprint === print);
       const sizeMB = f.size / 1024 / 1024;
       if (!existing && sizeMB > freeMB) {
@@ -148,7 +152,7 @@ export function UploadCut({ project, onClose, onAdded }: { project: VideoProject
 
   return (
     <Modal
-      title={`Upload a draft of “${project.title}”`}
+      title={kind === 'final' ? `Upload the final video of “${project.title}”` : `Upload a draft of “${project.title}”`}
       onClose={busy ? () => {} : onClose}
       footer={
         <>
@@ -175,7 +179,7 @@ export function UploadCut({ project, onClose, onAdded }: { project: VideoProject
                 onChange={(e) => {
                   const k = e.target.value as CutKind;
                   setKind(k);
-                  setLabel(k === 'draft' ? `Draft ${drafts + 1}` : KIND_LABEL[k]);
+                  setLabel(labelFor(k));
                 }}
               >
                 {(Object.keys(KIND_LABEL) as CutKind[]).map((k) => (
@@ -210,9 +214,11 @@ export function UploadCut({ project, onClose, onAdded }: { project: VideoProject
               . No length limit; storage is the only limit ({formatSize(Math.max(0, freeMB))} free).
             </p>
             <input ref={input} type="file" accept="video/*" hidden onChange={(e) => choose(e.target.files)} data-testid="cut-file" />
-            <button type="button" className="btn btn--ghost btn--sm" disabled={busy} onClick={() => void run({ name: 'Night market phrases — Draft 2.webm', size: 380 * 1024 * 1024, url: '/demo-media/studio/market-draft2.webm', sample: true })}>
+            {sampleAsset && (
+            <button type="button" className="btn btn--ghost btn--sm" disabled={busy} onClick={() => void run({ name: sampleAsset.name, size: sampleAsset.sizeMB * 1024 * 1024, url: sampleAsset.videoUrl!, sample: sampleAsset.fingerprint })}>
               Try with a sample file
             </button>
+            )}
           </div>
         </>
       )}

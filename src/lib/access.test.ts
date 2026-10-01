@@ -39,7 +39,7 @@ describe('preview access: a collaborator with one account (Sam, TikTok @pinepape
     expect(canSeeAsset(data, sam, shared)).toBe(true);
     // v-tt-pine uses the raw market clip as its cover, so that one file comes along.
     // Draft 1 is an earlier cut of the same video, so it comes along in the Studio.
-    expect(ids(scoped.assets)).toEqual(['a-market-draft1', 'a-market-raw', 'a-market-vertical']);
+    expect(ids(scoped.assets)).toEqual(['a-market-draft1', 'a-market-draft2', 'a-market-raw', 'a-market-vertical']);
     expect(hidden.assets.has('a-market-raw-copy')).toBe(true);
     expect(hidden.assets.has('a-desk-raw')).toBe(true);
     expect(hidden.assets.has('a-desk-1')).toBe(true);

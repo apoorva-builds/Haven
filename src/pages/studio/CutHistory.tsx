@@ -11,13 +11,13 @@ import { zonedDay } from '../../lib/time';
 import { cutDeletion, cutsOf, lengthLabel, notesOf, projectStorageMB } from '../../lib/videoStudio';
 import { useStore } from '../../state/store';
 
-const KIND: Record<Cut['kind'], string> = { footage: 'Footage', draft: 'Draft', final: 'Final cut' };
+const KIND: Record<Cut['kind'], string> = { footage: 'Footage', draft: 'Draft · review booklet', final: 'Final · publishing checklist' };
 
 /**
  * Every cut of one video, oldest first, then where it was posted. Sizes are
  * per file; the total counts each file once.
  */
-export function CutHistory({ project, onOpen, onCompare, onUpload }: { project: VideoProject; onOpen: (cutId: string) => void; onCompare: (a: string, b: string) => void; onUpload: () => void }) {
+export function CutHistory({ project, onOpen, onCompare, onUpload, onUploadFinal }: { project: VideoProject; onOpen: (cutId: string) => void; onCompare: (a: string, b: string) => void; onUpload: () => void; onUploadFinal: () => void }) {
   const { data, dispatch, allowed } = useStore();
   const toast = useToast();
   const cuts = cutsOf(data, project.id);
@@ -40,7 +40,7 @@ export function CutHistory({ project, onOpen, onCompare, onUpload }: { project: 
           const notes = notesOf(data, c.id);
           const by = data.people.find((p) => p.id === c.addedById);
           const isCurrent = c.id === project.currentCutId;
-          const isApproved = c.id === project.approvedCutId;
+          const isApproved = !!c.checklist?.readyAt;
           return (
             <li key={c.id} className={`hrow ${isCurrent ? 'is-current' : ''} ${c.archived ? 'is-archived' : ''}`} data-cut={c.id}>
               <span className="hrow__index" aria-hidden="true">
@@ -70,7 +70,7 @@ export function CutHistory({ project, onOpen, onCompare, onUpload }: { project: 
                       {c.label}
                     </button>
                     {isCurrent && <span className="hbadge hbadge--current">Current</span>}
-                    {isApproved && <span className="hbadge hbadge--approved">Approved</span>}
+                    {isApproved && <span className="hbadge hbadge--approved">Ready to publish</span>}
                     {c.archived && <span className="hbadge">Archived</span>}
                   </h3>
                 )}
@@ -142,6 +142,9 @@ export function CutHistory({ project, onOpen, onCompare, onUpload }: { project: 
             </span>
             <button type="button" className="btn btn--primary btn--sm" onClick={onUpload}>
               <Icon name="upload" size={14} /> Add a draft
+            </button>
+            <button type="button" className="btn btn--ghost btn--sm" onClick={onUploadFinal}>
+              Upload final video
             </button>
             <span className="muted small">Edits happen in your editor. A new upload never replaces an earlier draft.</span>
           </li>
