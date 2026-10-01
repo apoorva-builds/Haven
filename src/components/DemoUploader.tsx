@@ -47,9 +47,21 @@ function kindFromName(name: string): AssetKind {
  * uses only the name and size. Results exist for this browser session only,
  * and every surface says so.
  */
+/** Uploading needs Edit & upload where the file will live: the idea's Space, or workspace-wide (owner and admins). */
+export function useMayUpload(ideaId?: string, toLibrary = false): boolean {
+  const { data, allowed } = useStore();
+  const probe: Asset = {
+    id: 'probe', name: '', kind: 'raw', ideaIds: ideaId ? [ideaId] : [], inLibrary: toLibrary, sizeMB: 0,
+    art: { motif: 'grain', hue: 0, hue2: 0 }, favorite: false, storage: 'original', uploadedById: data.currentUserId,
+    uploadedAt: data.today, tags: [], platforms: [], moments: [],
+  };
+  return allowed({ type: 'asset/add-session', asset: probe });
+}
+
 export function DemoUploader({ ideaId, toLibrary = false }: { ideaId?: string; toLibrary?: boolean }) {
   const { data, dispatch } = useStore();
   const [jobs, setJobs] = useState<Job[]>([]);
+  const mayUpload = useMayUpload(ideaId, toLibrary);
   const [dragging, setDragging] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const failedOnce = useRef(false);
@@ -130,6 +142,15 @@ export function DemoUploader({ ideaId, toLibrary = false }: { ideaId?: string; t
     ]);
 
   const update = (id: string, patch: Partial<Job>) => setJobs((list) => list.map((j) => (j.id === id ? { ...j, ...patch } : j)));
+
+  if (!mayUpload) {
+    return (
+      <p className="muted access-note uploader--locked">
+        <Icon name="shield" size={14} />{' '}
+        {toLibrary && !ideaId ? 'Only the owner and admins add workspace-wide files.' : 'Adding files here needs Edit & upload on this idea’s Space.'}
+      </p>
+    );
+  }
 
   return (
     <div className="uploader">

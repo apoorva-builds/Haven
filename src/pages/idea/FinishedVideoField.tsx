@@ -51,7 +51,7 @@ export function FinishedVideoField({ version }: { version: Version }) {
       videoUrl: url,
       mediaSource: 'device-session',
     };
-    dispatch({ type: 'asset/add-session', asset });
+    dispatch({ type: 'asset/add-session', asset, forVersionId: version.id });
     dispatch({ type: 'version/media', versionId: version.id, assetId: asset.id });
     toast('Finished video added for this session only. It plays from this tab; nothing was uploaded or posted.', 'demo');
   };

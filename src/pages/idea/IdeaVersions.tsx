@@ -17,12 +17,13 @@ import { useStore } from '../../state/store';
 const LANG_LABEL: Record<string, string> = { en: 'English', es: 'Español', fr: 'Français', de: 'Deutsch', pt: 'Português', ja: '日本語' };
 
 export function IdeaVersions({ idea }: { idea: Idea }) {
-  const { data, dispatch } = useStore();
+  const { data, dispatch, allowed } = useStore();
   const [params, setParams] = useSearchParams();
   const versions = versionsForIdea(data, idea.id);
   const selectedId = params.get('v') ?? versions[0]?.id;
   const selected = versions.find((v) => v.id === selectedId) ?? versions[0];
-  const unused = data.accounts.filter((a) => !versions.some((v) => v.accountId === a.id));
+  // Only accounts this person may plan for (Edit & upload) are offered.
+  const unused = data.accounts.filter((a) => !versions.some((v) => v.accountId === a.id) && allowed({ type: 'version/add', ideaId: idea.id, accountId: a.id }));
   const [adding, setAdding] = useState('');
 
   const select = (id: string) => {
@@ -120,12 +121,11 @@ export function IdeaVersions({ idea }: { idea: Idea }) {
 }
 
 function VersionDetail({ version, idea }: { version: Version; idea: Idea }) {
-  const { data, dispatch, can, preview } = useStore();
-  const canEdit = can('edit', version.accountId);
-  const canReview = can('review', version.accountId);
-  const canPublish = can('publish', version.accountId);
-  // Approving needs review; recording a post needs publish; everything else needs edit.
-  const allowed = (s: VersionStatus) => s === version.status || (s === 'Ready to post' ? canReview : s === 'Posted' ? canPublish : canEdit);
+  const { data, dispatch, allowed: may, preview } = useStore();
+  const canEdit = may({ type: 'version/caption', versionId: version.id, lang: 'en', text: '' });
+  const canPublish = may({ type: 'version/live-url', versionId: version.id, url: '' });
+  // Same rules as the store: approving needs review, posting needs publish, the rest needs edit.
+  const allowed = (s: VersionStatus) => s === version.status || may({ type: 'version/status', versionId: version.id, status: s });
   const toast = useToast();
   const account = accountOf(data, version.accountId)!;
   const platform = platformOf(data, account.platform);
@@ -207,6 +207,7 @@ function VersionDetail({ version, idea }: { version: Version; idea: Idea }) {
                     role="radio"
                     aria-checked={version.coverAssetId === c.id}
                     className={version.coverAssetId === c.id ? 'is-active' : ''}
+                    disabled={!canEdit}
                     onClick={() => dispatch({ type: 'version/cover', versionId: version.id, assetId: c.id })}
                     title={c.name}
                   >
@@ -242,9 +243,15 @@ function VersionDetail({ version, idea }: { version: Version; idea: Idea }) {
               rows={5}
               value={caption}
               aria-label={`Caption (${LANG_LABEL[lang] ?? lang})`}
-              placeholder={`Write the ${platform.name} caption for ${account.handle}`}
+              placeholder={canEdit ? `Write the ${platform.name} caption for ${account.handle}` : 'No caption yet'}
+              readOnly={!canEdit}
               onChange={(e) => dispatch({ type: 'version/caption', versionId: version.id, lang, text: e.target.value })}
             />
+            {!canEdit && (
+              <p className="muted access-note">
+                <Icon name="shield" size={14} /> View only: editing needs Edit & upload for {account.handle}.
+              </p>
+            )}
             <p className="field-hint">
               {caption.length.toLocaleString()} / {captionLimit.toLocaleString()} characters · written by you; Haven doesn’t generate or translate captions.
             </p>
@@ -292,7 +299,7 @@ function VersionDetail({ version, idea }: { version: Version; idea: Idea }) {
               {version.checklist.map((c) => (
                 <li key={c.id}>
                   <label>
-                    <input type="checkbox" checked={c.done} onChange={() => dispatch({ type: 'version/check', versionId: version.id, itemId: c.id })} />
+                    <input type="checkbox" checked={c.done} disabled={!canEdit} onChange={() => dispatch({ type: 'version/check', versionId: version.id, itemId: c.id })} />
                     <span>{c.label}</span>
                   </label>
                 </li>
@@ -307,6 +314,7 @@ function VersionDetail({ version, idea }: { version: Version; idea: Idea }) {
               <input
                 type="date"
                 value={version.scheduledFor}
+                disabled={!canEdit}
                 onChange={(e) => e.target.value && dispatch({ type: 'version/reschedule', versionId: version.id, date: e.target.value })}
               />
             </label>

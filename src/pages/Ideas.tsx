@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { IDEA_STATUSES, type DemoData, type Idea } from '../data/types';
 import { Icon } from '../components/Icon';
 import { InfoButton } from '../components/InfoButton';
-import { QuickAddModal } from '../components/Shell';
+import { QuickAddModal, useCanCreateIdea } from '../components/Shell';
 import { EmptyState, SelectField, useDismiss, useSimulatedLoad } from '../components/ui';
 import { daysBetween, formatDay, relativeDay } from '../lib/dates';
 import { formatName } from '../lib/creations';
@@ -20,6 +20,7 @@ export function IdeasPage() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const [adding, setAdding] = useState(false);
+  const canCreate = useCanCreateIdea();
 
   const status = params.get('status') ?? 'all';
   const campaign = params.get('campaign') ?? 'all';
@@ -71,9 +72,11 @@ export function IdeasPage() {
             {activeCount} active{archivedCount > 0 && <> · {archivedCount} archived</>}
           </p>
         </div>
-        <button type="button" className="btn btn--primary" onClick={() => setAdding(true)}>
-          <Icon name="plus" size={16} /> New idea
-        </button>
+        {canCreate && (
+          <button type="button" className="btn btn--primary" onClick={() => setAdding(true)}>
+            <Icon name="plus" size={16} /> New idea
+          </button>
+        )}
       </header>
 
       {!ready ? (
@@ -143,11 +146,11 @@ export function IdeasPage() {
                 <button type="button" className="btn btn--ghost" onClick={() => setParams(view === 'archived' ? { view } : {}, { replace: true })}>
                   Clear filters
                 </button>
-              ) : (
+              ) : canCreate ? (
                 <button type="button" className="btn btn--primary" onClick={() => setAdding(true)}>
                   Capture an idea
                 </button>
-              )
+              ) : undefined
             }
           >
             {filtered ? 'Try a broader search or fewer filters.' : 'Archived ideas keep their media, versions and live links for reuse.'}

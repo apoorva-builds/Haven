@@ -10,20 +10,27 @@ import { useStore } from '../../state/store';
 const STAGES: TaskStage[] = ['Plan', 'Shoot', 'Edit', 'Review', 'Post'];
 
 export function IdeaTasks({ idea }: { idea: Idea }) {
-  const { data, dispatch } = useStore();
+  const { data, dispatch, allowed } = useStore();
   const toast = useToast();
   const tasks = tasksForIdea(data, idea.id);
   const versions = versionsForIdea(data, idea.id);
+  const draft = (versionId: string, ownerId: string) =>
+    ({ type: 'task/add', task: { title: 'x', ideaId: idea.id, versionId: versionId || undefined, ownerId, stage: 'Plan', due: data.today } }) as const;
+  // Where this person may add tasks: the whole idea (Space edit) and/or the versions they can edit.
+  const targets = ['', ...versions.map((v) => v.id)].filter((id) => allowed(draft(id, data.currentUserId)));
   const [title, setTitle] = useState('');
   const [ownerId, setOwnerId] = useState(data.currentUserId);
   const [stage, setStage] = useState<TaskStage>('Plan');
   const [due, setDue] = useState(addDays(data.today, 1));
-  const [versionId, setVersionId] = useState('');
+  const [versionId, setVersionId] = useState(targets[0] ?? '');
+  // Assignees must be able to see the work they're given.
+  const owners = data.people.filter((p) => allowed(draft(versionId, p.id)));
+  const owner = owners.some((p) => p.id === ownerId) ? ownerId : (owners[0]?.id ?? '');
 
   const add = (e: FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
-    dispatch({ type: 'task/add', task: { title: title.trim(), ideaId: idea.id, versionId: versionId || undefined, ownerId, stage, due } });
+    if (!title.trim() || !owner) return;
+    dispatch({ type: 'task/add', task: { title: title.trim(), ideaId: idea.id, versionId: versionId || undefined, ownerId: owner, stage, due } });
     setTitle('');
     toast('Task added for this session.', 'demo');
   };
@@ -32,10 +39,11 @@ export function IdeaTasks({ idea }: { idea: Idea }) {
 
   return (
     <div className="stack">
+      {targets.length === 0 ? null : (
       <form className="card task-form" onSubmit={add} aria-label="Add a task">
         <input className="task-form__title" placeholder="Add a task — e.g. Export captions file for Jonah" value={title} onChange={(e) => setTitle(e.target.value)} aria-label="Task title" />
-        <select value={ownerId} onChange={(e) => setOwnerId(e.target.value)} aria-label="Owner">
-          {data.people.map((p) => (
+        <select value={owner} onChange={(e) => setOwnerId(e.target.value)} aria-label="Owner">
+          {owners.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
             </option>
@@ -47,18 +55,21 @@ export function IdeaTasks({ idea }: { idea: Idea }) {
           ))}
         </select>
         <select value={versionId} onChange={(e) => setVersionId(e.target.value)} aria-label="Version">
-          <option value="">Whole idea</option>
-          {versions.map((v) => (
-            <option key={v.id} value={v.id}>
-              {accountOf(data, v.accountId)?.handle} · {v.format}
-            </option>
-          ))}
+          {targets.map((id) => {
+            const v = versions.find((x) => x.id === id);
+            return (
+              <option key={id || 'idea'} value={id}>
+                {v ? `${accountOf(data, v.accountId)?.handle} · ${v.format}` : 'Whole idea'}
+              </option>
+            );
+          })}
         </select>
         <input type="date" value={due} onChange={(e) => setDue(e.target.value)} aria-label="Due date" />
-        <button type="submit" className="btn btn--primary" disabled={!title.trim()}>
+        <button type="submit" className="btn btn--primary" disabled={!title.trim() || !owner}>
           <Icon name="plus" size={15} /> Add
         </button>
       </form>
+      )}
 
       {tasks.length === 0 ? (
         <EmptyState icon="check" title="No tasks yet">
@@ -89,7 +100,7 @@ export function IdeaTasks({ idea }: { idea: Idea }) {
                 const account = accountOf(data, version?.accountId);
                 return (
                   <li key={t.id} className={`task ${t.done ? 'is-done' : ''}`}>
-                    <button type="button" className="check" aria-pressed={t.done} aria-label={t.done ? `Mark “${t.title}” not done` : `Mark “${t.title}” done`} onClick={() => dispatch({ type: 'task/toggle', taskId: t.id })}>
+                    <button type="button" className="check" aria-pressed={t.done} aria-label={t.done ? `Mark “${t.title}” not done` : `Mark “${t.title}” done`} disabled={!allowed({ type: 'task/toggle', taskId: t.id })} onClick={() => dispatch({ type: 'task/toggle', taskId: t.id })}>
                       <Icon name="check" size={14} />
                     </button>
                     <div className="task__body">

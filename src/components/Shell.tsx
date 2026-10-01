@@ -33,6 +33,7 @@ export function AppShell() {
   const [quickAdd, setQuickAdd] = useState(false);
   const [drawer, setDrawer] = useState(false);
   const location = useLocation();
+  const canCreate = useCanCreateIdea();
 
   return (
     <div className="app">
@@ -58,6 +59,7 @@ export function AppShell() {
       <div className="main-col">
         <Topbar onMenu={() => setDrawer(true)} />
         <PreviewAsBar />
+        <RefusalNotice />
         <main id="main" className="main" key={location.pathname.split('/').slice(0, 3).join('/')}>
           <Outlet />
         </main>
@@ -70,7 +72,7 @@ export function AppShell() {
             <span>{n.label}</span>
           </NavLink>
         ))}
-        <button type="button" className="tabbar__add" onClick={() => setQuickAdd(true)} aria-label="Capture a new idea">
+        <button type="button" className="tabbar__add" onClick={() => setQuickAdd(true)} aria-label="Capture a new idea" disabled={!canCreate}>
           <Icon name="plus" size={24} />
         </button>
         <NavLink to="/gallery" className="tabbar__item">
@@ -87,6 +89,20 @@ export function AppShell() {
       {quickAdd && <QuickAddModal onClose={() => setQuickAdd(false)} />}
     </div>
   );
+}
+
+/** Says why a change was refused, instead of failing silently. */
+function RefusalNotice() {
+  const { refusal, preview, data } = useStore();
+  const toast = useToast();
+  const shown = useRef(0);
+  useEffect(() => {
+    if (!refusal || refusal.at === shown.current) return;
+    shown.current = refusal.at;
+    const who = preview ? data.people.find((p) => p.id === preview.personId)?.name : undefined;
+    toast(`${who ? `${who} can’t do that. ` : 'Not allowed. '}${refusal.reason}`, 'info');
+  }, [refusal, preview, data.people, toast]);
+  return null;
 }
 
 /** Shown while previewing as a collaborator. Honest about what it is. */
@@ -364,19 +380,33 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
   );
 }
 
+/** Whether the viewer can start a new idea anywhere (any account or Space they can edit). */
+export function useCanCreateIdea(): boolean {
+  const { data, allowed } = useStore();
+  return (
+    data.accounts.some((a) => allowed({ type: 'idea/add', title: '', accountIds: [a.id] })) ||
+    data.brands.some((b) => allowed({ type: 'idea/add', title: '', accountIds: [], spaceId: b.id }))
+  );
+}
+
 export function QuickAddModal({ onClose }: { onClose: () => void }) {
-  const { data, dispatch } = useStore();
+  const { data, dispatch, can, allowed } = useStore();
   const toast = useToast();
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [campaignId, setCampaignId] = useState('');
   const [accountIds, setAccountIds] = useState<string[]>([]);
   const toggle = (id: string) => setAccountIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+  // Only accounts and Spaces this person can edit are offered.
+  const accounts = data.accounts.filter((a) => can('edit', a.id));
+  const spaceId = data.brands.find((b) => allowed({ type: 'idea/add', title: '', accountIds: [], spaceId: b.id }))?.id;
+  const action = { type: 'idea/add' as const, title, campaignId: campaignId || undefined, accountIds, spaceId };
+  const permitted = allowed(action);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
-    dispatch({ type: 'idea/add', title, campaignId: campaignId || undefined, accountIds });
+    if (!title.trim() || !permitted) return;
+    dispatch(action);
     toast('Idea captured for this session. It will not be saved after reload.', 'demo');
     onClose();
     navigate('/ideas');
@@ -393,7 +423,7 @@ export function QuickAddModal({ onClose }: { onClose: () => void }) {
           <button type="button" className="btn btn--ghost" onClick={onClose}>
             Cancel
           </button>
-          <button type="submit" form="quick-add" className="btn btn--primary" disabled={!title.trim()}>
+          <button type="submit" form="quick-add" className="btn btn--primary" disabled={!title.trim() || !permitted}>
             Capture idea
           </button>
         </>
@@ -417,8 +447,9 @@ export function QuickAddModal({ onClose }: { onClose: () => void }) {
         </label>
         <fieldset className="field">
           <legend>Plan versions for</legend>
+          {!spaceId && accountIds.length === 0 && <p className="muted field-note">Choose at least one account you can edit.</p>}
           <div className="chip-grid">
-            {data.accounts.map((a) => {
+            {accounts.map((a) => {
               const p = platformOf(data, a.platform);
               const on = accountIds.includes(a.id);
               return (

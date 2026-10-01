@@ -36,7 +36,7 @@ export function filterVersions(data: DemoData, f: Filters): Version[] {
 }
 
 export function CalendarPage() {
-  const { data, dispatch } = useStore();
+  const { data, dispatch, allowed } = useStore();
   const toast = useToast();
   const [params, setParams] = useSearchParams();
   const [anchor, setAnchor] = useState<ISODate>(data.today);
@@ -84,7 +84,9 @@ export function CalendarPage() {
     setOver(null);
     const v = data.versions.find((x) => x.id === id);
     if (!v || v.scheduledFor === day) return;
-    dispatch({ type: 'version/reschedule', versionId: v.id, date: day });
+    const move = { type: 'version/reschedule' as const, versionId: v.id, date: day };
+    dispatch(move); // Refused moves are reported by the store, with the reason.
+    if (!allowed(move)) return;
     toast(`Moved to ${formatDay(day)} with its open tasks — this session only.`, 'demo');
   };
 
@@ -240,7 +242,7 @@ export function CalendarPage() {
                         to={`/ideas/${v.ideaId}/versions?v=${v.id}`}
                         className={`cal-item cal-item--${v.status.replace(/\s+/g, '-').toLowerCase()} ${dragging === v.id ? 'is-dragging' : ''}`}
                         style={{ ['--hue' as string]: hueFor(v) }}
-                        draggable
+                        draggable={allowed({ type: 'version/reschedule', versionId: v.id, date: v.scheduledFor })}
                         onDragStart={(e) => {
                           e.dataTransfer.setData('text/plain', v.id);
                           e.dataTransfer.effectAllowed = 'move';

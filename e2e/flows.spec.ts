@@ -254,8 +254,11 @@ test('calendar filters and drag-to-reschedule', async ({ page }) => {
 
   const source = page.locator('[data-version="v-ig-pine"]');
   const date = await source.evaluate((el) => el.closest('[data-date]')!.getAttribute('data-date'));
-  const target = page.locator('.month__day:not(.is-outside)').filter({ hasNot: page.locator('[data-version="v-ig-pine"]') }).last();
-  const targetDate = await target.getAttribute('data-date');
+  // Drop on the next day, which is always on screen beside the item, whatever today's date is.
+  const next = new Date(`${date}T12:00:00`);
+  next.setDate(next.getDate() + 1);
+  const targetDate = next.toISOString().slice(0, 10);
+  const target = page.locator(`.month__day[data-date="${targetDate}"]`);
   await source.dragTo(target);
   await expect(page.getByText(/this session only/)).toBeVisible();
   await expect(page.locator(`[data-date="${targetDate}"] [data-version="v-ig-pine"]`)).toBeVisible();

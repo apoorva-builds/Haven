@@ -7,7 +7,7 @@ import { accountOf, checklistProgress, personOf, versionsForIdea } from '../../s
 import { useStore } from '../../state/store';
 
 export function IdeaOverview({ idea }: { idea: Idea }) {
-  const { data, dispatch } = useStore();
+  const { data, dispatch, allowed } = useStore();
   const versions = versionsForIdea(data, idea.id);
   const campaign = data.campaigns.find((c) => c.id === idea.campaignId);
   const liveLinks = versions.filter((v) => v.liveUrl);
@@ -48,7 +48,12 @@ export function IdeaOverview({ idea }: { idea: Idea }) {
               {idea.shotList.map((s) => (
                 <li key={s.id}>
                   <label>
-                    <input type="checkbox" checked={s.done} onChange={() => dispatch({ type: 'idea/shot-toggle', ideaId: idea.id, shotId: s.id })} />
+                    <input
+                      type="checkbox"
+                      checked={s.done}
+                      disabled={!allowed({ type: 'idea/shot-toggle', ideaId: idea.id, shotId: s.id })}
+                      onChange={() => dispatch({ type: 'idea/shot-toggle', ideaId: idea.id, shotId: s.id })}
+                    />
                     <span>{s.label}</span>
                   </label>
                 </li>

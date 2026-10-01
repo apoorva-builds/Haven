@@ -26,7 +26,7 @@ type TabKey = (typeof TABS)[number]['key'];
 
 export function IdeaWorkspacePage() {
   const { ideaId = '', tab = 'overview' } = useParams();
-  const { data, dispatch, preview } = useStore();
+  const { data, dispatch, preview, allowed } = useStore();
   const ready = useSimulatedLoad(300);
   const idea = ideaOf(data, ideaId);
   const [menu, setMenu] = useState(false);
@@ -86,6 +86,7 @@ export function IdeaWorkspacePage() {
               <span className="sr-only">Idea status</span>
               <select
                 value={idea.status}
+                disabled={!allowed({ type: 'idea/status', ideaId: idea.id, status: idea.status })}
                 onChange={(e) => dispatch({ type: 'idea/status', ideaId: idea.id, status: e.target.value as IdeaStatus })}
                 aria-label="Idea status"
               >
@@ -111,6 +112,7 @@ export function IdeaWorkspacePage() {
                 type="button"
                 role="menuitem"
                 className="popover__item"
+                disabled={!allowed({ type: 'idea/archive', ideaId: idea.id, archived: !idea.archived })}
                 onClick={() => {
                   dispatch({ type: 'idea/archive', ideaId: idea.id, archived: !idea.archived });
                   toast(idea.archived ? 'Idea restored for this session.' : 'Idea archived for this session. Media and links are kept.', 'demo');
@@ -123,6 +125,7 @@ export function IdeaWorkspacePage() {
                 type="button"
                 role="menuitem"
                 className="popover__item popover__item--danger"
+                disabled={!allowed({ type: 'idea/delete', ideaId: idea.id })}
                 onClick={() => {
                   closeMenu();
                   setConfirmDelete(true);

@@ -8,7 +8,7 @@ import { NotShared } from '../components/NotShared';
 import { justify } from '../lib/justify';
 import { Icon } from '../components/Icon';
 import { AccountSelector, useAccountName } from '../components/AccountSelector';
-import { QuickAddModal } from '../components/Shell';
+import { QuickAddModal, useCanCreateIdea } from '../components/Shell';
 import { AudiencePulse } from '../components/AudiencePulse';
 import { InfoButton } from '../components/InfoButton';
 import { EmptyState, ExternalLink, LoadingGrid, PlatformGlyph, SelectField, StatusPill, useSimulatedLoad } from '../components/ui';
@@ -146,6 +146,7 @@ export function GalleryPage() {
 function GalleryIndex() {
   const { data } = useStore();
   const name = useAccountName();
+  const canCreate = useCanCreateIdea();
   const [adding, setAdding] = useState(false);
   const ready = useSimulatedLoad();
   const [params, setParams] = useSearchParams();
@@ -182,9 +183,11 @@ function GalleryIndex() {
             {versions.length} creation{versions.length === 1 ? '' : 's'} · {account === 'all' ? `${data.accounts.length} account${data.accounts.length === 1 ? '' : 's'}` : name(account)}
           </p>
         </div>
-        <button type="button" className="btn btn--primary" onClick={() => setAdding(true)}>
-          <Icon name="plus" size={16} /> New idea
-        </button>
+        {canCreate && (
+          <button type="button" className="btn btn--primary" onClick={() => setAdding(true)}>
+            <Icon name="plus" size={16} /> New idea
+          </button>
+        )}
       </header>
 
       <div className="gallery__toolbar">

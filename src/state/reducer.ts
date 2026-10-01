@@ -12,7 +12,7 @@ import type { AccessGrant, AccessScope, Asset, Capability, DemoData, IdeaStatus,
 export type Action =
   | { type: 'task/toggle'; taskId: string }
   | { type: 'task/add'; task: Omit<Task, 'id' | 'done'> }
-  | { type: 'idea/add'; title: string; campaignId?: string; accountIds: string[] }
+  | { type: 'idea/add'; title: string; campaignId?: string; accountIds: string[]; spaceId?: string }
   | { type: 'idea/status'; ideaId: string; status: IdeaStatus }
   | { type: 'idea/archive'; ideaId: string; archived: boolean }
   | { type: 'idea/delete'; ideaId: string }
@@ -27,7 +27,7 @@ export type Action =
   | { type: 'version/live-url'; versionId: string; url: string }
   | { type: 'asset/favorite'; assetId: string }
   | { type: 'asset/promote'; assetId: string }
-  | { type: 'asset/add-session'; asset: Asset }
+  | { type: 'asset/add-session'; asset: Asset; forVersionId?: string }
   | { type: 'asset/dismiss-duplicate'; assetId: string }
   | { type: 'link/add'; link: Omit<LinkItem, 'id'> }
   | { type: 'notifications/read' }
@@ -61,7 +61,7 @@ export function reducer(state: DemoData, action: Action): DemoData {
             id,
             title: action.title.trim() || 'Untitled idea',
             campaignId: action.campaignId,
-            spaceId: state.accounts.find((a) => a.id === action.accountIds[0])?.brandId ?? state.brands[0]?.id ?? '',
+            spaceId: state.accounts.find((a) => a.id === action.accountIds[0])?.brandId ?? action.spaceId ?? state.brands[0]?.id ?? '',
             status: 'Idea',
             due,
             art: { motif: 'grain', hue, hue2: (hue + 60) % 360 },

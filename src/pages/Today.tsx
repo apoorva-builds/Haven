@@ -38,7 +38,7 @@ export function bucketTasks(data: DemoData, focus: Focus) {
 }
 
 export function TodayPage() {
-  const { data, dispatch } = useStore();
+  const { data, dispatch, allowed } = useStore();
   const toast = useToast();
   const ready = useSimulatedLoad();
   const [focusValue, setFocusValue] = useState('all');
@@ -161,6 +161,7 @@ export function TodayPage() {
                       className="check"
                       aria-pressed={t.done}
                       aria-label={t.done ? `Mark “${t.title}” not done` : `Mark “${t.title}” done`}
+                      disabled={!allowed({ type: 'task/toggle', taskId: t.id })}
                       onClick={() => {
                         dispatch({ type: 'task/toggle', taskId: t.id });
                         if (!t.done) toast('Nice — marked done for this session.', 'ok');

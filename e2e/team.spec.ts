@@ -115,3 +115,54 @@ test('previewing as a restricted collaborator hides other work, including direct
   await nav(page, 'Creation Gallery');
   await expect(page.locator('.ctile')).toHaveCount(11);
 });
+
+test('every edit follows the previewed person’s capabilities, including uploads and tasks', async ({ page }) => {
+  await open(page, '/team');
+  await page.locator('.member-list').getByRole('button', { name: /Jonah/ }).click();
+  await page.getByRole('button', { name: 'Preview as Jonah' }).click();
+
+  // Instagram @littleatlas.sample: Jonah can edit this version, not approve it, and not the Little Atlas idea itself.
+  await goDirect(page, '/ideas/market-phrases/versions?v=v-ig-atlas');
+  const caption = page.getByRole('textbox', { name: 'Caption (English)' });
+  await expect(caption).toBeEditable();
+  await expect(page.getByLabel('Version status').locator('option', { hasText: 'Ready to post' })).toHaveAttribute('disabled', '');
+  await expect(page.getByLabel('Idea status')).toBeDisabled();
+  await expect(page.locator('.vrow')).toHaveCount(3); // ig-atlas, plus the two Pine & Paper versions from his Space
+
+  // Files on the Little Atlas idea: visible through his versions, but no upload into that Space.
+  await page.getByRole('tab', { name: /Assets/ }).click();
+  await expect(page.getByText('Adding files here needs Edit & upload on this idea’s Space.')).toBeVisible();
+  await expect(page.getByText('Market walk — raw (1).mov')).toHaveCount(0);
+
+  // Tasks: only the versions he can edit, and assignees who can see them.
+  await page.getByRole('tab', { name: /Tasks/ }).click();
+  const target = page.getByLabel('Version');
+  await expect(target.locator('option', { hasText: 'Whole idea' })).toHaveCount(0);
+  await expect(page.getByLabel('Owner').locator('option', { hasText: 'Alex' })).toHaveCount(0);
+
+  // In his own Space he can upload and change the idea.
+  await goDirect(page, '/ideas/desk-setup/assets');
+  await expect(page.getByRole('button', { name: 'Choose files' })).toBeVisible();
+  await expect(page.getByLabel('Idea status')).toBeEnabled();
+  await page.getByRole('button', { name: 'Back to your view' }).click();
+});
+
+test('an account-only collaborator gets only their own controls, and linked files stay hidden', async ({ page }) => {
+  await open(page, '/team');
+  await page.locator('.member-list').getByRole('button', { name: /Sam/ }).click();
+  await page.getByRole('button', { name: 'Preview as Sam' }).click();
+
+  await goDirect(page, '/ideas/market-phrases/versions?v=v-tt-pine');
+  await expect(page.getByRole('textbox', { name: 'Caption (English)' })).toBeEditable();
+  await expect(page.getByLabel('Idea status')).toBeDisabled();
+  // The finished-video picker lists only files Sam can open.
+  const picker = page.getByLabel('Finished video for @pinepaper.sample');
+  await expect(picker.locator('option', { hasText: 'Quiet morning' })).toHaveCount(0);
+
+  await goDirect(page, '/library?q=Desk%20timelapse');
+  await expect(page.getByText('Desk timelapse — raw.mov')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Upload' })).toHaveCount(0);
+
+  await goDirect(page, '/links');
+  await expect(page.getByRole('form', { name: 'Save a link' })).toHaveCount(0);
+});

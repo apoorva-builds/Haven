@@ -1,6 +1,6 @@
 # Haven backend plan: sign-in, access, activity, media, connections
 
-Status: proposal for review. Nothing here is built yet. The Milestone 1 preview (Team & access, *preview as*) only filters one browser tab and is not security. This plan makes the same rules real on the server.
+Status: in progress. Supabase is the chosen backend. Sign-in and the workspace data model come first, then server-enforced permissions with tests, before any real invitations. The Milestone 1 preview (Team & access, *preview as*) only filters one browser tab and is not security. This plan makes the same rules real on the server.
 
 ## Principles
 
@@ -78,7 +78,9 @@ These are the same rules as `src/lib/access.ts`, moved into the database.
 - Two-factor sign-in (TOTP) recommended for owners and admins, with an option to require it.
 - A person can belong to several workspaces (for example, an editor who works for two creators). The workspace switcher lists memberships.
 - Leaving or being removed:
-  - Access is revoked immediately.
+  - Their membership and grants are deleted at once, so every new database query, API call and request for a file link is refused from that moment.
+  - Their open sessions are signed out; any session token already in the browser stops working at its next refresh (short token lifetime, so within minutes).
+  - File links already issued to them are not revoked (see *Revocation, honestly* below); they expire on their own within the stated lifetime.
   - Past work stays and is attributed to "former member".
   - Their personal profile data can be deleted on request.
 
@@ -99,19 +101,20 @@ These are the same rules as `src/lib/access.ts`, moved into the database.
 
 ## Secure media access
 
-- **Storage:**
-  - Private bucket only; nothing public.
-  - Keys like `workspace/{id}/assets/{uuid}` are unguessable, but secrecy doesn't rely on that.
-- **Downloads and playback:**
-  - A server function checks `can_view_asset`.
-  - It returns a short-lived signed URL (minutes).
-  - Thumbnails and preview versions use the same check.
-  - Signed URLs are never cached across people.
+- **Storage:** private bucket only; nothing public. Keys like `workspace/{id}/assets/{uuid}` are unguessable, but secrecy doesn't rely on that.
+- **How files are delivered:**
+  - **Default, signed links:** a server function checks `can_view_asset` and returns a short-lived signed URL. Lifetimes: about 2 minutes for full downloads and originals; about 10 minutes for playback of preview versions (long enough to start and seek a video). Thumbnails use the same check with the same short lifetime.
+  - **Guarded delivery for sensitive files:** an asset can be marked *guarded*. Its bytes are then served through Haven's own file endpoint, which checks the person's access on every request, including each range request while a video plays. This is the only mode that can stop delivery the moment access changes. It costs more bandwidth and latency, so it's opt-in per file or per Space.
+  - Signed URLs are never cached across people, stored in the database, or included in activity history.
+- **Revocation, honestly:**
+  - Removing a member or a grant takes effect at once for everything the server checks: queries, API calls, new file links, and guarded delivery.
+  - **A signed URL that was already issued keeps working until it expires.** Supabase Storage can't revoke a single signed URL. The plan therefore keeps lifetimes short, and the UI says: "Removing someone stops new access right away. File links they already opened expire within 10 minutes."
+  - A file already downloaded to someone's device can't be taken back by any system. Haven says so when an admin removes a person.
+  - If an admin needs a hard stop for one file, they can rotate it: Haven copies it to a new storage key and deletes the old object, which invalidates every existing link to it. This is an explicit action with a confirmation, not something that happens silently.
 - **Uploads:**
   - Resumable uploads to a URL signed for one asset, after an `edit` check.
   - The server verifies size and checksum (`sha256`) before marking the file ready.
   - Failed or partial uploads never replace an existing original.
-- **Revoking access:** takes effect for new requests immediately. Existing signed URLs expire quickly.
 - **No leaks through references:** API responses include file IDs and URLs only for files the person can view. A version's media field is empty for anyone who can't see that file.
 - **Deletion and recovery:** a soft delete with a recovery window, and originals referenced elsewhere are never removed silently. Quotas are enforced on the server.
 
@@ -135,7 +138,7 @@ Each phase ends with a review and its own tests.
 | **1. Sign-in and workspace** | Auth, profiles, one workspace per customer, owner membership, Spaces and accounts in the database, demo mode kept | Two real people sign in separately, and each sees only their own workspace |
 | **2. Team and access** | Invitations, roles, grants, access editor on real data, RLS on all tables, activity for access changes | The access test fixtures pass against the database, and a restricted person gets nothing through direct URLs, the API or export |
 | **3. Shared work** | Ideas, versions, tasks, links, calendar on the server; capability-checked writes; activity history view; live updates | Two browsers as two people see each other's changes; approve and post buttons follow capabilities |
-| **4. Secure media** | Private storage, signed URLs, resumable uploads, checksums, quotas, recovery, export | Upload, interruption and restore tests pass; revoked people can't fetch files |
+| **4. Secure media** | Private storage, short-lived signed URLs, guarded delivery, rotation, resumable uploads, checksums, quotas, recovery, export | Upload, interruption and restore tests pass; a removed person can't get new links or guarded bytes, and old links expire within their stated lifetime |
 | **5. Creation feedback** (Milestone 3) | Feedback threads attached to a specific creation, with timestamps; no workspace chat | Feedback is visible only to people who can see that creation |
 | **6. Platform connections** | Official OAuth connections, platform by platform, where the action is supported | Connected actions obey `publish`; everything else stays manual |
 

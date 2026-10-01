@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ASSET_KIND_LABEL, type AssetKind } from '../data/types';
 import { AssetCard } from '../components/AssetCard';
-import { DemoUploader } from '../components/DemoUploader';
+import { DemoUploader, useMayUpload } from '../components/DemoUploader';
 import { Icon } from '../components/Icon';
 import { Modal } from '../components/Modal';
 import { useToast } from '../components/Toast';
@@ -18,6 +18,7 @@ export function LibraryPage() {
   const [selected, setSelected] = useState<string[]>([]);
   const [packaging, setPackaging] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
+  const mayUpload = useMayUpload(undefined, true);
 
   const q = params.get('q') ?? '';
   const kind = params.get('kind') ?? 'all';
@@ -77,9 +78,11 @@ export function LibraryPage() {
           </>
         }
         actions={
-          <button type="button" className="btn btn--primary" onClick={() => setShowUpload((s) => !s)} aria-expanded={showUpload}>
-            <Icon name="upload" size={16} /> Upload
-          </button>
+          mayUpload ? (
+            <button type="button" className="btn btn--primary" onClick={() => setShowUpload((s) => !s)} aria-expanded={showUpload}>
+              <Icon name="upload" size={16} /> Upload
+            </button>
+          ) : undefined
         }
       />
 

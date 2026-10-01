@@ -34,7 +34,7 @@ export function AssetCard({
   selected?: boolean;
   onSelect?: () => void;
 }) {
-  const { data, dispatch } = useStore();
+  const { data, dispatch, allowed } = useStore();
   const toast = useToast();
   const original = assetOf(data, asset.duplicateOfId);
   const uploader = personOf(data, asset.uploadedById);
@@ -65,6 +65,7 @@ export function AssetCard({
           className={`asset__fav ${asset.favorite ? 'is-on' : ''}`}
           aria-pressed={asset.favorite}
           aria-label={asset.favorite ? `Remove ${asset.name} from selects` : `Mark ${asset.name} as a select`}
+          disabled={!allowed({ type: 'asset/favorite', assetId: asset.id })}
           onClick={() => dispatch({ type: 'asset/favorite', assetId: asset.id })}
         >
           <Icon name="star" size={16} />
@@ -100,7 +101,7 @@ export function AssetCard({
             <Icon name="copy" size={13} />
             <span>
               Possible duplicate of “{original?.name ?? 'another file'}”.{' '}
-              <button type="button" className="link-btn" onClick={() => dispatch({ type: 'asset/dismiss-duplicate', assetId: asset.id })}>
+              <button type="button" className="link-btn" disabled={!allowed({ type: 'asset/dismiss-duplicate', assetId: asset.id })} onClick={() => dispatch({ type: 'asset/dismiss-duplicate', assetId: asset.id })}>
                 Keep both
               </button>
             </span>
@@ -139,7 +140,7 @@ export function AssetCard({
             <span className="tag tag--accent">
               <Icon name="library" size={12} /> In Raw Library
             </span>
-          ) : (
+          ) : allowed({ type: 'asset/promote', assetId: asset.id }) ? (
             <button
               type="button"
               className="btn btn--ghost btn--xs"
@@ -150,7 +151,7 @@ export function AssetCard({
             >
               <Icon name="library" size={13} /> Promote to Raw Library
             </button>
-          )}
+          ) : null}
           <button
             type="button"
             className="btn btn--ghost btn--xs"

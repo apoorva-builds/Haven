@@ -1,4 +1,5 @@
 import type { AccessScope, Asset, Capability, DemoData, Idea, Member, Task, Version } from '../data/types';
+import type { Action } from '../state/reducer';
 
 /*
  * Preview access rules. These decide what a collaborator would see and do,
@@ -156,4 +157,175 @@ export function toggleGrant(member: Member, scope: AccessScope, capability: Capa
   const others = member.grants.filter((g) => !sameScope(g.scope, scope));
   const order: Capability[] = ['view', 'edit', 'review', 'publish'];
   return { ...member, grants: caps.size ? [...others, { scope, capabilities: order.filter((c) => caps.has(c)) }] : others };
+}
+
+/* ------------------------------------------------------------------------
+ * Every change goes through authorize(). One rule per action type; the
+ * exhaustive switch makes a new action impossible to add without a rule.
+ * ---------------------------------------------------------------------- */
+
+export type Decision = { ok: true } | { ok: false; reason: string };
+
+const OK: Decision = { ok: true };
+const no = (reason: string): Decision => ({ ok: false, reason });
+
+function accountLabel(data: DemoData, accountId: string): string {
+  const a = data.accounts.find((x) => x.id === accountId);
+  const p = a && data.platforms.find((x) => x.id === a.platform);
+  return a ? `${p?.name ?? ''} ${a.handle}`.trim() : 'this account';
+}
+const spaceLabel = (data: DemoData, spaceId: string) => data.brands.find((b) => b.id === spaceId)?.name ?? 'this Space';
+
+function needOnAccount(data: DemoData, m: Member | undefined, accountId: string, cap: Capability): Decision {
+  return capabilitiesOn(data, m, accountId).has(cap) ? OK : no(`Needs ${CAPABILITY_LABEL[cap]} on ${accountLabel(data, accountId)}.`);
+}
+function needOnSpace(data: DemoData, m: Member | undefined, spaceId: string, cap: Capability): Decision {
+  return capabilitiesOnSpace(m, spaceId).has(cap) ? OK : no(`Needs ${CAPABILITY_LABEL[cap]} on the whole ${spaceLabel(data, spaceId)} Space.`);
+}
+const all = (...ds: Decision[]): Decision => ds.find((d) => !d.ok) ?? OK;
+
+/** Change a file: through a version that uses it (edit on that account), or its idea's or own Space (edit). */
+export function canEditAsset(data: DemoData, m: Member | undefined, asset: Asset): boolean {
+  if (!canSeeAsset(data, m, asset)) return false;
+  if (hasFullAccess(m) && m?.status === 'active') return true;
+  const usedBy = data.versions.filter((v) => v.mediaAssetId === asset.id || v.coverAssetId === asset.id || v.photoAssetIds?.includes(asset.id));
+  if (usedBy.some((v) => capabilitiesOn(data, m, v.accountId).has('edit'))) return true;
+  const spaces = [...asset.ideaIds.map((id) => data.ideas.find((i) => i.id === id)?.spaceId), asset.spaceId].filter((s): s is string => !!s);
+  return spaces.some((s) => capabilitiesOnSpace(m, s).has('edit'));
+}
+
+const versionOf = (data: DemoData, id: string) => data.versions.find((v) => v.id === id);
+const ideaById = (data: DemoData, id: string | undefined) => data.ideas.find((i) => i.id === id);
+const MISSING = no('That work isn’t shared with you.');
+
+/**
+ * Whether a person may perform an action. The same rule set will run on the
+ * server (Postgres functions and RLS); here it guards the preview's store.
+ */
+export function authorize(data: DemoData, personId: string, action: Action): Decision {
+  const m = memberOf(data, personId);
+  if (!m || m.status !== 'active') return no('Only active members can make changes.');
+  const full = hasFullAccess(m);
+  const adminOnly = full ? OK : no('Only the owner and admins can do this.');
+
+  switch (action.type) {
+    case 'notifications/read':
+      return OK;
+
+    case 'member/role':
+    case 'member/grant':
+    case 'member/invite':
+    case 'member/remove':
+      return adminOnly;
+
+    case 'idea/add': {
+      if (full) return OK;
+      if (action.accountIds.length) return all(...action.accountIds.map((a) => needOnAccount(data, m, a, 'edit')));
+      return action.spaceId ? needOnSpace(data, m, action.spaceId, 'edit') : no('Choose an account or Space you can edit.');
+    }
+    case 'idea/status':
+    case 'idea/shot-toggle':
+    case 'idea/archive': {
+      const idea = ideaById(data, action.ideaId);
+      if (!idea || !canSeeIdea(data, m, idea)) return MISSING;
+      // Idea-level fields belong to the Space; account-only collaborators can't change them.
+      return full ? OK : needOnSpace(data, m, idea.spaceId, 'edit');
+    }
+    case 'idea/delete':
+      return adminOnly;
+
+    case 'version/add': {
+      const idea = ideaById(data, action.ideaId);
+      if (!idea || !canSeeIdea(data, m, idea)) return MISSING;
+      return needOnAccount(data, m, action.accountId, 'edit');
+    }
+    case 'version/status': {
+      const v = versionOf(data, action.versionId);
+      if (!v || !canSeeVersion(data, m, v)) return MISSING;
+      if (action.status === 'Ready to post') return needOnAccount(data, m, v.accountId, 'review');
+      if (action.status === 'Posted' || v.status === 'Posted') return needOnAccount(data, m, v.accountId, 'publish');
+      return needOnAccount(data, m, v.accountId, 'edit');
+    }
+    case 'version/live-url': {
+      const v = versionOf(data, action.versionId);
+      return v && canSeeVersion(data, m, v) ? needOnAccount(data, m, v.accountId, 'publish') : MISSING;
+    }
+    case 'version/caption':
+    case 'version/check':
+    case 'version/reschedule': {
+      const v = versionOf(data, action.versionId);
+      return v && canSeeVersion(data, m, v) ? needOnAccount(data, m, v.accountId, 'edit') : MISSING;
+    }
+    case 'version/cover':
+    case 'version/media': {
+      const v = versionOf(data, action.versionId);
+      if (!v || !canSeeVersion(data, m, v)) return MISSING;
+      // A linked file must itself be one this person can open.
+      const asset = action.assetId ? data.assets.find((a) => a.id === action.assetId) : undefined;
+      if (action.assetId && (!asset || !canSeeAsset(data, m, asset))) return no('That file isn’t shared with you.');
+      return needOnAccount(data, m, v.accountId, 'edit');
+    }
+
+    case 'asset/favorite':
+    case 'asset/dismiss-duplicate': {
+      const asset = data.assets.find((a) => a.id === action.assetId);
+      if (!asset || !canSeeAsset(data, m, asset)) return MISSING;
+      return canEditAsset(data, m, asset) ? OK : no('Needs Edit & upload on the work this file belongs to.');
+    }
+    case 'asset/promote': {
+      const asset = data.assets.find((a) => a.id === action.assetId);
+      if (!asset || !canSeeAsset(data, m, asset)) return MISSING;
+      if (full) return OK;
+      // The Raw Library is Space-level: promoting needs edit on the whole Space.
+      const space = ideaById(data, asset.ideaIds[0])?.spaceId ?? asset.spaceId;
+      return space ? needOnSpace(data, m, space, 'edit') : adminOnly;
+    }
+    case 'asset/add-session': {
+      if (full) return OK;
+      if (action.forVersionId) {
+        const v = versionOf(data, action.forVersionId);
+        return v && canSeeVersion(data, m, v) ? needOnAccount(data, m, v.accountId, 'edit') : MISSING;
+      }
+      const idea = ideaById(data, action.asset.ideaIds[0]);
+      if (idea) return needOnSpace(data, m, idea.spaceId, 'edit');
+      if (action.asset.spaceId) return needOnSpace(data, m, action.asset.spaceId, 'edit');
+      return no('Only the owner and admins add workspace-wide files.');
+    }
+
+    case 'task/add': {
+      const t = action.task;
+      const owner = memberOf(data, t.ownerId);
+      if (!owner || !canSeeTask(data, owner, { ...t, id: 'draft', done: false })) return no('The assignee can’t see that work.');
+      if (full) return OK;
+      if (t.versionId) {
+        const v = versionOf(data, t.versionId);
+        return v && canSeeVersion(data, m, v) ? needOnAccount(data, m, v.accountId, 'edit') : MISSING;
+      }
+      const idea = ideaById(data, t.ideaId);
+      return idea ? needOnSpace(data, m, idea.spaceId, 'edit') : adminOnly;
+    }
+    case 'task/toggle': {
+      const t = data.tasks.find((x) => x.id === action.taskId);
+      if (!t || !canSeeTask(data, m, t)) return MISSING;
+      // The assignee may tick off their own task; others need edit on the work.
+      if (full || t.ownerId === personId) return OK;
+      if (t.versionId) {
+        const v = versionOf(data, t.versionId);
+        return v ? needOnAccount(data, m, v.accountId, 'edit') : MISSING;
+      }
+      const idea = ideaById(data, t.ideaId);
+      return idea ? needOnSpace(data, m, idea.spaceId, 'edit') : adminOnly;
+    }
+
+    case 'link/add': {
+      if (full) return OK;
+      const l = action.link;
+      if (l.accountId) return needOnAccount(data, m, l.accountId, 'edit');
+      const idea = ideaById(data, l.ideaId);
+      if (idea) return needOnSpace(data, m, idea.spaceId, 'edit');
+      return no('Only the owner and admins add workspace-wide links.');
+    }
+  }
+  const unreachable: never = action;
+  return unreachable;
 }

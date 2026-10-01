@@ -10,7 +10,7 @@ import { useStore } from '../state/store';
 const CATEGORIES = Object.keys(LINK_CATEGORY_LABEL) as LinkCategory[];
 
 export function LinksPage() {
-  const { data, dispatch } = useStore();
+  const { data, dispatch, allowed } = useStore();
   const toast = useToast();
   const ready = useSimulatedLoad();
   const [params, setParams] = useSearchParams();
@@ -120,6 +120,7 @@ export function LinksPage() {
         </div>
       )}
 
+      {allowed({ type: 'link/add', link: { category: newCat, label: 'x', url: 'https://x' } }) && (
       <form className="card link-form" onSubmit={add} aria-label="Save a link">
         <h2 className="h3">
           Save a link <DemoTag>Session only</DemoTag>
@@ -139,6 +140,7 @@ export function LinksPage() {
           </button>
         </div>
       </form>
+      )}
     </div>
   );
 }
