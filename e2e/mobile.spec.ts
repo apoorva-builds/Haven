@@ -40,8 +40,16 @@ test('quick capture from the tab bar', async ({ page }) => {
 
 test('calendar becomes an agenda and the drawer reaches every section', async ({ page }) => {
   await open(page, '/calendar');
-  await expect(page.locator('.month')).toBeHidden();
+  // Phones get a compact visual month (covers only) above the agenda.
+  await expect(page.locator('.month')).toBeVisible();
+  await expect(page.locator('.month .cal-item').first()).toBeHidden();
   await expect(page.getByRole('region', { name: /Agenda/ })).toBeVisible();
+  await page.getByRole('button', { name: 'Previous month' }).click();
+  await page.getByRole('button', { name: /^Open .*: 3 posts/ }).last().click();
+  const day = page.getByRole('dialog');
+  await expect(day.locator('.dpost')).toHaveCount(3);
+  await day.getByRole('button', { name: 'Close day' }).click();
+  await expect(day).toHaveCount(0);
   await page.getByRole('button', { name: 'More sections' }).click();
   const drawer = page.getByRole('navigation', { name: 'All sections' });
   await drawer.getByRole('link', { name: 'Raw Library' }).click();

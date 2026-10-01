@@ -43,6 +43,6 @@ describe('creations', () => {
 
   it('keeps the Raw Library and finished videos apart', () => {
     expect(rawLibrary(data).some((a) => a.kind === 'final')).toBe(false);
-    expect(finishedVideos(data).map((a) => a.id).sort()).toEqual(['a-market-vertical', 'a-morning-vertical', 'a-morning-wide', 'a-spots-vertical']);
+    expect(finishedVideos(data).map((a) => a.id).sort()).toEqual(['a-evening-short', 'a-first-wide', 'a-market-vertical', 'a-morning-vertical', 'a-morning-wide', 'a-spots-vertical']);
   });
 });

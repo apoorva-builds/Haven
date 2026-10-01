@@ -56,12 +56,23 @@ docs/screenshots/      Review screenshots (light/dark × desktop/phone)
 - **Sample content.** Two fictional brands, **Pine & Paper** and **Little Atlas**, with five accounts (two YouTube, two Instagram, one TikTok). Handles end in `.sample` and none link to a real profile. Six ideas, a handful of posts and files, and two placeholder links on example.com. Every still and clip in `public/demo-media/` is painted on a canvas by `scripts/demo-media/scenes.js` (a night market, a desk in morning light, a reading room, desks and café tables from above). None are real photos or footage, and each carries a small burned-in “Haven sample · not a real photo / not real footage” mark. Regenerate with `node scripts/make-demo-media.mjs` (add `--only=packing.jpg` for one file).
 - **ⓘ buttons.** Main sections and less familiar features have an ⓘ button: Creation Gallery, account filter, post status, tiles and platform borders, Audience Pulse, Raw Library, finished video, Work, Ideas, Calendar and Links. The explanation appears on click or tap, one at a time, and closes on Escape (focus returns to the button), on an outside click, or when another opens. Panels stay inside the screen on phones and are announced to screen readers. The wording lives in `src/lib/help.ts`.
 
+## Calendar: the life of everything you've made
+
+- **Covers on days:** posted days show the real covers or video frames; several posts on one day become a small collage with the count. Planned posts are dashed outlines (and draggable chips on larger screens), so past and future never look alike. Empty weeks stay slim.
+- **Day View** (`?day=YYYY-MM-DD`, from the Calendar or Today): every post from that date, with its video, photos (browse them), platform, account and Space, caption and source. *Open in Haven* opens the creation; *View live post* appears only when a live link was saved. Move with the arrows, ←/→ keys, or the strip of nearby days with posts; Esc closes. Empty dates say so and offer the nearest days with posts.
+- **Years of work:** a ribbon of months with activity (covers and counts) jumps straight to any month, a year ago included.
+- **Today** shows the last four weeks and the week ahead as a ribbon of covers, opening the same Day View and the full Calendar.
+- **Time zones:** a post's day is the day it went live in the workspace time zone (`America/Los_Angeles` in the preview), so an 11:40 pm post stays on its day although it is already tomorrow in UTC.
+- **Access:** built from the viewer's own data, so collaborators see only permitted posts, and a direct Day View link reveals nothing else.
+- **Honest sources:** each post says where it came from. In the preview every posted record is *Recorded in Haven* (Mark as posted). No social account is connected, and no history is imported or synced.
+- Model: `src/lib/posts.ts`, `src/lib/time.ts` (unit tested); flows in `e2e/calendar.spec.ts`. Captures: [`docs/redesign/calendar/`](docs/redesign/calendar/).
+
 ## Today: a creator's dashboard
 
 Today opens on the creator's own work, then what's next.
 
 - **Memories:** posted creations they can open come back as a playable video or a photo post, with the post's caption and an *Open creation* link. One leads each day in rotation, and *Another memory* walks through the rest. A post from this day in an earlier year leads with *On this day*. Memories are never invented: with nothing posted, Today says so (`src/lib/memories.ts`, unit tested).
-- **Look what you've made:** a film strip of posted, then ready, creations; videos play quietly on hover or focus.
+- **Look what you've made:** a ribbon of the last four weeks and the week ahead, with real covers per day; it opens the Day View and the full Calendar.
 - **What's next:** the next task with *Continue*, quick actions (New idea, Creation Gallery, Calendar), *Needs attention* (tasks with Focus), *Coming up* (seven days) and *Pick up where you left off*.
 - **Personal photo (optional):** each person can add one from the photo circle. Preview: it's kept in this browser only (localStorage) and never uploaded. Without one, initials keep the page complete.
 - **Wordmark:** a temporary typographic placeholder at the top of Today. Replace it by putting your SVGs in `public/brand/` and setting the two paths at the top of `src/components/Wordmark.tsx`.
@@ -116,7 +127,7 @@ Applied so far to **Ideas** and the **Creation Gallery** only; the rest of Haven
 | `/library` | **Raw Library**: source files only (original photos, audio/music, unedited clips, brand assets). Finished posts are never listed here. |
 | `/` | **Today**: memories of posted work, look what you've made, the next action, needs attention, coming up, pick up where you left off |
 | `/ideas`, `/ideas/:id[/assets|/versions|/tasks]` | **Ideas** and the **Idea workspace**; the Versions tab holds the finished-video picker |
-| `/calendar` | Content and marketing perspectives, filters, drag to reschedule; agenda on phones |
+| `/calendar` | Visual publishing calendar: covers on days, Day View (`?day=`), months ribbon, filters, drag to reschedule; compact month and agenda on phones |
 | `/links`, `/campaigns` | Saved links; campaigns (reachable from ideas) |
 | `/team` | **Team & access** (preview): members, invitations, access by Space and account, preview as a collaborator |
 | `/accounts`, `/accounts/:id` | Redirect to the Creation Gallery |

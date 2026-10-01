@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { DemoData, Task, Version } from '../data/types';
+import type { DemoData, ISODate, Task } from '../data/types';
 import { useAccountName } from '../components/AccountSelector';
 import { InfoButton } from '../components/InfoButton';
 import { Icon } from '../components/Icon';
@@ -10,8 +10,10 @@ import { useToast } from '../components/Toast';
 import { TypeCover } from '../components/TypeCover';
 import { AccountBadge, Avatar, EmptyState, PlatformGlyph, SelectField, StatusPill, TextLink, useSimulatedLoad } from '../components/ui';
 import { Wordmark } from '../components/Wordmark';
-import { creationLabel, creationMedia } from '../lib/creations';
-import { addDays, daysBetween, formatDay, formatLongDate, relativeDay } from '../lib/dates';
+import { DayCollage, DayView, dayLabel, useDayParam } from '../components/DayView';
+import { calendarEntries, entriesByDay } from '../lib/posts';
+import { creationLabel } from '../lib/creations';
+import { addDays, daysBetween, formatDay, formatLongDate, fromISODate, relativeDay } from '../lib/dates';
 import { memoriesFor, rotateMemories, type Memory } from '../lib/memories';
 import { ideaImage, toneOf } from '../lib/studio';
 import { accountOf, assetOf, ideaOf, personOf, platformOf, taskMatchesFocus, versionMatchesFocus, type Focus } from '../state/selectors';
@@ -68,7 +70,7 @@ export function TodayPage() {
   // Honest numbers from the viewer's own data.
   const postedRecently = data.versions.filter((v) => v.status === 'Posted' && daysBetween(v.scheduledFor, data.today) <= 30 && v.scheduledFor <= data.today).length;
   const readyToGo = data.versions.filter((v) => v.status === 'Ready to post').length;
-  const made = useMemo(() => madeWork(data), [data]);
+  const { day: dayOpen, open: openDay, close: closeDay } = useDayParam();
 
   if (!ready) {
     return (
@@ -158,25 +160,7 @@ export function TodayPage() {
         <MemoryCard memories={memories} />
       </section>
 
-      <section className="t-made t-rise" style={{ ['--i' as string]: 3 }} aria-labelledby="made-h">
-        <div className="t-section-head">
-          <h2 id="made-h" className="t-section-h">
-            Look what you’ve made
-          </h2>
-          <TextLink to="/gallery">Creation Gallery</TextLink>
-        </div>
-        {made.length === 0 ? (
-          <p className="t-empty">Posted and ready creations will gather here. Nothing is ready or posted yet.</p>
-        ) : (
-          <ul className="t-film">
-            {made.map((v) => (
-              <li key={v.id}>
-                <FilmTile data={data} version={v} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <LifeRibbon onOpen={openDay} />
 
       <div className="today-grid">
         <section className="panel tasks-panel" aria-labelledby="tasks-h">
@@ -350,10 +334,12 @@ export function TodayPage() {
           {recent.map((i) => (
             <li key={i.id}>
               <Link to={`/ideas/${i.id}`} className="t-idea">
-                <IdeaThumb data={data} ideaId={i.id} large />
-                <span className="t-idea__title">{i.title}</span>
-                <span className="t-idea__meta">
-                  <StatusPill status={i.status} /> <span className="muted">{relativeDay(i.updatedAt, data.today)}</span>
+                <IdeaThumb data={data} ideaId={i.id} />
+                <span className="t-idea__text">
+                  <span className="t-idea__title">{i.title}</span>
+                  <span className="t-idea__meta">
+                    <StatusPill status={i.status} /> <span className="muted">{relativeDay(i.updatedAt, data.today)}</span>
+                  </span>
                 </span>
               </Link>
             </li>
@@ -362,31 +348,81 @@ export function TodayPage() {
             <li>
               <button type="button" className="t-idea t-idea--new" onClick={() => setAdding(true)}>
                 <span className="t-idea__plus">
-                  <Icon name="plus" size={22} />
+                  <Icon name="plus" size={20} />
                 </span>
-                <span className="t-idea__title">Start something new</span>
-                <span className="t-idea__meta muted">Capture an idea in seconds</span>
+                <span className="t-idea__text">
+                  <span className="t-idea__title">Start something new</span>
+                  <span className="t-idea__meta muted">Capture an idea in seconds</span>
+                </span>
               </button>
             </li>
           )}
         </ul>
       </section>
       {adding && <QuickAddModal onClose={() => setAdding(false)} />}
+      {dayOpen && <DayView day={dayOpen} onClose={closeDay} onDay={(d) => openDay(d, true)} />}
     </div>
   );
 }
 
-/** Posted and ready creations with media, newest first: the creator's own work. */
-function madeWork(data: DemoData): Version[] {
-  return data.versions
-    .filter((v) => (v.status === 'Posted' || v.status === 'Ready to post') && !ideaOf(data, v.ideaId)?.archived)
-    .filter((v) => {
-      const media = assetOf(data, v.mediaAssetId);
-      return (creationMedia(v) === 'video' && !!media?.videoUrl) || (v.photoAssetIds ?? []).some((id) => assetOf(data, id));
-    })
-    // Posted work leads, newest first; then what's ready to go.
-    .sort((a, b) => Number(b.status === 'Posted') - Number(a.status === 'Posted') || b.scheduledFor.localeCompare(a.scheduledFor))
-    .slice(0, 8);
+/**
+ * The life of your work: the last four weeks and the week ahead, each day
+ * showing its real covers. Opens any day; the full Calendar is one click away.
+ */
+function LifeRibbon({ onOpen }: { onOpen: (day: ISODate) => void }) {
+  const { data } = useStore();
+  const scroller = useRef<HTMLOListElement>(null);
+  const entries = useMemo(() => calendarEntries(data), [data]);
+  const byDay = useMemo(() => entriesByDay(entries), [entries]);
+  const days = Array.from({ length: 35 }, (_, i) => addDays(data.today, i - 27));
+  const postedRecently = entries.filter((e) => e.posted && e.day >= days[0] && e.day <= data.today).length;
+  const plannedSoon = entries.filter((e) => !e.posted && e.day >= data.today && e.day <= days[days.length - 1]).length;
+  const firstPosted = entries.find((e) => e.posted);
+
+  // Keep today in view, with the past to its left.
+  useEffect(() => {
+    const el = scroller.current?.querySelector<HTMLElement>('.ribbon__day.is-today');
+    if (el && scroller.current) scroller.current.scrollLeft = el.offsetLeft - scroller.current.clientWidth * 0.62;
+  }, []);
+
+  return (
+    <section className="ribbon t-rise" style={{ ['--i' as string]: 3 }} aria-labelledby="ribbon-h">
+      <div className="t-section-head">
+        <div>
+          <h2 id="ribbon-h" className="t-section-h">
+            Look what you’ve made
+          </h2>
+          <p className="ribbon__sum">
+            {postedRecently ? `${postedRecently} posted in the last four weeks` : 'Nothing posted in the last four weeks'}
+            {plannedSoon > 0 && ` · ${plannedSoon} planned this week`}
+            {firstPosted && ` · posting since ${formatDay(firstPosted.day, { month: 'long', year: 'numeric' })}`}
+          </p>
+        </div>
+        <TextLink to="/calendar">Open calendar</TextLink>
+      </div>
+      <ol className="ribbon__days" ref={scroller} aria-label="Your last four weeks and the week ahead">
+        {days.map((day, i) => {
+          const items = byDay.get(day) ?? [];
+          const date = fromISODate(day);
+          const monthStart = i === 0 || date.getDate() === 1;
+          return (
+            <li key={day} className={`ribbon__day ${day === data.today ? 'is-today' : ''} ${day > data.today ? 'is-future' : ''} ${items.length ? 'has-items' : ''}`}>
+              {monthStart && <span className="ribbon__month">{date.toLocaleDateString('en-US', { month: 'short' })}</span>}
+              <button type="button" className="ribbon__btn" onClick={() => onOpen(day)} aria-label={`Open ${dayLabel(day, items)}`}>
+                <span className="ribbon__dow" aria-hidden="true">
+                  {date.toLocaleDateString('en-US', { weekday: 'narrow' })}
+                </span>
+                <span className="ribbon__num" aria-hidden="true">
+                  {date.getDate()}
+                </span>
+                {items.length ? <DayCollage data={data} entries={items} /> : <span className="ribbon__empty" aria-hidden="true" />}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
 }
 
 function IdeaThumb({ data, ideaId, large = false }: { data: DemoData; ideaId: string; large?: boolean }) {
@@ -397,39 +433,6 @@ function IdeaThumb({ data, ideaId, large = false }: { data: DemoData; ideaId: st
     <span className={`t-thumb ${large ? 't-thumb--large' : ''} tone--${toneOf(idea)}`} aria-hidden="true">
       {image ? <img src={image} alt="" loading="lazy" /> : large ? <TypeCover title={idea.title} ratio="4 / 5" /> : <span className="t-thumb__type">{idea.title.charAt(0)}</span>}
     </span>
-  );
-}
-
-/** One of the creator's creations; videos play quietly on hover or focus. */
-function FilmTile({ data, version }: { data: DemoData; version: Version }) {
-  const video = useRef<HTMLVideoElement>(null);
-  const account = accountOf(data, version.accountId)!;
-  const platform = platformOf(data, account.platform);
-  const media = assetOf(data, version.mediaAssetId);
-  const photo = assetOf(data, version.photoAssetIds?.[0]);
-  const still = media?.art.image ?? photo?.art.image;
-  const title = version.title ?? ideaOf(data, version.ideaId)?.title ?? '';
-  const play = () => {
-    const v = video.current;
-    if (!v || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    v.play().catch(() => {});
-  };
-  const stop = () => {
-    const v = video.current;
-    if (v) {
-      v.pause();
-      v.currentTime = 0;
-    }
-  };
-  return (
-    <Link to={`/gallery/${version.id}`} className="t-film__tile" onMouseEnter={play} onMouseLeave={stop} onFocus={play} onBlur={stop} aria-label={`${title}, ${creationLabel(version, account, platform)}, ${version.status === 'Posted' ? 'posted' : 'ready to post'}`}>
-      <span className="t-film__media">
-        {media?.videoUrl ? <video ref={video} src={media.videoUrl} poster={still} muted loop playsInline preload="none" tabIndex={-1} aria-hidden="true" /> : still && <img src={still} alt="" loading="lazy" />}
-        <span className={`t-film__badge ${version.status === 'Posted' ? 'is-posted' : 'is-ready'}`}>{version.status === 'Posted' ? 'Posted' : 'Ready'}</span>
-      </span>
-      <span className="t-film__title">{title}</span>
-      <span className="t-film__meta">{creationLabel(version, account, platform)}</span>
-    </Link>
   );
 }
 

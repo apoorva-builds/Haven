@@ -11,34 +11,44 @@ test('memories bring back posted work, lead with "on this day", rotate, and open
   await expect(memory).toContainText('On this day · 1 year ago');
   await expect(memory).toContainText('Everything in one carry-on');
 
-  // Rotate through every memory; one of them is a playable video.
+  // Rotate through every memory and back to the first; one of them is a playable video.
   const next = page.getByRole('button', { name: /Another memory/ });
-  await expect(next).toContainText('1 of 3');
-  const titles = new Set<string>();
+  const total = Number((await next.textContent())!.match(/of (\d+)/)![1]);
+  expect(total).toBe(8);
   let sawVideo = false;
-  for (let i = 0; i < 3; i++) {
-    const region = page.locator('section.memory');
-    titles.add((await region.locator('.memory__title').textContent()) ?? '');
-    if (await region.locator('video[controls]').count()) sawVideo = true;
+  for (let i = 0; i < total; i++) {
+    await expect(next).toContainText(`${i + 1} of ${total}`);
+    if (await page.locator('section.memory video[controls]').count()) sawVideo = true;
     await next.click();
   }
-  expect(titles.size).toBe(3);
   expect(sawVideo).toBe(true);
-  await expect(next).toContainText('1 of 3');
+  await expect(next).toContainText(`1 of ${total}`);
 
   await page.locator('section.memory').getByRole('link', { name: /Open creation/ }).click();
   await expect(page).toHaveURL(/\/gallery\/v-ig-atlas-packing$/);
   await expect(page.locator('.creation__info')).toContainText('Posted');
 });
 
-test('look what you’ve made shows posted work first and opens each creation', async ({ page }) => {
+test('the ribbon shows real covers by day, opens a Day View, and leads to the full calendar', async ({ page }) => {
   await open(page, '/');
-  const film = page.locator('.t-film');
-  const tiles = film.locator('.t-film__tile');
-  await expect(tiles).toHaveCount(4);
-  await expect(tiles.first().locator('.t-film__badge')).toHaveText('Posted');
-  await tiles.first().click();
-  await expect(page).toHaveURL(/\/gallery\/v-/);
+  const ribbon = page.getByRole('region', { name: 'Look what you’ve made' });
+  await expect(ribbon).toContainText('posting since');
+  // A day with two posts shows a collage with its count.
+  const busy = ribbon.getByRole('button', { name: /: 2 posts$/ });
+  await expect(busy).toHaveCount(1);
+  await expect(busy.locator('.collage__count')).toHaveText('2');
+  // Planned days look different from posted ones.
+  await expect(ribbon.locator('.collage.is-planned').first()).toBeVisible();
+
+  await busy.click();
+  await expect(page).toHaveURL(/[?&]day=\d{4}-\d{2}-\d{2}/);
+  const day = page.getByRole('dialog');
+  await expect(day.locator('.dpost')).toHaveCount(2);
+  await page.keyboard.press('Escape');
+  await expect(day).toHaveCount(0);
+
+  await ribbon.getByRole('link', { name: /Open calendar/ }).click();
+  await expect(page).toHaveURL(/\/calendar$/);
 });
 
 test('next action, quick actions and the work list stay one click away', async ({ page }) => {
@@ -73,7 +83,7 @@ test('a personal photo is optional, kept in this browser, and per person', async
 
   // Sam has nothing posted he can open: an honest empty memory, no owner work.
   await expect(page.getByRole('heading', { name: 'Your posted work comes back here' })).toBeVisible();
-  await expect(page.locator('.t-film__tile')).toHaveCount(1);
+  await expect(page.locator('.ribbon .collage.is-posted')).toHaveCount(0);
   await page.getByRole('button', { name: 'Back to your view' }).click();
 
   await page.goto('/?instant');

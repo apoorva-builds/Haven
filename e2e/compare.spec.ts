@@ -12,6 +12,17 @@ const only = process.env.COMPARE_SCREENS?.split(',');
 const onlyDevice = process.env.COMPARE_DEVICES?.split(',');
 const allScreens = [
   { name: 'today', path: '/', fullPage: true },
+  { name: 'calendar', path: '/calendar', fullPage: true },
+  {
+    name: 'calendar-day',
+    path: '/calendar',
+    then: async (page: Page) => {
+      await page.getByRole('button', { name: 'Previous month' }).click();
+      await page.getByRole('button', { name: /^Open .*: 3 posts/ }).first().click();
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.waitForTimeout(500);
+    },
+  },
   { name: 'ideas', path: '/ideas', fullPage: true },
   { name: 'gallery', path: '/gallery', fullPage: true },
   { name: 'version', path: '/ideas/market-phrases/versions?v=v-ig-atlas' },

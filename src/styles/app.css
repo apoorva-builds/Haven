@@ -7670,3 +7670,712 @@ body {
     order: 3;
   }
 }
+
+/* ==========================================================================
+   Publishing calendar: covers on days, a Day View, and a ribbon on Today.
+   Posted work is full colour and solid; planned work is an outline with a
+   clock, so past and future never look alike.
+   ========================================================================== */
+
+/* Day collage: 1 cover, 2 side by side, 3 one big + two small, 4 a grid */
+.collage {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface-3);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 10px 20px -14px rgba(20, 14, 8, 0.5);
+}
+.collage--n1 {
+  grid-template: 1fr / 1fr;
+}
+.collage--n2 {
+  grid-template: 1fr / 1fr 1fr;
+}
+.collage--n3 {
+  grid-template: 1fr 1fr / 1.4fr 1fr;
+}
+.collage--n3 .collage__cell:first-child {
+  grid-row: span 2;
+}
+.collage--n4 {
+  grid-template: 1fr 1fr / 1fr 1fr;
+}
+.collage__cell {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.collage__cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.collage__blank {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--surface-3);
+}
+.collage__count {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: rgba(14, 14, 18, 0.66);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.collage.is-planned {
+  background: transparent;
+  box-shadow: none;
+  outline: 1.5px dashed var(--line-2);
+  outline-offset: -1.5px;
+  padding: 4px;
+}
+.collage.is-planned .collage__cell {
+  border-radius: 6px;
+}
+.collage.is-planned img {
+  opacity: 0.55;
+  filter: saturate(0.6);
+}
+.collage__count--planned {
+  background: var(--surface);
+  color: var(--ink-2);
+  box-shadow: 0 0 0 1px var(--line);
+}
+.collage.is-compact {
+  border-radius: 7px;
+}
+.collage.is-compact .collage__count {
+  height: 16px;
+  min-width: 16px;
+  font-size: 10px;
+  padding: 0 4px;
+  right: 3px;
+  bottom: 3px;
+}
+
+/* Month cells */
+.month__day {
+  min-height: 150px;
+}
+.month__day.is-past:not(.is-outside) {
+  background: color-mix(in srgb, var(--surface) 70%, var(--canvas));
+}
+.month__num {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.month__num:hover {
+  background: var(--cobalt-soft);
+  color: var(--cobalt);
+}
+.day-open {
+  display: block;
+  width: min(100%, 132px);
+  margin: 2px 0 4px;
+  border-radius: 10px;
+  transition: transform 300ms var(--ease);
+}
+.day-open:hover,
+.day-open:focus-visible {
+  transform: translateY(-3px) rotate(-0.8deg);
+}
+.day-open:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+.cal-item {
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 7px;
+  align-items: center;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px hsl(var(--hue) 40% 60% / 0.55);
+  border: 0;
+}
+.cal-item:hover {
+  box-shadow: inset 0 0 0 1px hsl(var(--hue) 45% 50%), var(--shadow-2);
+}
+.cal-item__thumb {
+  grid-row: span 2;
+  width: 26px;
+  height: 32px;
+  border-radius: 4px;
+  object-fit: cover;
+  opacity: 0.75;
+  filter: saturate(0.7);
+}
+.cal-item__acct,
+.cal-item__title {
+  grid-column: 2;
+}
+.legend__state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.legend__state::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+}
+.legend__state--posted::before {
+  background: linear-gradient(135deg, #c98b55, #3a4fb0);
+}
+.legend__state--planned::before {
+  border: 1.5px dashed var(--line-2);
+}
+.legend__tz {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+/* Months with work: years of posting at a glance */
+.months {
+  display: flex;
+  gap: 10px;
+  margin: -8px calc(var(--gutter) * -1) 20px;
+  padding: 6px var(--gutter) 12px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.months__item {
+  flex: none;
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  padding: 8px 10px 8px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  text-align: left;
+  transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.months__item:hover {
+  border-color: var(--line-2);
+  transform: translateY(-2px);
+}
+.months__item.is-current {
+  border-color: var(--cobalt);
+  background: var(--cobalt-soft);
+}
+.months__item.is-future .months__covers {
+  opacity: 0.6;
+}
+.months__covers {
+  display: flex;
+  height: 34px;
+}
+.months__covers img {
+  width: 26px;
+  height: 34px;
+  object-fit: cover;
+  border-radius: 5px;
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.months__covers img + img {
+  margin-left: -9px;
+}
+.months__none {
+  width: 26px;
+  height: 34px;
+  border-radius: 5px;
+  border: 1.5px dashed var(--line-2);
+}
+.months__label {
+  font-weight: 620;
+  font-size: 13px;
+}
+.months__label span {
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.months__count {
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+/* Day View */
+.dayview-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: stretch end;
+  background: rgba(10, 9, 8, 0.55);
+  backdrop-filter: blur(6px);
+  animation: dv-fade 220ms var(--ease) both;
+}
+@keyframes dv-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes dv-in {
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+}
+.dayview {
+  display: flex;
+  flex-direction: column;
+  width: min(640px, 100vw);
+  height: 100vh;
+  background: var(--canvas);
+  color: var(--ink);
+  box-shadow: -30px 0 80px -40px rgba(0, 0, 0, 0.6);
+  animation: dv-in 380ms var(--ease) both;
+}
+.dayview__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 24px 26px 14px;
+}
+.dayview__eyebrow {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--coral);
+}
+.dayview__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(30px, 4vw, 40px);
+  line-height: 1;
+}
+.dayview__sum {
+  margin: 8px 0 0;
+  color: var(--ink-3);
+  font-size: 13.5px;
+}
+.dayview__nav {
+  display: flex;
+  gap: 4px;
+  flex: none;
+}
+.dayview__strip {
+  display: flex;
+  gap: 10px;
+  padding: 4px 26px 16px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--hairline);
+  scrollbar-width: none;
+}
+.dayview__chip {
+  flex: none;
+  display: grid;
+  gap: 5px;
+  width: 58px;
+  justify-items: center;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  border-radius: 10px;
+  padding: 4px;
+  transition: background var(--dur) var(--ease);
+}
+.dayview__chip:hover {
+  background: var(--surface-2);
+}
+.dayview__chip.is-current {
+  background: var(--cobalt-soft);
+  color: var(--cobalt);
+  font-weight: 650;
+}
+.dayview__scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 22px 26px 30px;
+  overscroll-behavior: contain;
+}
+.dayview__posts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 34px;
+}
+.dayview__foot {
+  margin: 28px 0 0;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.dayview__empty {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  padding: 30px 0;
+}
+.dayview__empty-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 26px;
+}
+.dayview__jump {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.dpost {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+  animation: t-rise 600ms var(--ease) both;
+}
+.dpost__media {
+  position: relative;
+  max-height: 520px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #0f0e0d;
+  box-shadow: var(--media-shadow);
+}
+.dpost__media video,
+.dpost__media img,
+.dpost__media .tcover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.dpost.is-planned .dpost__media {
+  outline: 1.5px dashed var(--line-2);
+  outline-offset: 4px;
+}
+.dpost.is-planned .dpost__media img,
+.dpost.is-planned .dpost__media video {
+  filter: saturate(0.75);
+}
+.dpost__pager {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 20px;
+  background: rgba(14, 14, 18, 0.6);
+  color: #fff;
+  font-size: 12px;
+  backdrop-filter: blur(6px);
+}
+.dpost__pager button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: #fff;
+}
+.dpost__pager button:disabled {
+  opacity: 0.35;
+}
+.dpost__body {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+.dpost__state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.dpost__state.is-posted {
+  color: var(--jade);
+}
+.dpost__state.is-planned {
+  color: var(--ink-3);
+}
+.dpost__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 28px;
+  line-height: 1.05;
+}
+.dpost__where {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.dpost__caption {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 1.3;
+  color: var(--ink-2);
+}
+.dpost__source {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.dpost__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+}
+.dpost__nolink {
+  font-size: 12.5px;
+}
+
+/* Today: the life of your work */
+.ribbon__sum {
+  margin: 6px 0 0;
+  color: var(--ink-3);
+  font-size: 13.5px;
+}
+.ribbon__days {
+  display: flex;
+  gap: 8px;
+  margin: 0 calc(var(--gutter) * -1);
+  padding: 22px var(--gutter) 16px;
+  list-style: none;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+}
+.ribbon__day {
+  position: relative;
+  flex: none;
+  width: 74px;
+}
+.ribbon__day.has-items {
+  width: 104px;
+}
+.ribbon__month {
+  position: absolute;
+  top: -20px;
+  left: 4px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.ribbon__btn {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  width: 100%;
+  padding: 6px 4px 8px;
+  border-radius: 14px;
+  transition: background var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.ribbon__btn:hover {
+  background: var(--surface-2);
+}
+.ribbon__btn:hover .collage {
+  transform: translateY(-3px) rotate(-1deg);
+}
+.ribbon__btn .collage {
+  transition: transform 350ms var(--ease);
+}
+.ribbon__dow {
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+}
+.ribbon__num {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.ribbon__empty {
+  display: block;
+  width: 6px;
+  height: 6px;
+  margin: 24px 0;
+  border-radius: 50%;
+  background: var(--line-2);
+}
+.ribbon__day.is-today .ribbon__btn {
+  background: var(--coral-soft);
+}
+.ribbon__day.is-today .ribbon__num,
+.ribbon__day.is-today .ribbon__dow {
+  color: var(--coral);
+}
+.ribbon__day.is-future .ribbon__num {
+  color: var(--ink-3);
+}
+
+/* Pick up where you left off: compact rows */
+.t-continue__list {
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px 22px;
+}
+.t-idea {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  padding: 8px;
+  border-radius: 14px;
+  transition: background var(--dur) var(--ease);
+}
+.t-idea:hover {
+  background: var(--surface-2);
+}
+.t-idea__text {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.t-idea__title {
+  font-size: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.t-idea--new .t-idea__plus {
+  width: 58px;
+  height: 72px;
+  aspect-ratio: auto;
+  border-radius: 9px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dayview,
+  .dayview-backdrop,
+  .dpost {
+    animation: none;
+  }
+}
+
+@media (max-width: 720px) {
+  /* Phones: a compact visual month (covers only) above the agenda */
+  .month {
+    display: block !important;
+  }
+  .month__day {
+    min-height: 0;
+    aspect-ratio: 1 / 1.25;
+    padding: 3px;
+    gap: 2px;
+  }
+  .month__day .cal-item,
+  .month__day .cal-mk {
+    display: none;
+  }
+  .month__num {
+    width: 22px;
+    height: 22px;
+    font-size: 11.5px;
+  }
+  .month__head span {
+    padding: 8px 2px;
+    text-align: center;
+    font-size: 10px;
+  }
+  .day-open {
+    margin: 0;
+  }
+  .collage {
+    border-radius: 7px;
+  }
+  .collage__count {
+    height: 16px;
+    min-width: 16px;
+    font-size: 10px;
+    padding: 0 4px;
+    right: 2px;
+    bottom: 2px;
+  }
+  .dayview {
+    width: 100vw;
+  }
+  .dayview-backdrop {
+    place-items: stretch;
+  }
+  .dayview__head {
+    padding: 18px 16px 10px;
+  }
+  .dayview__strip,
+  .dayview__scroll {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .dpost {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+  .dpost__media {
+    max-height: 70vh;
+  }
+  .ribbon__day {
+    width: 56px;
+  }
+  .ribbon__day.has-items {
+    width: 84px;
+  }
+}
+/* Weeks with nothing on them stay slim, so the month isn't a wall of empty boxes. */
+.month__week.is-quiet .month__day {
+  min-height: 52px;
+  aspect-ratio: auto;
+}
+.filters__more {
+  display: contents;
+}
+.filters__toggle,
+.day-open--planned {
+  display: none;
+}
+@media (max-width: 720px) {
+  .filters__toggle {
+    display: inline-flex;
+  }
+  .filters__more {
+    display: none;
+  }
+  .filters__more.is-open {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+  }
+  .day-open--planned {
+    display: block;
+  }
+}

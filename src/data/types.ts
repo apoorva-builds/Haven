@@ -268,6 +268,14 @@ export interface Version {
   checklist: ChecklistItem[];
   /** Filled in by the creator after posting natively. */
   liveUrl?: string;
+  /** When it went live (UTC ISO). Its calendar day is taken in the workspace time zone. */
+  postedAt?: string;
+  /**
+   * Where the posted record came from. "manual": recorded in Haven (Mark as
+   * posted). "connected": imported from a connected account where the platform
+   * supports it (none in the preview).
+   */
+  postSource?: 'manual' | 'connected';
 }
 
 export type TaskStage = 'Plan' | 'Shoot' | 'Edit' | 'Review' | 'Post';
@@ -325,6 +333,8 @@ export interface Workspace {
   id: string;
   name: string;
   planLabel: string;
+  /** IANA time zone for calendar days, e.g. "America/Los_Angeles". */
+  timeZone: string;
   storageLimitGB: number;
   /** Demo baseline for media not modelled as individual assets. */
   otherStorageGB: number;

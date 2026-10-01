@@ -181,7 +181,8 @@ test('ideas list filters and shows an empty state', async ({ page }) => {
   await page.getByRole('button', { name: 'Clear filters' }).click();
   await expect(page.locator('.idea-row')).toHaveCount(6);
   await page.getByRole('button', { name: /^Archived/ }).click();
-  await expect(page.locator('.idea-row')).toHaveCount(1);
+  // Archived ideas include earlier published work kept in the history.
+  await expect(page.locator('.idea-row')).toHaveCount(4);
 });
 
 test('loading state appears before content', async ({ page }) => {
@@ -359,12 +360,12 @@ test('Creation Gallery: every account together, one compact account filter', asy
   await menu.getByRole('group', { name: 'Pine & Paper' }).getByRole('menuitemradio', { name: /Instagram/ }).click();
 
   await expect(page).toHaveURL(/account=ig-pine/);
-  await expect(page.locator('.ctile')).toHaveCount(3);
+  await expect(page.locator('.ctile')).toHaveCount(4);
   for (const t of await page.locator('.ctile').all()) await expect(t.locator('.ctile__label')).toContainText('Instagram');
 
   await chooseAccount(page, null);
   await page.getByLabel('Status', { exact: true }).selectOption('posted');
-  await expect(page.locator('.ctile')).toHaveCount(2);
+  await expect(page.locator('.ctile')).toHaveCount(3);
 });
 
 test('Audience Pulse: sample counts, 7- and 30-day change, trend, and no stale count shown as current', async ({ page }) => {

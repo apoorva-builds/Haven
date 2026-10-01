@@ -11,7 +11,7 @@ describe('memories', () => {
     const ms = memoriesFor(data);
     expect(ms.length).toBeGreaterThan(0);
     for (const m of ms) expect(m.version.status).toBe('Posted');
-    expect(ms.map((m) => m.version.id).sort()).toEqual(['v-ig-atlas-cafe', 'v-ig-atlas-packing', 'v-yt-pine-spots']);
+    expect(ms.map((m) => m.version.id).sort()).toEqual(['v-ig-atlas-cafe', 'v-ig-atlas-counter', 'v-ig-atlas-packing', 'v-ig-pine-evening', 'v-ig-pine-spots', 'v-yt-pine-evening', 'v-yt-pine-first', 'v-yt-pine-spots']);
   });
 
   it('mark a post from this day in an earlier year as on this day, and lead with it', () => {
@@ -39,7 +39,7 @@ describe('memories', () => {
   it('follow access: a collaborator only gets memories they can open', () => {
     expect(memoriesFor(scopeData(data, 'sam').data)).toEqual([]);
     const jonah = memoriesFor(scopeData(data, 'jonah').data).map((m) => m.version.id).sort();
-    expect(jonah).toEqual(['v-ig-atlas-cafe', 'v-ig-atlas-packing', 'v-yt-pine-spots']);
+    expect(jonah).toEqual(['v-ig-atlas-cafe', 'v-ig-atlas-counter', 'v-ig-atlas-packing', 'v-ig-pine-evening', 'v-ig-pine-spots', 'v-yt-pine-evening', 'v-yt-pine-first', 'v-yt-pine-spots']);
   });
 
   it('are empty when nothing is posted, instead of inventing activity', () => {

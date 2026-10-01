@@ -113,7 +113,7 @@ test('previewing as a restricted collaborator hides other work, including direct
   await bar.getByRole('button', { name: 'Back to your view' }).click();
   await expect(bar).toHaveCount(0);
   await nav(page, 'Creation Gallery');
-  await expect(page.locator('.ctile')).toHaveCount(11);
+  await expect(page.locator('.ctile')).toHaveCount(12);
 });
 
 test('every edit follows the previewed person’s capabilities, including uploads and tasks', async ({ page }) => {

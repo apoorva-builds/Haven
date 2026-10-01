@@ -24,7 +24,7 @@ export type Action =
   | { type: 'version/cover'; versionId: string; assetId: string }
   | { type: 'version/media'; versionId: string; assetId: string | undefined }
   | { type: 'version/reschedule'; versionId: string; date: ISODate }
-  | { type: 'version/live-url'; versionId: string; url: string }
+  | { type: 'version/live-url'; versionId: string; url: string; at?: string }
   | { type: 'asset/favorite'; assetId: string }
   | { type: 'asset/promote'; assetId: string }
   | { type: 'asset/add-session'; asset: Asset; forVersionId?: string }
@@ -166,7 +166,12 @@ export function reducer(state: DemoData, action: Action): DemoData {
 
     case 'version/live-url': {
       const url = action.url.trim();
-      const next = mapVersion(state, action.versionId, (v) => ({ ...v, liveUrl: url || undefined, status: url ? 'Posted' : v.status }));
+      // Recorded in Haven: the post went live now, unless it already had a time.
+      const next = mapVersion(state, action.versionId, (v) =>
+        url
+          ? { ...v, liveUrl: url, status: 'Posted', postedAt: v.postedAt ?? action.at ?? new Date().toISOString(), postSource: v.postSource ?? 'manual' }
+          : { ...v, liveUrl: undefined },
+      );
       const version = next.versions.find((v) => v.id === action.versionId);
       if (!url || !version) return next;
       const account = next.accounts.find((a) => a.id === version.accountId);

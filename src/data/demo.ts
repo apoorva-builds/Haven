@@ -10,6 +10,10 @@
  */
 import { addDays, toISODate } from '../lib/dates';
 import { sampleSnapshots } from '../lib/audience';
+import { zonedInstant } from '../lib/time';
+
+/** The sample workspace's time zone. Calendar days for posts are taken here. */
+export const TIME_ZONE = 'America/Los_Angeles';
 import type { Account, Asset, AudienceSeries, Campaign, ChecklistItem, DemoData, Idea, LinkItem, MarketingEvent, Member, Notification, Person, Platform, Task, Version } from './types';
 
 export const PLATFORMS: Platform[] = [
@@ -44,6 +48,8 @@ export const READY_CHECKS = [
 export function createDemoData(now: Date = new Date()): DemoData {
   const today = toISODate(now);
   const d = (offset: number) => addDays(today, offset);
+  /** A wall-clock time on a sample day, in the workspace time zone. */
+  const at = (date: string, time: string) => zonedInstant(date, time, TIME_ZONE);
   /** The same calendar day one year earlier, so the sample has an honest "on this day" memory. */
   const yearAgo = (() => {
     const t = new Date(now);
@@ -237,6 +243,43 @@ export function createDemoData(now: Date = new Date()): DemoData {
       updatedAt: yearAgo,
       archived: true,
     }),
+    // Earlier published work, archived after posting. It still belongs to the creator's history.
+    idea({
+      id: 'evening-desk',
+      title: 'One lamp, three evenings',
+      campaignId: 'routines',
+      spaceId: 'pine',
+      status: 'Posted',
+      due: d(-20),
+      art: { motif: 'studio', hue: 220, hue2: 30, image: '/demo-media/desk-lamp.jpg' },
+      concept: 'Archived sample: an evening desk set-up, posted as a carousel and a Short.',
+      updatedAt: d(-20),
+      archived: true,
+    }),
+    idea({
+      id: 'counter-phrases',
+      title: 'Ordering at the counter',
+      campaignId: 'phrase-guides',
+      spaceId: 'atlas',
+      status: 'Posted',
+      due: d(-20),
+      art: { motif: 'bloom', hue: 30, hue2: 20, image: '/demo-media/cafe-table.jpg' },
+      concept: 'Archived sample: one photo post with three counter phrases.',
+      updatedAt: d(-20),
+      archived: true,
+    }),
+    idea({
+      id: 'first-morning',
+      title: 'My first slow morning',
+      campaignId: 'routines',
+      spaceId: 'pine',
+      status: 'Posted',
+      due: d(-75),
+      art: { motif: 'sunrise', hue: 30, hue2: 240, image: '/demo-media/morning-wide.jpg' },
+      concept: 'Archived sample: the first long video in the series.',
+      updatedAt: d(-75),
+      archived: true,
+    }),
   ];
 
   const base = { favorite: false, storage: 'original' as const, platforms: [] as Asset['platforms'], moments: [] as Asset['moments'], tags: [] as string[] };
@@ -347,6 +390,11 @@ export function createDemoData(now: Date = new Date()): DemoData {
     photo('a-cafe-1', 'Café words — slide 1.jpg', 'cafe-words', 'bloom', 110, 'cafe-cup.jpg'),
     photo('a-cafe-2', 'Café words — slide 2.jpg', 'cafe-words', 'waves', 90, 'cafe-table.jpg'),
     { ...photo('a-packing-1', 'Carry-on — flat lay.jpg', 'packing-list', 'grain', 200, 'packing.jpg'), uploadedAt: yearAgo },
+    photo('a-evening-1', 'Evening desk — slide 1.jpg', 'evening-desk', 'studio', 220, 'desk-lamp.jpg'),
+    photo('a-evening-2', 'Evening desk — slide 2.jpg', 'evening-desk', 'studio', 160, 'desk-plant.jpg'),
+    photo('a-counter-1', 'Counter phrases.jpg', 'counter-phrases', 'bloom', 30, 'cafe-table.jpg'),
+    finished('a-evening-short', 'Evening desk — Short.webm', 'morning-vertical.webm', ['evening-desk'], 220, 30, 240),
+    finished('a-first-wide', 'First slow morning — long cut.webm', 'morning-wide.webm', ['first-morning'], 30, 240, 1900),
     {
       ...base,
       id: 'a-brand-kit',
@@ -486,6 +534,8 @@ export function createDemoData(now: Date = new Date()): DemoData {
       scheduledFor: d(-6),
       status: 'Posted',
       liveUrl: 'https://example.com/sample-posted-short',
+      postedAt: at(d(-6), '17:05'),
+      postSource: 'manual',
       done: 6,
     }),
     v({
@@ -500,6 +550,8 @@ export function createDemoData(now: Date = new Date()): DemoData {
       scheduledFor: d(-3),
       status: 'Posted',
       liveUrl: 'https://example.com/sample-posted-carousel',
+      postedAt: at(d(-3), '09:20'),
+      postSource: 'manual',
       done: 6,
     }),
     v({
@@ -514,6 +566,85 @@ export function createDemoData(now: Date = new Date()): DemoData {
       scheduledFor: yearAgo,
       status: 'Posted',
       liveUrl: 'https://example.com/sample-posted-packing',
+      postedAt: at(yearAgo, '10:00'),
+      postSource: 'manual',
+      done: 6,
+    }),
+    v({
+      id: 'v-ig-pine-spots',
+      ideaId: 'study-spots',
+      accountId: 'ig-pine',
+      format: 'Reel',
+      aspect: '9:16',
+      mediaAssetId: 'a-spots-vertical',
+      captions: { en: 'Four quiet places to work. Which one is yours?' },
+      scheduledFor: d(-6),
+      status: 'Posted',
+      liveUrl: 'https://example.com/sample-posted-reel',
+      postedAt: at(d(-6), '18:30'),
+      postSource: 'manual',
+      done: 6,
+    }),
+    v({
+      id: 'v-ig-pine-evening',
+      ideaId: 'evening-desk',
+      accountId: 'ig-pine',
+      format: 'Carousel',
+      aspect: '4:5',
+      coverAssetId: 'a-evening-1',
+      photoAssetIds: ['a-evening-1', 'a-evening-2'],
+      captions: { en: 'One lamp, three evenings. Swipe for the plant corner.' },
+      scheduledFor: d(-20),
+      status: 'Posted',
+      liveUrl: 'https://example.com/sample-posted-evening',
+      postedAt: at(d(-20), '19:30'),
+      postSource: 'manual',
+      done: 6,
+    }),
+    v({
+      id: 'v-yt-pine-evening',
+      ideaId: 'evening-desk',
+      accountId: 'yt-pine',
+      format: 'Short',
+      aspect: '9:16',
+      mediaAssetId: 'a-evening-short',
+      captions: { en: 'The evening desk in thirty seconds.' },
+      scheduledFor: d(-20),
+      status: 'Posted',
+      // Late at night: already the next day in UTC, still this day for the workspace.
+      postedAt: at(d(-20), '23:40'),
+      postSource: 'manual',
+      done: 6,
+    }),
+    v({
+      id: 'v-ig-atlas-counter',
+      ideaId: 'counter-phrases',
+      accountId: 'ig-atlas',
+      format: 'Post',
+      aspect: '4:5',
+      coverAssetId: 'a-counter-1',
+      photoAssetIds: ['a-counter-1'],
+      captions: { en: 'Three phrases for the counter. Save it for your next trip.' },
+      scheduledFor: d(-20),
+      status: 'Posted',
+      liveUrl: 'https://example.com/sample-posted-counter',
+      postedAt: at(d(-20), '12:15'),
+      postSource: 'manual',
+      done: 6,
+    }),
+    v({
+      id: 'v-yt-pine-first',
+      ideaId: 'first-morning',
+      accountId: 'yt-pine',
+      format: 'Video',
+      aspect: '16:9',
+      mediaAssetId: 'a-first-wide',
+      captions: { en: 'My first slow morning, the long version.' },
+      scheduledFor: d(-75),
+      status: 'Posted',
+      liveUrl: 'https://example.com/sample-posted-first',
+      postedAt: at(d(-75), '08:05'),
+      postSource: 'manual',
       done: 6,
     }),
   ];
@@ -548,7 +679,7 @@ export function createDemoData(now: Date = new Date()): DemoData {
   return {
     today,
     generatedAt: now.toISOString(),
-    workspace: { id: 'preview', name: 'Haven Preview', planLabel: 'Workspace', storageLimitGB: 1024, otherStorageGB: 240 },
+    workspace: { id: 'preview', name: 'Haven Preview', planLabel: 'Workspace', timeZone: TIME_ZONE, storageLimitGB: 1024, otherStorageGB: 240 },
     currentUserId: 'me',
     brands,
     audience,

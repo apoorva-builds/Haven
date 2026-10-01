@@ -129,6 +129,17 @@ These are the same rules as `src/lib/access.ts`, moved into the database.
 - **Unsupported actions:** anything a platform doesn't support stays clearly manual in the UI.
 - **Upkeep:** connections can be disconnected or revoked at any time. Tokens are refreshed by background jobs, and failures mark the connection as needing attention.
 
+## Publishing history
+
+- **Where posts come from:**
+  - **Recorded in Haven:** someone with Publish marks a version as posted and saves the live link. Haven stores `posted_at` (the moment it went live) and `post_source = 'manual'`.
+  - **Imported from a connected account:** only where the platform's official API lets the account's owner grant read access to their published posts. A background job imports posts the API returns, matched to existing versions by live URL or platform post ID, otherwise kept as imported posts. `post_source = 'connected'`, with the connection and the API's post ID.
+  - Haven never scrapes profiles or asks for passwords. If a platform has no supported import, its history in Haven is whatever was recorded manually, and the calendar says so.
+- **Honest coverage:** each connection stores how far back the import reached (`synced_from`, `synced_until`, last run, errors). The calendar labels days outside that range as "not imported" rather than implying nothing was posted.
+- **Time zones:** `posted_at` is stored in UTC; the workspace has an IANA time zone (changeable in settings), and calendar days are computed in it, server-side and in the client, with the same function.
+- **Access:** posts follow their account's access rules, so the database returns only permitted posts for any month, day or direct link.
+- **Scale:** month and day queries use an index on `(workspace_id, account_id, posted_at)`. The months ribbon reads a small per-month summary (counts and up to three covers), so years of work stay fast.
+
 ## Phases
 
 Each phase ends with a review and its own tests.

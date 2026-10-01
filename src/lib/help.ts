@@ -57,7 +57,7 @@ export const HELP = {
   },
   calendar: {
     topic: 'Calendar',
-    text: 'Planned versions by date. The content view colours posts by platform; the marketing view colours them by campaign. Drag a post to another day to reschedule it for this session.',
+    text: 'Your publishing history and your plans. Posted days show their real covers, with a count when several went live; planned posts are outlines you can drag to another day (this session only). Open any day to see every post from it. Days are in your workspace time zone. In this preview, posts appear when they are recorded in Haven; no social account is connected or imported.',
   },
   links: {
     topic: 'Links',
