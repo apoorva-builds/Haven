@@ -53,8 +53,6 @@ const SAMPLES = {
   'studio/note-update': { type: 'studio/note-update', noteId: 'n-l-1', patch: { resolved: true } },
   'studio/note-delete': { type: 'studio/note-delete', noteId: 'n-l-1' },
   'studio/note-carry': { type: 'studio/note-carry', noteId: 'n-l-1', toCutId: 'c-morning-1', startSec: 1, newId: 'n-c' },
-  'studio/chapter-add': { type: 'studio/chapter-add', chapter: { id: 'ch-new', cutId: 'c-morning-1', title: 'x', startSec: 10 } },
-  'studio/chapter-delete': { type: 'studio/chapter-delete', chapterId: 'ch-morning-2' },
   'workspace/storage-add': { type: 'workspace/storage-add', gb: 500 },
 } satisfies { [K in Action['type']]: Extract<Action, { type: K }> };
 

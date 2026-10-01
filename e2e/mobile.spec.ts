@@ -107,7 +107,7 @@ test('phone: review a video, tap a note to seek, and add a note at the playhead'
   await panel.getByRole('button', { name: 'Jump to 0:55:20' }).tap();
   await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime)).toBe(3320);
   await expect(panel.locator('.tnote.is-now')).toContainText('Wrap-up repeats the intro');
-  await page.getByTestId('mark-moment').tap();
+  await page.getByTestId('add-note').tap();
   await page.getByTestId('note-composer').getByLabel('Note').fill('Keep this pause.');
   await page.getByTestId('note-composer').getByRole('button', { name: 'Add note' }).tap();
   await expect(panel.locator('.tnote', { hasText: 'Keep this pause.' })).toContainText('0:55:20');

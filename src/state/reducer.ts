@@ -7,7 +7,7 @@
 import { READY_CHECKS } from '../data/demo';
 import { addDays, daysBetween } from '../lib/dates';
 import { toggleGrant } from '../lib/access';
-import type { AccessGrant, AccessScope, Aspect, Asset, Capability, Chapter, Cut, DemoData, Idea, IdeaStatus, ISODate, LinkItem, Task, TimeNote, Version, VersionStatus, VideoPlan, WorkspaceRole } from '../data/types';
+import type { AccessGrant, AccessScope, Aspect, Asset, Capability, Cut, DemoData, Idea, IdeaStatus, ISODate, LinkItem, Task, TimeNote, Version, VersionStatus, VideoPlan, WorkspaceRole } from '../data/types';
 
 export type Action =
   | { type: 'task/toggle'; taskId: string }
@@ -61,8 +61,6 @@ export type Action =
   | { type: 'studio/note-update'; noteId: string; patch: Partial<Pick<TimeNote, 'text' | 'section' | 'startSec' | 'endSec' | 'resolved'>> }
   | { type: 'studio/note-delete'; noteId: string }
   | { type: 'studio/note-carry'; noteId: string; toCutId: string; startSec: number; endSec?: number; newId: string }
-  | { type: 'studio/chapter-add'; chapter: Chapter }
-  | { type: 'studio/chapter-delete'; chapterId: string }
   | { type: 'workspace/storage-add'; gb: number };
 
 /** Plan fields that can be edited after the plan is made. */
@@ -399,12 +397,6 @@ export function reducer(state: DemoData, action: Action): DemoData {
       });
       return { ...state, notes: [...state.notes, note] };
     }
-
-    case 'studio/chapter-add':
-      return { ...state, chapters: [...state.chapters, action.chapter] };
-
-    case 'studio/chapter-delete':
-      return { ...state, chapters: state.chapters.filter((c) => c.id !== action.chapterId) };
 
     case 'workspace/storage-add':
       // Preview only: nothing is charged and the allowance resets on reload.

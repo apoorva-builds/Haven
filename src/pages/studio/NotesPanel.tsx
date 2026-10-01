@@ -100,7 +100,7 @@ export function NotesPanel({
       <div className="npanel__list" ref={list}>
         {notes.length === 0 && !draft && (
           <p className="npanel__empty">
-            No notes on {cut.label} yet. {mayNote ? 'Press M to mark a moment, or drag across the timeline to mark a range.' : 'You can watch and read notes here.'}
+            No notes on {cut.label} yet. {mayNote ? 'Pause at any second and press N (or “Note at …”) to say what should change in the next draft.' : 'You can watch and read notes here.'}
           </p>
         )}
         {groups.map((g) => (
@@ -132,7 +132,7 @@ export function NotesPanel({
                   <footer className="tnote__foot">
                     {author && <Avatar person={author} size={18} />}
                     <span className="tnote__who">{author?.name ?? 'Someone'}</span>
-                    {n.carriedFrom && <span className="tnote__carried">Carried forward</span>}
+                    {n.carriedFrom && <span className="tnote__carried">From an earlier draft</span>}
                     <span className="spacer" />
                     {mayNote && confirmDelete !== n.id && (
                       <>
@@ -180,7 +180,7 @@ export function NotesPanel({
               Earlier feedback
             </h3>
             <p className="earlier__lede">
-              Open notes from earlier cuts. Their times refer to that cut, not this one. Carry a note forward at the right moment here, or resolve it where it was left.
+              Open notes on earlier drafts, kept at their original times for comparison. Haven never moves them. If one still applies, add it to this draft at the second you choose.
             </p>
             {earlier.map(({ note: n, from }) => (
               <article key={n.id} className="tnote tnote--earlier" data-earlier={n.id}>
@@ -196,10 +196,10 @@ export function NotesPanel({
                       className="btn btn--primary btn--xs"
                       onClick={() => {
                         const len = n.endSec !== undefined ? n.endSec - n.startSec : undefined;
-                        dispatch({ type: 'studio/note-carry', noteId: n.id, toCutId: cut.id, startSec: t, endSec: len !== undefined ? Math.min(duration, t + len) : undefined, newId: uid('note') });
+                        dispatch({ type: 'studio/note-carry', noteId: n.id, toCutId: cut.id, startSec: Math.floor(t), endSec: len !== undefined ? Math.min(Math.floor(duration), Math.floor(t) + len) : undefined, newId: uid('note') });
                       }}
                     >
-                      Carry to {fmt(t)}
+                      Add here at {fmt(Math.floor(t))}
                     </button>
                   )}
                   {mayNote && (
@@ -255,12 +255,12 @@ function Composer({ draft, setDraft, sections, duration, cut }: { draft: NoteDra
     >
       <div className="composer__times">
         <label>
-          <span>From</span>
+          <span>At</span>
           <input className="mono" value={start} onChange={(e) => setStart(e.target.value)} aria-label="Start time" inputMode="numeric" />
         </label>
         <label>
-          <span>To</span>
-          <input className="mono" value={end} placeholder="moment" onChange={(e) => setEnd(e.target.value)} aria-label="End time (optional)" inputMode="numeric" />
+          <span>Until</span>
+          <input className="mono" value={end} placeholder="optional" onChange={(e) => setEnd(e.target.value)} aria-label="End time (optional)" inputMode="numeric" />
         </label>
         <label className="composer__section">
           <span>Section</span>
@@ -281,7 +281,7 @@ function Composer({ draft, setDraft, sections, duration, cut }: { draft: NoteDra
           if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) save();
           if (e.key === 'Escape') setDraft(null);
         }}
-        placeholder="What should change here?"
+        placeholder="What should change in the next draft?"
         aria-label="Note"
       />
       {bad && <p className="composer__error">Times must be within {fmt(duration)}, and the end after the start.</p>}

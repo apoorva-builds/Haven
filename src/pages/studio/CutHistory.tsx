@@ -34,7 +34,7 @@ export function CutHistory({ project, onOpen, onCompare, onUpload }: { project: 
 
   return (
     <div className="history">
-      <ol className="history__list" aria-label="Cuts, oldest first" data-testid="cut-history">
+      <ol className="history__list" aria-label="Drafts, oldest first" data-testid="cut-history">
         {cuts.map((c, i) => {
           const asset = data.assets.find((a) => a.id === c.assetId);
           const notes = notesOf(data, c.id);
@@ -56,7 +56,7 @@ export function CutHistory({ project, onOpen, onCompare, onUpload }: { project: 
                       setRenaming(null);
                     }}
                   >
-                    <input autoFocus value={name} onChange={(e) => setName(e.target.value)} aria-label="Cut name" />
+                    <input autoFocus value={name} onChange={(e) => setName(e.target.value)} aria-label="Draft name" />
                     <button type="submit" className="btn btn--primary btn--xs">
                       Save
                     </button>
@@ -143,7 +143,7 @@ export function CutHistory({ project, onOpen, onCompare, onUpload }: { project: 
             <button type="button" className="btn btn--primary btn--sm" onClick={onUpload}>
               <Icon name="upload" size={14} /> Add a draft
             </button>
-            <span className="muted small">A new upload never replaces an earlier cut.</span>
+            <span className="muted small">Edits happen in your editor. A new upload never replaces an earlier draft.</span>
           </li>
         )}
         {posted.map((v) => {
@@ -176,13 +176,13 @@ export function CutHistory({ project, onOpen, onCompare, onUpload }: { project: 
           Storage <DemoTag title="Bundled samples use sample sizes; files you add use their real size.">Sample sizes</DemoTag>
         </h3>
         <p className="history__total">
-          This video’s cuts: <strong data-testid="project-storage">{formatSize(projectStorageMB(data, project.id))}</strong>
+          This video’s drafts: <strong data-testid="project-storage">{formatSize(projectStorageMB(data, project.id))}</strong>
         </p>
         <StorageMeter compact onAdd={allowed({ type: 'workspace/storage-add', gb: 1 }) ? () => setAddStorage(true) : undefined} />
         <ul className="history__rules">
           <li>A file linked in several places counts once.</li>
-          <li>Archived cuts stay in history and still use storage.</li>
-          <li>Deleting a cut frees its space, after you confirm, unless something else uses the file.</li>
+          <li>Archived drafts stay in history and still use storage.</li>
+          <li>Deleting a draft frees its space, after you confirm, unless something else uses the file.</li>
           <li>Deleting a note or a link never touches the video file.</li>
         </ul>
       </aside>

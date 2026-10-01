@@ -442,17 +442,6 @@ export function authorize(data: DemoData, personId: string, action: Action): Dec
       if (!n || !from || !to || from.id !== to.id || !canSeeProject(data, m, to)) return MISSING;
       return mayGiveFeedback(data, m, to);
     }
-    case 'studio/chapter-add': {
-      const p = projectOfCut(data, data.cuts.find((c) => c.id === action.chapter.cutId));
-      if (!p || !canSeeProject(data, m, p)) return MISSING;
-      return needOnProject(data, m, p, 'edit');
-    }
-    case 'studio/chapter-delete': {
-      const ch = data.chapters.find((c) => c.id === action.chapterId);
-      const p = projectOfCut(data, data.cuts.find((c) => c.id === ch?.cutId));
-      if (!ch || !p || !canSeeProject(data, m, p)) return MISSING;
-      return needOnProject(data, m, p, 'edit');
-    }
     case 'workspace/storage-add':
       // Billing changes belong to the owner and admins.
       return adminOnly;

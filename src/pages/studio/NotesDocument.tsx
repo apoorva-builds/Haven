@@ -91,7 +91,7 @@ export function NotesDocument({ project, cut, duration, onClose }: { project: Vi
             </ul>
           </section>
         ))}
-        {notes.length === 0 && <p className="muted">No notes on this cut yet.</p>}
+        {notes.length === 0 && <p className="muted">No notes on this draft yet.</p>}
       </article>
     </Modal>
   );

@@ -23,8 +23,8 @@ export function StudioPage() {
     <div className="page studio-index">
       <PageHeader
         eyebrow="Video Studio"
-        title="Plan it, cut it, get it right"
-        lede="Each video keeps its plan, every draft, and the notes on each one together, from first footage to the posted cut."
+        title="Watch it, note it, get it right"
+        lede="Watch each draft, pause on any second, and note what should change in the next one. Edits happen in your editor; Haven keeps the drafts and notes together."
         actions={
           mayPlan ? (
             <button type="button" className="btn btn--primary" onClick={() => setPlanning({})} data-testid="plan-video">
@@ -162,7 +162,7 @@ export function PlanVideoModal({ ideaId, onClose }: { ideaId?: string; onClose: 
             disabled={!may}
             onClick={() => {
               dispatch(action);
-              toast('Plan started. Add footage or a first cut whenever it’s ready.', 'ok');
+              toast('Plan started. Upload footage or a first draft whenever it’s ready.', 'ok');
               onClose();
               navigate(`/studio/${action.projectId}/plan`);
             }}

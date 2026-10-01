@@ -115,7 +115,7 @@ export function StudioProjectPage() {
           ))}
         </div>
         {active === 'review' && cuts.length > 0 && (
-          <div className="cutbar" role="radiogroup" aria-label="Cut">
+          <div className="cutbar" role="radiogroup" aria-label="Draft">
             {cuts
               .filter((c) => !c.archived || c.id === cut?.id)
               .map((c) => (
@@ -194,7 +194,7 @@ export function StudioProjectPage() {
               action={
                 mayAdd ? (
                   <button type="button" className="btn btn--primary" onClick={() => setUploading(true)}>
-                    <Icon name="upload" size={15} /> Add footage or a first cut
+                    <Icon name="upload" size={15} /> Upload footage or a first draft
                   </button>
                 ) : undefined
               }
@@ -219,7 +219,7 @@ export function StudioProjectPage() {
           project={project}
           onClose={() => setUploading(false)}
           onAdded={(c) => {
-            toast(`${c.label} added. Earlier cuts are kept.`, 'ok');
+            toast(`${c.label} added. Earlier drafts are kept.`, 'ok');
             if (active === 'review') openCut(c.id);
           }}
         />

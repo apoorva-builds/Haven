@@ -148,7 +148,7 @@ export function UploadCut({ project, onClose, onAdded }: { project: VideoProject
 
   return (
     <Modal
-      title={`Add a cut to “${project.title}”`}
+      title={`Upload a draft of “${project.title}”`}
       onClose={busy ? () => {} : onClose}
       footer={
         <>
@@ -230,7 +230,7 @@ export function UploadCut({ project, onClose, onAdded }: { project: VideoProject
           <Icon name="alert" size={16} />
           <div>
             <p>{phase.message}</p>
-            <p className="muted small">Earlier cuts are untouched.</p>
+            <p className="muted small">Earlier drafts are untouched.</p>
             <div className="upcut__retry">
               {phase.storage && (
                 <button type="button" className="btn btn--primary btn--sm" onClick={() => setAddStorage(true)}>

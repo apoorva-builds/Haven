@@ -17,7 +17,7 @@ export function CompareCuts({ project, left: initialLeft, right: initialRight }:
   const b = useSide(project, right);
 
   if (playable.length < 2) {
-    return <p className="muted compare__empty">Add a second playable cut to compare drafts side by side.</p>;
+    return <p className="muted compare__empty">Upload a second playable draft to compare drafts side by side.</p>;
   }
 
   const playBoth = () => {
@@ -36,7 +36,7 @@ export function CompareCuts({ project, left: initialLeft, right: initialRight }:
   const rightCut = cuts.find((c) => c.id === right);
 
   return (
-    <section className="compare" aria-label="Compare cuts" data-testid="compare">
+    <section className="compare" aria-label="Compare drafts" data-testid="compare">
       <div className="compare__bar">
         <button type="button" className="btn btn--primary btn--sm" onClick={playBoth}>
           {a.clock.playing || b.clock.playing ? 'Pause both' : <><Icon name="play" size={14} /> Play both</>}
@@ -46,7 +46,7 @@ export function CompareCuts({ project, left: initialLeft, right: initialRight }:
           <span>Link playheads</span>
         </label>
         <p className="muted small compare__warn">
-          Linked playheads share a timestamp, not a moment: cuts can differ in timing.
+          Linked playheads share a timestamp, not a moment: drafts can differ in timing.
           {diff !== 0 && leftCut && rightCut && (
             <>
               {' '}
@@ -64,8 +64,8 @@ export function CompareCuts({ project, left: initialLeft, right: initialRight }:
         ].map(({ side, value, set, other }, i) => (
           <figure key={i} className="compare__pane">
             <label className="compare__pick">
-              <span className="sr-only">{i === 0 ? 'Left cut' : 'Right cut'}</span>
-              <select value={value} onChange={(e) => set(e.target.value)} aria-label={i === 0 ? 'Left cut' : 'Right cut'}>
+              <span className="sr-only">{i === 0 ? 'Left draft' : 'Right draft'}</span>
+              <select value={value} onChange={(e) => set(e.target.value)} aria-label={i === 0 ? 'Left draft' : 'Right draft'}>
                 {playable.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.label}

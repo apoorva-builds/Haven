@@ -33,6 +33,7 @@ describe('timecodes', () => {
     expect(lengthLabel(3600)).toBe('1 hr 00 min');
   });
   it('parses what people type', () => {
+    expect(parseTimecode('00:14:32')).toBe(872);
     expect(parseTimecode('1:02:03')).toBe(3723);
     expect(parseTimecode('4:05')).toBe(245);
     expect(parseTimecode('45')).toBe(45);
