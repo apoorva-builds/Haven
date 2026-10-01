@@ -161,12 +161,85 @@ export interface Idea {
   updatedAt: ISODate;
   archived: boolean;
   learningNotes?: string;
+  /** Planning fields for a video; everything except the title is optional. */
+  plan?: VideoPlan;
 }
 
-export type AssetKind = 'final' | 'raw' | 'cutaway' | 'photo' | 'audio' | 'cover' | 'document';
+export interface PlannedSection {
+  id: string;
+  title: string;
+  /** Rough target length in seconds, if known. */
+  targetSec?: number;
+}
+
+export interface VideoPlan {
+  audience?: string;
+  hook?: string;
+  /** One line per beat. */
+  outline: string[];
+  sections: PlannedSection[];
+}
+
+/*
+ * Video Studio. A VideoProject is one video being made for an idea (e.g. the
+ * vertical edit, or the long YouTube cut). It keeps every cut together, from
+ * original footage to the final cut, and links to the account versions
+ * (creations) that will post it. Notes belong to one exact cut.
+ */
+export type CutKind = 'footage' | 'draft' | 'final';
+
+export interface Cut {
+  id: string;
+  projectId: string;
+  /** "Original footage", "Draft 1", "Final cut"… editable. */
+  label: string;
+  kind: CutKind;
+  assetId: string;
+  addedAt: string;
+  addedById: string;
+  /** Archived cuts stay in history and still use storage. */
+  archived?: boolean;
+}
+
+export interface Chapter {
+  id: string;
+  cutId: string;
+  title: string;
+  startSec: number;
+}
+
+export interface TimeNote {
+  id: string;
+  cutId: string;
+  /** Section name, e.g. "Opening". */
+  section?: string;
+  startSec: number;
+  /** A range when set; a single moment otherwise. */
+  endSec?: number;
+  text: string;
+  resolved: boolean;
+  authorId: string;
+  createdAt: string;
+  /** Carried forward deliberately from a note on an earlier cut. */
+  carriedFrom?: string;
+}
+
+export interface VideoProject {
+  id: string;
+  ideaId: string;
+  title: string;
+  aspect: Aspect;
+  /** The account versions (creations) that will post this video. */
+  versionIds: string[];
+  currentCutId?: string;
+  approvedCutId?: string;
+}
+
+export type AssetKind = 'final' | 'draft' | 'raw' | 'cutaway' | 'photo' | 'audio' | 'cover' | 'document';
 
 export const ASSET_KIND_LABEL: Record<AssetKind, string> = {
   final: 'Finished video',
+  draft: 'Draft cut',
   raw: 'Raw video',
   cutaway: 'Cutaway',
   photo: 'Photo',
@@ -214,6 +287,11 @@ export interface Asset {
   platforms: PlatformId[];
   musicRights?: MusicRights;
   duplicateOfId?: string;
+  /**
+   * Content fingerprint. Two references to the same fingerprint are one file
+   * and count once towards storage.
+   */
+  fingerprint?: string;
   moments: Moment[];
   /** Created during this browser session only. Never persisted. */
   sessionOnly?: boolean;
@@ -336,6 +414,8 @@ export interface Workspace {
   /** IANA time zone for calendar days, e.g. "America/Los_Angeles". */
   timeZone: string;
   storageLimitGB: number;
+  /** Extra storage added in this preview session (no charge; resets on reload). */
+  addedStorageGB?: number;
   /** Demo baseline for media not modelled as individual assets. */
   otherStorageGB: number;
 }
@@ -384,6 +464,10 @@ export interface DemoData {
   versions: Version[];
   tasks: Task[];
   links: LinkItem[];
+  projects: VideoProject[];
+  cuts: Cut[];
+  chapters: Chapter[];
+  notes: TimeNote[];
   marketing: MarketingEvent[];
   notifications: Notification[];
 }

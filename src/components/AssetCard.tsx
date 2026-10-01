@@ -9,6 +9,7 @@ import { MediaSourceNote, VideoPlayer } from './VideoPlayer';
 
 export const KIND_ICON: Record<AssetKind, IconName> = {
   final: 'play',
+  draft: 'film',
   raw: 'film',
   cutaway: 'layers',
   photo: 'image',

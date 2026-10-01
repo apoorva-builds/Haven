@@ -14,7 +14,7 @@ import { zonedInstant } from '../lib/time';
 
 /** The sample workspace's time zone. Calendar days for posts are taken here. */
 export const TIME_ZONE = 'America/Los_Angeles';
-import type { Account, Asset, AudienceSeries, Campaign, ChecklistItem, DemoData, Idea, LinkItem, MarketingEvent, Member, Notification, Person, Platform, Task, Version } from './types';
+import type { Account, Asset, AudienceSeries, Campaign, Chapter, ChecklistItem, Cut, DemoData, Idea, LinkItem, MarketingEvent, Member, Notification, Person, Platform, Task, TimeNote, Version, VideoProject } from './types';
 
 export const PLATFORMS: Platform[] = [
   { id: 'youtube', name: 'YouTube', glyph: 'YT', hue: 10, tier: 'core' },
@@ -169,7 +169,18 @@ export function createDemoData(now: Date = new Date()): DemoData {
         { id: 's2', label: 'Each phrase to camera, two speeds', done: true },
         { id: 's3', label: 'Vertical safe-frame pass', done: false },
       ],
+      references: [{ id: 'r1', label: 'Sample reference: slow-then-fast phrase format', url: 'https://example.com/reference' }],
       peopleIds: ['me', 'jonah'],
+      plan: {
+        audience: 'First-time visitors who want to order food without pointing.',
+        hook: 'Five phrases. Ten seconds each. Order like a regular.',
+        outline: ['Lanterns and noise, title card', 'Each phrase slowly, then at speed', 'Save-this end card'],
+        sections: [
+          { id: 'ps1', title: 'Opening', targetSec: 3 },
+          { id: 'ps2', title: 'Phrases', targetSec: 19 },
+          { id: 'ps3', title: 'End card', targetSec: 4 },
+        ],
+      },
     }),
     idea({
       id: 'morning-routine',
@@ -186,6 +197,17 @@ export function createDemoData(now: Date = new Date()): DemoData {
         { id: 's2', label: 'Planner close-up', done: false },
       ],
       peopleIds: ['me', 'jonah', 'priya'],
+      plan: {
+        audience: 'Students who want a calm start without a strict routine.',
+        hook: 'One quiet hour, in real time. Work along with me.',
+        outline: ['Welcome and what we’ll do', 'Set up the desk', 'Tea, then the first focused block', 'A short check-in at the midpoint', 'Deep work', 'Wrap up and plan next week'],
+        sections: [
+          { id: 'ps1', title: 'Welcome', targetSec: 240 },
+          { id: 'ps2', title: 'Desk setup', targetSec: 600 },
+          { id: 'ps3', title: 'Deep work', targetSec: 2400 },
+          { id: 'ps4', title: 'Wrap-up', targetSec: 360 },
+        ],
+      },
     }),
     idea({
       id: 'desk-setup',
@@ -315,9 +337,20 @@ export function createDemoData(now: Date = new Date()): DemoData {
   });
 
   const assets: Asset[] = [
-    finished('a-market-vertical', 'Night market phrases — vertical.webm', 'market-vertical.webm', [HERO_IDEA_ID], 18, 175, 380),
+    // Draft 2 of the market video is the finished edit every short-form account uses.
+    { ...finished('a-market-vertical', 'Night market phrases — Draft 2.webm', 'market-vertical.webm', [HERO_IDEA_ID], 18, 175, 380), durationSec: 26, videoUrl: '/demo-media/studio/market-draft2.webm', fingerprint: 'sample:market-draft2' },
+    {
+      ...finished('a-market-draft1', 'Night market phrases — Draft 1.webm', 'market-vertical.webm', [HERO_IDEA_ID], 18, 175, 410),
+      kind: 'draft',
+      durationSec: 30,
+      videoUrl: '/demo-media/studio/market-draft1.webm',
+      uploadedAt: d(-4),
+      tags: ['draft', 'sample'],
+      fingerprint: 'sample:market-draft1',
+    },
     finished('a-morning-vertical', 'Quiet morning — vertical.webm', 'morning-vertical.webm', ['morning-routine'], 28, 250, 290),
-    finished('a-morning-wide', 'Quiet morning — long cut.webm', 'morning-wide.webm', ['morning-routine'], 30, 230, 2100),
+    // A genuinely one-hour, seekable sample (3.9 MB on disk; 2.1 GB is the sample figure a real hour would take).
+    { ...finished('a-morning-wide', 'Quiet morning — long cut.webm', 'morning-wide.webm', ['morning-routine'], 30, 230, 2100), durationSec: 3600, videoUrl: '/demo-media/studio/morning-long.webm', fingerprint: 'sample:morning-long' },
     finished('a-spots-vertical', 'Quiet places — Short.webm', 'quiet-places-vertical.webm', ['study-spots'], 250, 200, 260),
     {
       ...base,
@@ -649,6 +682,48 @@ export function createDemoData(now: Date = new Date()): DemoData {
     }),
   ];
 
+
+  /*
+   * Video Studio samples. Two videos: a short vertical edit with two drafts
+   * (Draft 2 removed a pause, so timings differ), and a one-hour long cut with
+   * chapters and notes near the beginning, middle and end.
+   */
+  const projects: VideoProject[] = [
+    { id: 'proj-market', ideaId: HERO_IDEA_ID, title: 'Night market phrases — vertical', aspect: '9:16', versionIds: ['v-tt-pine', 'v-ig-atlas', 'v-yt-atlas-short', 'v-ig-pine-cross'], currentCutId: 'c-market-2' },
+    { id: 'proj-morning', ideaId: 'morning-routine', title: 'A quiet morning — long cut', aspect: '16:9', versionIds: ['v-yt-pine'], currentCutId: 'c-morning-1' },
+  ];
+  const cuts: Cut[] = [
+    { id: 'c-market-1', projectId: 'proj-market', label: 'Draft 1', kind: 'draft', assetId: 'a-market-draft1', addedAt: at(d(-4), '16:20'), addedById: 'jonah' },
+    { id: 'c-market-2', projectId: 'proj-market', label: 'Draft 2', kind: 'draft', assetId: 'a-market-vertical', addedAt: at(d(-1), '11:05'), addedById: 'jonah' },
+    { id: 'c-morning-0', projectId: 'proj-morning', label: 'Original footage', kind: 'footage', assetId: 'a-desk-raw', addedAt: at(d(-4), '08:40'), addedById: 'me' },
+    { id: 'c-morning-1', projectId: 'proj-morning', label: 'Draft 1', kind: 'draft', assetId: 'a-morning-wide', addedAt: at(d(-1), '18:30'), addedById: 'jonah' },
+  ];
+  const chapters: Chapter[] = [
+    ['Welcome and the plan', 0],
+    ['Setting up the desk', 240],
+    ['Tea and the first quiet hour', 840],
+    ['Midpoint: what changed this week', 1680],
+    ['Deep work, in real time', 2040],
+    ['Wrap-up and next week', 3120],
+  ].map(([title, startSec], i) => ({ id: `ch-morning-${i + 1}`, cutId: 'c-morning-1', title: title as string, startSec: startSec as number }));
+  const note = (id: string, cutId: string, startSec: number, endSec: number | undefined, section: string, text: string, authorId: string, resolved = false, day = -1): TimeNote => ({
+    id, cutId, startSec, endSec, section, text, authorId, resolved, createdAt: at(d(day), '15:00'),
+  });
+  const notes: TimeNote[] = [
+    note('n-m1-1', 'c-market-1', 0, 3, 'Opening', 'Title card is hard to read over the lanterns. Darken behind it.', 'me', true, -3),
+    note('n-m1-2', 'c-market-1', 9, 13, 'Phrases', 'Cut this pause. It loses people right after phrase 2.', 'me', true, -3),
+    note('n-m1-3', 'c-market-1', 21, 26, 'Phrases', 'Replace this shot of the stall: the sign shows a real shop name.', 'jonah', false, -3),
+    note('n-m2-1', 'c-market-2', 0, 3, 'Opening', 'Hook lands now. Could the first phrase start half a second earlier?', 'me'),
+    note('n-m2-2', 'c-market-2', 6, undefined, 'Phrases', 'Caption overlaps the safe zone on TikTok here.', 'sam'),
+    note('n-m2-3', 'c-market-2', 22, 26, 'End card', 'End card: add “Save this for your next trip”.', 'priya', true),
+    note('n-l-1', 'c-morning-1', 45, 130, 'Welcome and the plan', 'Intro runs long. Keep the window shot, trim the talking to one minute.', 'priya'),
+    note('n-l-2', 'c-morning-1', 238, undefined, 'Setting up the desk', 'Chapter title appears two seconds late.', 'jonah'),
+    note('n-l-3', 'c-morning-1', 1680, 1890, 'Midpoint: what changed this week', 'Good honest check-in. Add a lower third with the three priorities.', 'me'),
+    note('n-l-4', 'c-morning-1', 1990, undefined, 'Midpoint: what changed this week', 'Music swell is too loud here.', 'priya'),
+    note('n-l-5', 'c-morning-1', 3320, 3480, 'Wrap-up and next week', 'Wrap-up repeats the intro. Cut to the next-week plan.', 'me'),
+    note('n-l-6', 'c-morning-1', 3580, undefined, 'Wrap-up and next week', 'End screen safe area checked.', 'jonah', true),
+  ];
+
   const tasks: Task[] = [
     { id: 't1', title: 'Approve the market Reel cover', ideaId: HERO_IDEA_ID, versionId: 'v-ig-atlas', ownerId: 'me', due: d(0), stage: 'Review', done: false },
     { id: 't2', title: 'Record phrase 5 again, slower', ideaId: HERO_IDEA_ID, ownerId: 'me', due: d(0), stage: 'Shoot', done: false },
@@ -693,6 +768,10 @@ export function createDemoData(now: Date = new Date()): DemoData {
     versions,
     tasks,
     links,
+    projects,
+    cuts,
+    chapters,
+    notes,
     marketing,
     notifications,
   };

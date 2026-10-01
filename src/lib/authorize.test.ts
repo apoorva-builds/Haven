@@ -40,9 +40,27 @@ const SAMPLES = {
   'member/grant': { type: 'member/grant', personId: 'sam', scope: { kind: 'space', id: 'atlas' }, capability: 'view', on: true },
   'member/invite': { type: 'member/invite', name: 'Kai', email: 'kai@example.com', role: 'collaborator', grants: [] },
   'member/remove': { type: 'member/remove', personId: 'sam' },
+  // Studio samples use the long morning video, which Sam can't see.
+  'studio/plan': { type: 'studio/plan', projectId: 'p-new', ideaId: 'morning-routine', existingIdea: true, title: 'Vertical cut', spaceId: 'pine', accountIds: ['ig-pine'], aspect: '9:16' },
+  'studio/plan-update': { type: 'studio/plan-update', ideaId: 'morning-routine', patch: { concept: 'x' } },
+  'studio/cut-add': { type: 'studio/cut-add', cut: { id: 'c-new', projectId: 'proj-morning', label: 'Draft 2', kind: 'draft', assetId: 'new', addedAt: '2026-01-01T00:00:00Z', addedById: 'me' }, asset: upload({ ideaIds: ['morning-routine'] }), makeCurrent: true },
+  'studio/cut-update': { type: 'studio/cut-update', cutId: 'c-morning-1', label: 'First cut' },
+  'studio/cut-current': { type: 'studio/cut-current', cutId: 'c-morning-0' },
+  'studio/cut-archive': { type: 'studio/cut-archive', cutId: 'c-morning-0', archived: true },
+  'studio/cut-delete': { type: 'studio/cut-delete', cutId: 'c-morning-0' },
+  'studio/approve': { type: 'studio/approve', cutId: 'c-morning-1', approved: true },
+  'studio/note-add': { type: 'studio/note-add', note: { id: 'n-new', cutId: 'c-morning-1', startSec: 1, text: 'x', resolved: false, authorId: 'sam', createdAt: '2026-01-01T00:00:00Z' } },
+  'studio/note-update': { type: 'studio/note-update', noteId: 'n-l-1', patch: { resolved: true } },
+  'studio/note-delete': { type: 'studio/note-delete', noteId: 'n-l-1' },
+  'studio/note-carry': { type: 'studio/note-carry', noteId: 'n-l-1', toCutId: 'c-morning-1', startSec: 1, newId: 'n-c' },
+  'studio/chapter-add': { type: 'studio/chapter-add', chapter: { id: 'ch-new', cutId: 'c-morning-1', title: 'x', startSec: 10 } },
+  'studio/chapter-delete': { type: 'studio/chapter-delete', chapterId: 'ch-morning-2' },
+  'workspace/storage-add': { type: 'workspace/storage-add', gb: 500 },
 } satisfies { [K in Action['type']]: Extract<Action, { type: K }> };
 
-const ok = (person: string, action: Action) => authorize(data, person, action).ok;
+/** Notes are always written in the actor's own name. */
+const as = (person: string, a: Action): Action => (a.type === 'studio/note-add' ? { ...a, note: { ...a.note, authorId: person } } : a);
+const ok = (person: string, action: Action) => authorize(data, person, as(person, action)).ok;
 
 describe('authorize: every action type has a rule', () => {
   it('the owner and admins may do everything', () => {

@@ -7,7 +7,7 @@
 import { READY_CHECKS } from '../data/demo';
 import { addDays, daysBetween } from '../lib/dates';
 import { toggleGrant } from '../lib/access';
-import type { AccessGrant, AccessScope, Asset, Capability, DemoData, IdeaStatus, ISODate, LinkItem, Task, Version, VersionStatus, WorkspaceRole } from '../data/types';
+import type { AccessGrant, AccessScope, Aspect, Asset, Capability, Chapter, Cut, DemoData, Idea, IdeaStatus, ISODate, LinkItem, Task, TimeNote, Version, VersionStatus, VideoPlan, WorkspaceRole } from '../data/types';
 
 export type Action =
   | { type: 'task/toggle'; taskId: string }
@@ -34,10 +34,42 @@ export type Action =
   | { type: 'member/role'; personId: string; role: Exclude<WorkspaceRole, 'owner'> }
   | { type: 'member/grant'; personId: string; scope: AccessScope; capability: Capability; on: boolean }
   | { type: 'member/invite'; name: string; email: string; role: Exclude<WorkspaceRole, 'owner'>; grants: AccessGrant[] }
-  | { type: 'member/remove'; personId: string };
+  | { type: 'member/remove'; personId: string }
+  // Video Studio
+  | {
+      type: 'studio/plan';
+      /** Ids chosen by the caller so the page can open the new plan. */
+      projectId: string;
+      /** An existing idea, or a new one created with `title`. */
+      ideaId: string;
+      existingIdea: boolean;
+      title: string;
+      spaceId: string;
+      accountIds: string[];
+      aspect: Aspect;
+      concept?: string;
+      plan?: VideoPlan;
+    }
+  | { type: 'studio/plan-update'; ideaId: string; patch: PlanPatch }
+  | { type: 'studio/cut-add'; cut: Cut; asset?: Asset; makeCurrent: boolean }
+  | { type: 'studio/cut-update'; cutId: string; label: string }
+  | { type: 'studio/cut-current'; cutId: string }
+  | { type: 'studio/cut-archive'; cutId: string; archived: boolean }
+  | { type: 'studio/cut-delete'; cutId: string }
+  | { type: 'studio/approve'; cutId: string; approved: boolean }
+  | { type: 'studio/note-add'; note: TimeNote }
+  | { type: 'studio/note-update'; noteId: string; patch: Partial<Pick<TimeNote, 'text' | 'section' | 'startSec' | 'endSec' | 'resolved'>> }
+  | { type: 'studio/note-delete'; noteId: string }
+  | { type: 'studio/note-carry'; noteId: string; toCutId: string; startSec: number; endSec?: number; newId: string }
+  | { type: 'studio/chapter-add'; chapter: Chapter }
+  | { type: 'studio/chapter-delete'; chapterId: string }
+  | { type: 'workspace/storage-add'; gb: number };
+
+/** Plan fields that can be edited after the plan is made. */
+export type PlanPatch = Partial<Pick<Idea, 'title' | 'concept' | 'script' | 'references' | 'shotList' | 'plan'>>;
 
 let counter = 0;
-const uid = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${(counter++).toString(36)}`;
+export const uid = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${(counter++).toString(36)}`;
 
 export function reducer(state: DemoData, action: Action): DemoData {
   switch (action.type) {
@@ -101,8 +133,14 @@ export function reducer(state: DemoData, action: Action): DemoData {
         .filter((a) => !a.ideaIds.includes(action.ideaId) || a.inLibrary || a.ideaIds.length > 1)
         .map((a) => (a.ideaIds.includes(action.ideaId) ? { ...a, ideaIds: a.ideaIds.filter((x) => x !== action.ideaId) } : a));
       const removedVersionIds = new Set(state.versions.filter((v) => v.ideaId === action.ideaId).map((v) => v.id));
+      const removedProjects = new Set(state.projects.filter((p) => p.ideaId === action.ideaId).map((p) => p.id));
+      const removedCuts = new Set(state.cuts.filter((c) => removedProjects.has(c.projectId)).map((c) => c.id));
       return {
         ...state,
+        projects: state.projects.filter((p) => !removedProjects.has(p.id)),
+        cuts: state.cuts.filter((c) => !removedCuts.has(c.id)),
+        notes: state.notes.filter((n) => !removedCuts.has(n.cutId)),
+        chapters: state.chapters.filter((c) => !removedCuts.has(c.cutId)),
         ideas: state.ideas.filter((i) => i.id !== action.ideaId),
         versions: state.versions.filter((v) => v.ideaId !== action.ideaId),
         tasks: state.tasks.filter((t) => t.ideaId !== action.ideaId && !(t.versionId && removedVersionIds.has(t.versionId))),
@@ -233,7 +271,152 @@ export function reducer(state: DemoData, action: Action): DemoData {
 
     case 'member/remove':
       return { ...state, members: state.members.filter((m) => m.personId !== action.personId || m.role === 'owner') };
+
+    /* Video Studio. Every change here lasts for this browser session only. */
+    case 'studio/plan': {
+      let next = state;
+      if (!action.existingIdea) {
+        next = reducer(state, { type: 'idea/add', title: action.title, accountIds: action.accountIds, spaceId: action.spaceId });
+        // idea/add makes its own id; give the new idea the caller's id.
+        const made = next.ideas[0];
+        next = {
+          ...next,
+          ideas: next.ideas.map((i) => (i.id === made.id ? { ...i, id: action.ideaId, concept: action.concept ?? '', plan: action.plan } : i)),
+          versions: next.versions.map((v) => (v.ideaId === made.id ? { ...v, ideaId: action.ideaId, aspect: action.aspect } : v)),
+        };
+      } else {
+        // Add a version for any chosen account the idea doesn't have yet.
+        const idea = next.ideas.find((i) => i.id === action.ideaId);
+        if (!idea) return state;
+        for (const accountId of action.accountIds) {
+          if (!next.versions.some((v) => v.ideaId === idea.id && v.accountId === accountId)) next = reducer(next, { type: 'version/add', ideaId: idea.id, accountId });
+        }
+        if (action.plan) next = { ...next, ideas: next.ideas.map((i) => (i.id === idea.id ? { ...i, plan: i.plan ?? action.plan } : i)) };
+      }
+      const versionIds = next.versions.filter((v) => v.ideaId === action.ideaId && action.accountIds.includes(v.accountId)).map((v) => v.id);
+      const title = action.title.trim() || next.ideas.find((i) => i.id === action.ideaId)?.title || 'Untitled video';
+      return { ...next, projects: [...next.projects, { id: action.projectId, ideaId: action.ideaId, title, aspect: action.aspect, versionIds }] };
+    }
+
+    case 'studio/plan-update':
+      return {
+        ...state,
+        ideas: state.ideas.map((i) => (i.id === action.ideaId ? { ...i, ...action.patch, updatedAt: state.today } : i)),
+      };
+
+    case 'studio/cut-add': {
+      // A new upload is always a new cut. Nothing earlier is replaced.
+      const assets = action.asset && !state.assets.some((a) => a.id === action.asset!.id) ? [action.asset, ...state.assets] : state.assets;
+      return {
+        ...state,
+        assets,
+        cuts: [...state.cuts, action.cut],
+        projects: action.makeCurrent ? state.projects.map((p) => (p.id === action.cut.projectId ? { ...p, currentCutId: action.cut.id } : p)) : state.projects,
+      };
+    }
+
+    case 'studio/cut-update':
+      return { ...state, cuts: state.cuts.map((c) => (c.id === action.cutId ? { ...c, label: action.label.trim() || c.label } : c)) };
+
+    case 'studio/cut-current': {
+      const cut = state.cuts.find((c) => c.id === action.cutId);
+      if (!cut) return state;
+      return {
+        ...state,
+        cuts: state.cuts.map((c) => (c.id === cut.id ? { ...c, archived: false } : c)),
+        projects: state.projects.map((p) => (p.id === cut.projectId ? { ...p, currentCutId: cut.id } : p)),
+      };
+    }
+
+    case 'studio/cut-archive':
+      // Archived cuts stay in history and still use storage.
+      return { ...state, cuts: state.cuts.map((c) => (c.id === action.cutId ? { ...c, archived: action.archived } : c)) };
+
+    case 'studio/cut-delete': {
+      const cut = state.cuts.find((c) => c.id === action.cutId);
+      if (!cut) return state;
+      const cuts = state.cuts.filter((c) => c.id !== cut.id);
+      // The file goes only if nothing else uses it (another cut, a creation, the Raw Library).
+      const asset = state.assets.find((a) => a.id === cut.assetId);
+      const stillUsed =
+        cuts.some((c) => c.assetId === cut.assetId) ||
+        state.versions.some((v) => v.mediaAssetId === cut.assetId || v.coverAssetId === cut.assetId || v.photoAssetIds?.includes(cut.assetId)) ||
+        !!asset?.inLibrary;
+      const remaining = cuts.filter((c) => c.projectId === cut.projectId).sort((a, b) => a.addedAt.localeCompare(b.addedAt));
+      const fallback = remaining.filter((c) => !c.archived).pop() ?? remaining[remaining.length - 1];
+      return {
+        ...state,
+        cuts,
+        assets: stillUsed ? state.assets : state.assets.filter((a) => a.id !== cut.assetId),
+        notes: state.notes.filter((n) => n.cutId !== cut.id),
+        chapters: state.chapters.filter((c) => c.cutId !== cut.id),
+        projects: state.projects.map((p) =>
+          p.id === cut.projectId
+            ? { ...p, currentCutId: p.currentCutId === cut.id ? fallback?.id : p.currentCutId, approvedCutId: p.approvedCutId === cut.id ? undefined : p.approvedCutId }
+            : p,
+        ),
+      };
+    }
+
+    case 'studio/approve': {
+      const cut = state.cuts.find((c) => c.id === action.cutId);
+      if (!cut) return state;
+      const projects = state.projects.map((p) => (p.id === cut.projectId ? { ...p, approvedCutId: action.approved ? cut.id : undefined } : p));
+      if (!action.approved) return { ...state, projects };
+      // An approved cut becomes a finished video the creations can use.
+      return {
+        ...state,
+        projects: projects.map((p) => (p.id === cut.projectId ? { ...p, currentCutId: cut.id } : p)),
+        assets: state.assets.map((a) => (a.id === cut.assetId && a.kind === 'draft' ? { ...a, kind: 'final' } : a)),
+        cuts: state.cuts.map((c) => (c.id === cut.id ? { ...c, archived: false } : c)),
+      };
+    }
+
+    case 'studio/note-add':
+      return { ...state, notes: [...state.notes, action.note] };
+
+    case 'studio/note-update':
+      return { ...state, notes: state.notes.map((n) => (n.id === action.noteId ? normaliseNote({ ...n, ...action.patch }) : n)) };
+
+    case 'studio/note-delete':
+      // Only the note goes; the video and its other notes are untouched.
+      return { ...state, notes: state.notes.filter((n) => n.id !== action.noteId) };
+
+    case 'studio/note-carry': {
+      // Carrying forward copies the feedback to the new cut at a time the
+      // creator chose. The original stays on its own cut, unchanged.
+      const from = state.notes.find((n) => n.id === action.noteId);
+      if (!from) return state;
+      const note: TimeNote = normaliseNote({
+        ...from,
+        id: action.newId,
+        cutId: action.toCutId,
+        startSec: action.startSec,
+        endSec: action.endSec,
+        resolved: false,
+        carriedFrom: from.id,
+        createdAt: new Date().toISOString(),
+      });
+      return { ...state, notes: [...state.notes, note] };
+    }
+
+    case 'studio/chapter-add':
+      return { ...state, chapters: [...state.chapters, action.chapter] };
+
+    case 'studio/chapter-delete':
+      return { ...state, chapters: state.chapters.filter((c) => c.id !== action.chapterId) };
+
+    case 'workspace/storage-add':
+      // Preview only: nothing is charged and the allowance resets on reload.
+      return { ...state, workspace: { ...state.workspace, addedStorageGB: (state.workspace.addedStorageGB ?? 0) + action.gb } };
   }
+}
+
+/** Ranges run forwards; an end at or before the start makes it a moment. */
+function normaliseNote(n: TimeNote): TimeNote {
+  const startSec = Math.max(0, n.startSec);
+  const endSec = n.endSec !== undefined && n.endSec > startSec ? n.endSec : undefined;
+  return { ...n, startSec, endSec };
 }
 
 function mapVersion(state: DemoData, id: string, fn: (v: DemoData['versions'][number]) => DemoData['versions'][number]): DemoData {

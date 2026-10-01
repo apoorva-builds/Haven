@@ -1574,6 +1574,9 @@
     watermark(ctx, w, h, mark);
   }
 
+  /** Paint one frame of a scene onto a given canvas (used by the studio media encoder). */
+  window.paintFrame = (canvas, scene, t, frame, mark) => paint(canvas.getContext('2d'), scene, canvas.width, canvas.height, t, frame, mark);
+
   window.renderStill = (scene, w, h, t = 0.3, mark = 'Haven sample · not a real photo') => {
     const c = layer(w, h, () => {});
     paint(c.getContext('2d'), scene, w, h, t, 0, mark);

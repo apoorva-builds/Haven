@@ -14,6 +14,7 @@ import { IdeaAssets } from './IdeaAssets';
 import { IdeaOverview } from './IdeaOverview';
 import { IdeaTasks } from './IdeaTasks';
 import { IdeaVersions } from './IdeaVersions';
+import { PlanVideoModal } from '../studio/Studio';
 
 const TABS = [
   { key: 'overview', label: 'Overview' },
@@ -31,6 +32,7 @@ export function IdeaWorkspacePage() {
   const idea = ideaOf(data, ideaId);
   const [menu, setMenu] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [planning, setPlanning] = useState(false);
   const closeMenu = useCallback(() => setMenu(false), []);
   const menuRef = useDismiss<HTMLDivElement>(menu, closeMenu);
   const toast = useToast();
@@ -101,6 +103,7 @@ export function IdeaWorkspacePage() {
             </span>
             <AvatarStack people={people} />
           </div>
+          <IdeaStudioLinks ideaId={idea.id} onPlan={() => setPlanning(true)} />
         </div>
         <div className="idea-head__menu" ref={menuRef}>
           <button type="button" className="icon-btn" aria-label="Idea actions" aria-expanded={menu} onClick={() => setMenu((m) => !m)}>
@@ -163,6 +166,7 @@ export function IdeaWorkspacePage() {
         )}
       </section>
 
+      {planning && <PlanVideoModal ideaId={idea.id} onClose={() => setPlanning(false)} />}
       {confirmDelete && (
         <DeleteIdeaModal
           ideaId={idea.id}
@@ -174,6 +178,30 @@ export function IdeaWorkspacePage() {
         />
       )}
     </div>
+  );
+}
+
+/** The videos being made for this idea in the Video Studio. */
+function IdeaStudioLinks({ ideaId, onPlan }: { ideaId: string; onPlan: () => void }) {
+  const { data, allowed } = useStore();
+  const projects = data.projects.filter((p) => p.ideaId === ideaId);
+  const idea = ideaOf(data, ideaId)!;
+  const mayPlan = allowed({ type: 'studio/plan', projectId: 'p', ideaId, existingIdea: true, title: 'x', spaceId: idea.spaceId, accountIds: [], aspect: '9:16' });
+  if (!projects.length && !mayPlan) return null;
+  return (
+    <p className="idea-head__studio">
+      <Icon name="film" size={14} />
+      {projects.map((p) => (
+        <Link key={p.id} to={`/studio/${p.id}`} className="inline-link">
+          {p.title}
+        </Link>
+      ))}
+      {mayPlan && (
+        <button type="button" className="inline-link" onClick={onPlan}>
+          {projects.length ? 'Plan another video' : 'Plan a video in the Studio'}
+        </button>
+      )}
+    </p>
   );
 }
 

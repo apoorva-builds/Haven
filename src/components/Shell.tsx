@@ -14,6 +14,7 @@ export const NAV: { to: string; label: string; icon: IconName }[] = [
   { to: '/', label: 'Today', icon: 'today' },
   { to: '/gallery', label: 'Creation Gallery', icon: 'grid' },
   { to: '/ideas', label: 'Ideas', icon: 'ideas' },
+  { to: '/studio', label: 'Video Studio', icon: 'film' },
   { to: '/calendar', label: 'Calendar', icon: 'calendar' },
   { to: '/library', label: 'Raw Library', icon: 'library' },
   { to: '/links', label: 'Links', icon: 'links' },

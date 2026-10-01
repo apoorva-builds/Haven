@@ -18,6 +18,11 @@ const screens: { name: string; path: string; click?: string }[] = [
   { name: 'ideas', path: '/ideas' },
   { name: 'idea-versions', path: '/ideas/market-phrases/versions?v=v-ig-atlas' },
   { name: 'calendar', path: '/calendar' },
+  { name: 'studio', path: '/studio' },
+  { name: 'studio-short', path: '/studio/proj-market' },
+  { name: 'studio-long', path: '/studio/proj-morning?t=1785' },
+  { name: 'studio-drafts', path: '/studio/proj-market/drafts' },
+  { name: 'studio-plan', path: '/studio/proj-morning/plan' },
 ]
 
 const devices = [

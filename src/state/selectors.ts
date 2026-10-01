@@ -1,3 +1,4 @@
+import { workspaceUsedGB } from '../lib/videoStudio';
 import type { Account, Asset, DemoData, Idea, Person, Platform, Task, Version } from '../data/types';
 
 export const byId = <T extends { id: string }>(list: T[], id: string | undefined): T | undefined =>
@@ -29,8 +30,8 @@ export const checklistProgress = (v: Version) => {
   return { done, total: v.checklist.length, ratio: v.checklist.length ? done / v.checklist.length : 0 };
 };
 
-export const storageUsedGB = (data: DemoData): number =>
-  data.workspace.otherStorageGB + data.assets.reduce((sum, a) => sum + a.sizeMB, 0) / 1024;
+/** Workspace storage in GB. Each file counts once, however many places link to it. */
+export const storageUsedGB = (data: DemoData): number => workspaceUsedGB(data);
 
 /** Focus filter used on Today: everything, one account, or one campaign. */
 export type Focus = { kind: 'all' } | { kind: 'account'; id: string } | { kind: 'campaign'; id: string };
@@ -52,7 +53,7 @@ export function versionMatchesFocus(data: DemoData, v: Version, focus: Focus): b
   return ideaOf(data, v.ideaId)?.campaignId === focus.id;
 }
 
-export const isVideo = (a: Asset): boolean => a.kind === 'final' || a.kind === 'raw' || a.kind === 'cutaway';
+export const isVideo = (a: Asset): boolean => a.kind === 'final' || a.kind === 'draft' || a.kind === 'raw' || a.kind === 'cutaway';
 
 /** Finished videos that can play in the prototype; versions pick from these. */
 export const finishedVideos = (data: DemoData): Asset[] => data.assets.filter((a) => a.kind === 'final' && !!a.videoUrl);

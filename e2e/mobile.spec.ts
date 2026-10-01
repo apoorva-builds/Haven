@@ -16,6 +16,12 @@ test('phone layout uses the tab bar and never scrolls sideways', async ({ page }
     '/ideas/market-phrases/versions',
     '/ideas/market-phrases/assets',
     '/calendar',
+    '/studio',
+    '/studio/proj-market',
+    '/studio/proj-morning',
+    '/studio/proj-market/drafts',
+    '/studio/proj-market/plan',
+    '/studio/proj-market/compare',
     '/library',
     '/campaigns',
     '/links',
@@ -91,4 +97,18 @@ test('Creation Gallery on the phone: preview label, ⓘ, account selector, Audie
   await page.locator('.ctile[data-version="v-ig-pine-desk"]').click();
   await expect(page.getByRole('figure', { name: 'Photo 1 of 3' })).toBeVisible();
   await expect(page.getByText(/Not published/)).toBeVisible();
+});
+
+test('phone: review a video, tap a note to seek, and add a note at the playhead', async ({ page }) => {
+  await open(page, '/studio/proj-morning');
+  const video = page.getByTestId('studio-video');
+  await expect(video).toHaveJSProperty('duration', 3600);
+  const panel = page.getByTestId('notes-panel');
+  await panel.getByRole('button', { name: 'Jump to 0:55:20' }).tap();
+  await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime)).toBe(3320);
+  await expect(panel.locator('.tnote.is-now')).toContainText('Wrap-up repeats the intro');
+  await page.getByTestId('mark-moment').tap();
+  await page.getByTestId('note-composer').getByLabel('Note').fill('Keep this pause.');
+  await page.getByTestId('note-composer').getByRole('button', { name: 'Add note' }).tap();
+  await expect(panel.locator('.tnote', { hasText: 'Keep this pause.' })).toContainText('0:55:20');
 });

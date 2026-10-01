@@ -34,11 +34,12 @@ describe('preview access: a collaborator with one account (Sam, TikTok @pinepape
     expect(hidden.versions.has('v-ig-atlas')).toBe(true);
   });
 
-  it('gets only the files its creations use (shared finished video, cover), not the idea’s other files', () => {
+  it('gets only the files its creations use (shared finished video, cover, earlier drafts of that video), not the idea’s other files', () => {
     const shared = data.assets.find((a) => a.id === 'a-market-vertical')!;
     expect(canSeeAsset(data, sam, shared)).toBe(true);
     // v-tt-pine uses the raw market clip as its cover, so that one file comes along.
-    expect(ids(scoped.assets)).toEqual(['a-market-raw', 'a-market-vertical']);
+    // Draft 1 is an earlier cut of the same video, so it comes along in the Studio.
+    expect(ids(scoped.assets)).toEqual(['a-market-draft1', 'a-market-raw', 'a-market-vertical']);
     expect(hidden.assets.has('a-market-raw-copy')).toBe(true);
     expect(hidden.assets.has('a-desk-raw')).toBe(true);
     expect(hidden.assets.has('a-desk-1')).toBe(true);

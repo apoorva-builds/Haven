@@ -426,6 +426,13 @@ function CreationPage({ versionId }: { versionId: string }) {
             <Link to={`/ideas/${idea.id}`} className="btn btn--ghost btn--sm">
               Open idea
             </Link>
+            {data.projects
+              .filter((p) => p.versionIds.includes(version.id))
+              .map((p) => (
+                <Link key={p.id} to={`/studio/${p.id}`} className="btn btn--ghost btn--sm">
+                  <Icon name="film" size={14} /> Drafts &amp; notes
+                </Link>
+              ))}
           </div>
         </aside>
       </div>

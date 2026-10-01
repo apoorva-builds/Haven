@@ -1,4 +1,4 @@
-import type { AccessScope, Asset, Capability, DemoData, Idea, Member, Task, Version } from '../data/types';
+import type { AccessScope, Asset, Capability, Cut, DemoData, Idea, Member, Task, Version, VideoProject } from '../data/types';
 import type { Action } from '../state/reducer';
 
 /*
@@ -46,6 +46,25 @@ export function canSeeIdea(data: DemoData, member: Member | undefined, idea: Ide
 }
 
 /**
+ * A video in the Studio follows its idea's Space and the creations it is made
+ * for: Space access gives the whole video; account access gives the videos
+ * made for that account. Capabilities are the union of both.
+ */
+export function capabilitiesOnProject(data: DemoData, member: Member | undefined, project: VideoProject): Set<Capability> {
+  const idea = data.ideas.find((i) => i.id === project.ideaId);
+  const caps = new Set<Capability>(idea ? capabilitiesOnSpace(member, idea.spaceId) : []);
+  for (const id of project.versionIds) {
+    const v = data.versions.find((x) => x.id === id);
+    if (v) capabilitiesOn(data, member, v.accountId).forEach((c) => caps.add(c));
+  }
+  return caps.has('view') ? caps : new Set();
+}
+
+export const canSeeProject = (data: DemoData, member: Member | undefined, project: VideoProject) => capabilitiesOnProject(data, member, project).has('view');
+
+const projectOfCut = (data: DemoData, cut: Cut | undefined) => (cut ? data.projects.find((p) => p.id === cut.projectId) : undefined);
+
+/**
  * Files follow the work. A file is visible if a visible version uses it, or
  * it belongs to an idea or Space the member can see as a whole. Account-only
  * collaborators therefore get the finished media for their accounts, not the
@@ -55,9 +74,16 @@ export function canSeeAsset(data: DemoData, member: Member | undefined, asset: A
   if (hasFullAccess(member) && member?.status === 'active') return true;
   const usedBy = data.versions.filter((v) => v.mediaAssetId === asset.id || v.coverAssetId === asset.id || v.photoAssetIds?.includes(asset.id));
   if (usedBy.some((v) => canSeeVersion(data, member, v))) return true;
+  // A cut of a video the member can open.
+  if (data.cuts.some((c) => c.assetId === asset.id && canSeeVersionlessProject(data, member, c))) return true;
   const ideaSpaces = asset.ideaIds.map((id) => data.ideas.find((i) => i.id === id)?.spaceId).filter(Boolean) as string[];
   if (ideaSpaces.some((s) => capabilitiesOnSpace(member, s).has('view'))) return true;
   return !!asset.spaceId && capabilitiesOnSpace(member, asset.spaceId).has('view');
+}
+
+function canSeeVersionlessProject(data: DemoData, member: Member | undefined, cut: Cut): boolean {
+  const p = projectOfCut(data, cut);
+  return !!p && canSeeProject(data, member, p);
 }
 
 export function canSeeTask(data: DemoData, member: Member | undefined, task: Task): boolean {
@@ -75,6 +101,7 @@ export interface Hidden {
   ideas: Set<string>;
   versions: Set<string>;
   assets: Set<string>;
+  projects: Set<string>;
 }
 
 /**
@@ -83,7 +110,7 @@ export interface Hidden {
  */
 export function scopeData(data: DemoData, personId: string): { data: DemoData; hidden: Hidden } {
   const member = memberOf(data, personId);
-  const hidden: Hidden = { ideas: new Set(), versions: new Set(), assets: new Set() };
+  const hidden: Hidden = { ideas: new Set(), versions: new Set(), assets: new Set(), projects: new Set() };
   const keep = <T extends { id: string }>(list: T[], ok: (x: T) => boolean, bucket?: Set<string>) =>
     list.filter((x) => {
       const yes = ok(x);
@@ -97,6 +124,12 @@ export function scopeData(data: DemoData, personId: string): { data: DemoData; h
   const assets = keep(data.assets, (a) => canSeeAsset(data, member, a), hidden.assets);
   const ideaIds = new Set(ideas.map((i) => i.id));
   const accountIds = new Set(accounts.map((a) => a.id));
+  const versionIds = new Set(versions.map((v) => v.id));
+  // A video is shown with only the creations this person can see.
+  const projects = keep(data.projects, (p) => canSeeProject(data, member, p), hidden.projects).map((p) => ({ ...p, versionIds: p.versionIds.filter((id) => versionIds.has(id)) }));
+  const projectIds = new Set(projects.map((p) => p.id));
+  const cuts = data.cuts.filter((c) => projectIds.has(c.projectId));
+  const cutIds = new Set(cuts.map((c) => c.id));
   const campaigns = data.campaigns.filter((c) => ideas.some((i) => i.campaignId === c.id));
   const campaignIds = new Set(campaigns.map((c) => c.id));
 
@@ -112,6 +145,10 @@ export function scopeData(data: DemoData, personId: string): { data: DemoData; h
       versions,
       assets: assets.map((a) => ({ ...a, ideaIds: a.ideaIds.filter((id) => ideaIds.has(id)) })),
       tasks: data.tasks.filter((t) => canSeeTask(data, member, t)),
+      projects,
+      cuts,
+      notes: data.notes.filter((n) => cutIds.has(n.cutId)),
+      chapters: data.chapters.filter((c) => cutIds.has(c.cutId)),
       campaigns,
       marketing: data.marketing.filter((m) => !!m.campaignId && campaignIds.has(m.campaignId)),
       links: data.links.filter((l) => (l.accountId ? accountIds.has(l.accountId) : l.ideaId ? ideaIds.has(l.ideaId) : false)),
@@ -184,12 +221,23 @@ function needOnSpace(data: DemoData, m: Member | undefined, spaceId: string, cap
 }
 const all = (...ds: Decision[]): Decision => ds.find((d) => !d.ok) ?? OK;
 
+function needOnProject(data: DemoData, m: Member | undefined, p: VideoProject, cap: Capability): Decision {
+  return capabilitiesOnProject(data, m, p).has(cap) ? OK : no(`Needs ${CAPABILITY_LABEL[cap]} on “${p.title}”.`);
+}
+/** Feedback (notes) comes from people who edit or review the video. */
+function mayGiveFeedback(data: DemoData, m: Member | undefined, p: VideoProject): Decision {
+  const caps = capabilitiesOnProject(data, m, p);
+  return caps.has('edit') || caps.has('review') ? OK : no(`Needs Edit or Review on “${p.title}” to leave notes.`);
+}
+
 /** Change a file: through a version that uses it (edit on that account), or its idea's or own Space (edit). */
 export function canEditAsset(data: DemoData, m: Member | undefined, asset: Asset): boolean {
   if (!canSeeAsset(data, m, asset)) return false;
   if (hasFullAccess(m) && m?.status === 'active') return true;
   const usedBy = data.versions.filter((v) => v.mediaAssetId === asset.id || v.coverAssetId === asset.id || v.photoAssetIds?.includes(asset.id));
   if (usedBy.some((v) => capabilitiesOn(data, m, v.accountId).has('edit'))) return true;
+  const projects = data.cuts.filter((c) => c.assetId === asset.id).map((c) => projectOfCut(data, c));
+  if (projects.some((p) => p && capabilitiesOnProject(data, m, p).has('edit'))) return true;
   const spaces = [...asset.ideaIds.map((id) => data.ideas.find((i) => i.id === id)?.spaceId), asset.spaceId].filter((s): s is string => !!s);
   return spaces.some((s) => capabilitiesOnSpace(m, s).has('edit'));
 }
@@ -325,6 +373,89 @@ export function authorize(data: DemoData, personId: string, action: Action): Dec
       if (idea) return needOnSpace(data, m, idea.spaceId, 'edit');
       return no('Only the owner and admins add workspace-wide links.');
     }
+
+    /* Video Studio */
+    case 'studio/plan': {
+      if (!action.existingIdea) {
+        if (full) return OK;
+        if (action.accountIds.length) return all(...action.accountIds.map((a) => needOnAccount(data, m, a, 'edit')));
+        return needOnSpace(data, m, action.spaceId, 'edit');
+      }
+      const idea = ideaById(data, action.ideaId);
+      if (!idea || !canSeeIdea(data, m, idea)) return MISSING;
+      if (full || capabilitiesOnSpace(m, idea.spaceId).has('edit')) return OK;
+      if (!action.accountIds.length) return needOnSpace(data, m, idea.spaceId, 'edit');
+      return all(...action.accountIds.map((a) => needOnAccount(data, m, a, 'edit')));
+    }
+    case 'studio/plan-update': {
+      const idea = ideaById(data, action.ideaId);
+      if (!idea || !canSeeIdea(data, m, idea)) return MISSING;
+      // The plan belongs to the idea, which belongs to the Space.
+      return full ? OK : needOnSpace(data, m, idea.spaceId, 'edit');
+    }
+    case 'studio/cut-add': {
+      const p = data.projects.find((x) => x.id === action.cut.projectId);
+      if (!p || !canSeeProject(data, m, p)) return MISSING;
+      // Linking an existing file needs access to that file.
+      if (!action.asset) {
+        const existing = data.assets.find((a) => a.id === action.cut.assetId);
+        if (!existing || !canSeeAsset(data, m, existing)) return no('That file isn’t shared with you.');
+      }
+      return needOnProject(data, m, p, 'edit');
+    }
+    case 'studio/cut-update':
+    case 'studio/cut-current':
+    case 'studio/cut-archive': {
+      const p = projectOfCut(data, data.cuts.find((c) => c.id === action.cutId));
+      if (!p || !canSeeProject(data, m, p)) return MISSING;
+      return needOnProject(data, m, p, 'edit');
+    }
+    case 'studio/cut-delete': {
+      const p = projectOfCut(data, data.cuts.find((c) => c.id === action.cutId));
+      if (!p || !canSeeProject(data, m, p)) return MISSING;
+      // Deleting a file is Space-level: owner, admins, or edit on the whole Space.
+      const idea = ideaById(data, p.ideaId);
+      return full ? OK : idea ? needOnSpace(data, m, idea.spaceId, 'edit') : adminOnly;
+    }
+    case 'studio/approve': {
+      const p = projectOfCut(data, data.cuts.find((c) => c.id === action.cutId));
+      if (!p || !canSeeProject(data, m, p)) return MISSING;
+      return needOnProject(data, m, p, 'review');
+    }
+    case 'studio/note-add': {
+      const p = projectOfCut(data, data.cuts.find((c) => c.id === action.note.cutId));
+      if (!p || !canSeeProject(data, m, p)) return MISSING;
+      if (action.note.authorId !== personId) return no('Notes are added in your own name.');
+      return mayGiveFeedback(data, m, p);
+    }
+    case 'studio/note-update':
+    case 'studio/note-delete': {
+      const n = data.notes.find((x) => x.id === action.noteId);
+      const p = projectOfCut(data, data.cuts.find((c) => c.id === n?.cutId));
+      if (!n || !p || !canSeeProject(data, m, p)) return MISSING;
+      return mayGiveFeedback(data, m, p);
+    }
+    case 'studio/note-carry': {
+      const n = data.notes.find((x) => x.id === action.noteId);
+      const from = projectOfCut(data, data.cuts.find((c) => c.id === n?.cutId));
+      const to = projectOfCut(data, data.cuts.find((c) => c.id === action.toCutId));
+      if (!n || !from || !to || from.id !== to.id || !canSeeProject(data, m, to)) return MISSING;
+      return mayGiveFeedback(data, m, to);
+    }
+    case 'studio/chapter-add': {
+      const p = projectOfCut(data, data.cuts.find((c) => c.id === action.chapter.cutId));
+      if (!p || !canSeeProject(data, m, p)) return MISSING;
+      return needOnProject(data, m, p, 'edit');
+    }
+    case 'studio/chapter-delete': {
+      const ch = data.chapters.find((c) => c.id === action.chapterId);
+      const p = projectOfCut(data, data.cuts.find((c) => c.id === ch?.cutId));
+      if (!ch || !p || !canSeeProject(data, m, p)) return MISSING;
+      return needOnProject(data, m, p, 'edit');
+    }
+    case 'workspace/storage-add':
+      // Billing changes belong to the owner and admins.
+      return adminOnly;
   }
   const unreachable: never = action;
   return unreachable;

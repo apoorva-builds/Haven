@@ -40,6 +40,11 @@ All tables carry `workspace_id`. No table has a column for social account passwo
 | `asset_links` | Which ideas an asset belongs to |
 | `version_media` | `version_id`, `asset_id`, `role` (`media` \| `cover` \| `photo`), `position`. Shared files are referenced, never copied |
 | `activity_events` | Append-only: `actor_id`, `verb`, `subject_type`, `subject_id`, `space_id`, `account_id`, `summary`, `created_at` |
+| `video_projects` | `id`, `idea_id`, `title`, `aspect`, `current_cut_id`, `approved_cut_id`; `project_versions` links it to the versions (creations) it's made for |
+| `cuts` | `id`, `project_id`, `label`, `kind` (`footage` \| `draft` \| `final`), `asset_id`, `added_by`, `added_at`, `archived_at` |
+| `chapters` | `id`, `cut_id`, `title`, `start_ms` |
+| `time_notes` | `id`, `cut_id`, `section`, `start_ms`, `end_ms` (null = a moment), `body`, `resolved_at`, `resolved_by`, `author_id`, `carried_from` (note id). Belongs to one cut; never re-timed automatically |
+| `storage_addons` | `workspace_id`, `gb`, `price_id`, `status`, `billing_ref`. Allowance = plan + active add-ons |
 | `platform_connections` | `account_id`, `provider`, `provider_account_id`, `scopes`, `status`, `connected_by`, `token_ref` (pointer to an encrypted secret), `expires_at` |
 
 ## Access rules
@@ -140,6 +145,18 @@ These are the same rules as `src/lib/access.ts`, moved into the database.
 - **Access:** posts follow their account's access rules, so the database returns only permitted posts for any month, day or direct link.
 - **Scale:** month and day queries use an index on `(workspace_id, account_id, posted_at)`. The months ribbon reads a small per-month summary (counts and up to three covers), so years of work stay fast.
 
+## Video Studio
+
+The preview's Studio (`src/lib/videoStudio.ts`, `src/lib/access.ts`) defines the behaviour; the server makes it real.
+
+- **Access:** a project is visible when its idea's Space grants `view`, or any of its linked versions' accounts does; capabilities are the union. Cuts, chapters, notes and the cut files follow the project. RLS policies use one `project_capabilities(user, project)` function, and the shared test cases in `videoStudio.test.ts` (Sam sees only the market video; notes need edit or review; approve needs review; deleting a cut needs Space edit) run against it.
+- **Uploads:** resumable, chunked uploads (tus/S3 multipart) so hour-long footage survives a dropped connection, with progress from the server. Each upload creates a new `assets` row and a new cut; nothing overwrites an earlier file. `sha256` is computed on the server; a matching hash in the workspace links the existing file instead of storing a second copy.
+- **Playback at length:** a background job makes streaming renditions (HLS, a few bitrates), a poster, timeline thumbnails and an audio waveform, so a long cut seeks instantly. Originals stay untouched. No arbitrary length limit: storage and the plan's quota are the limits.
+- **Notes and timing:** times are stored in milliseconds against one cut. Earlier feedback is offered on a new cut with its original times; carrying it forward writes a new note with `carried_from` at a time the person chose. Haven doesn't guess new timings.
+- **Storage accounting:** usage = sum of distinct `sha256` files in the workspace (archived cuts included), computed by the server and cached. Deleting a cut is a soft delete; the file's bytes are released only when no cut, version, library entry or other reference uses it, after the recovery window. Deleting notes or links never touches files. Uploads that would exceed the allowance are refused before any bytes are sent.
+- **Billing:** extra storage is a subscription add-on through the payment provider. The confirmation shows the price, proration and the new allowance before anything is charged; only owners and admins can change it; usage alerts at 80% and 95%. The preview's *Add storage* shows the same summary and charges nothing.
+- **Export:** the notes document is generated from the same data on the server (Markdown and PDF), including only notes on cuts the person can see.
+
 ## Phases
 
 Each phase ends with a review and its own tests.
@@ -150,7 +167,7 @@ Each phase ends with a review and its own tests.
 | **2. Team and access** | Invitations, roles, grants, access editor on real data, RLS on all tables, activity for access changes | The access test fixtures pass against the database, and a restricted person gets nothing through direct URLs, the API or export |
 | **3. Shared work** | Ideas, versions, tasks, links, calendar on the server; capability-checked writes; activity history view; live updates | Two browsers as two people see each other's changes; approve and post buttons follow capabilities |
 | **4. Secure media** | Private storage, short-lived signed URLs, guarded delivery, rotation, resumable uploads, checksums, quotas, recovery, export | Upload, interruption and restore tests pass; a removed person can't get new links or guarded bytes, and old links expire within their stated lifetime |
-| **5. Creation feedback** (Milestone 3) | Feedback threads attached to a specific creation, with timestamps; no workspace chat | Feedback is visible only to people who can see that creation |
+| **5. Video Studio on the server** | Projects, cuts, chapters and timed notes in the database; resumable uploads and streaming renditions; storage accounting; storage add-ons through billing | A one-hour upload survives interruption and seeks instantly; notes appear for every permitted person and no one else; storage totals match the distinct files; an add-on is charged only after confirmation |
 | **6. Platform connections** | Official OAuth connections, platform by platform, where the action is supported | Connected actions obey `publish`; everything else stays manual |
 
 ## Testing and review

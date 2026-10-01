@@ -9,10 +9,13 @@ import { useToast } from '../components/Toast';
 import { DemoTag, EmptyState, LoadingGrid, PageHeader, Progress, SelectField, useSimulatedLoad } from '../components/ui';
 import { addDays, formatSize } from '../lib/dates';
 import { rawLibrary, storageUsedGB } from '../state/selectors';
+import { storageLimitGB } from '../lib/videoStudio';
+import { AddStorageModal } from '../components/Storage';
 import { useStore } from '../state/store';
 
 export function LibraryPage() {
-  const { data } = useStore();
+  const { data, allowed } = useStore();
+  const [addStorage, setAddStorage] = useState(false);
   const ready = useSimulatedLoad();
   const [params, setParams] = useSearchParams();
   const [selected, setSelected] = useState<string[]>([]);
@@ -52,7 +55,7 @@ export function LibraryPage() {
   }, [library, q, kind, campaign, platform, person, when, data.today]);
 
   const used = storageUsedGB(data);
-  const limit = data.workspace.storageLimitGB;
+  const limit = storageLimitGB(data);
   const pct = used / limit;
   const byKind = (['final', 'raw', 'cutaway', 'photo', 'audio', 'document'] as AssetKind[]).map((k) => ({
     kind: k,
@@ -93,13 +96,15 @@ export function LibraryPage() {
               Workspace storage <DemoTag>Demo figures</DemoTag>
             </h2>
             <p className="storage__big">
-              {Math.round(used)} GB <span className="muted">of {limit} GB</span>
+              {formatSize(used * 1024)} <span className="muted">of {formatSize(limit * 1024)}</span>
             </p>
           </div>
           <div className="storage__actions">
-            <button type="button" className="btn btn--ghost btn--sm" disabled title="Storage add-ons arrive with billing in Milestone 3">
-              Add storage <span className="soon">Milestone 3</span>
-            </button>
+            {allowed({ type: 'workspace/storage-add', gb: 1 }) && (
+              <button type="button" className="btn btn--ghost btn--sm" onClick={() => setAddStorage(true)}>
+                Add storage
+              </button>
+            )}
           </div>
         </div>
         <Progress value={pct} label="Storage used (demo figures)" tone={pct > 0.9 ? 'danger' : pct > 0.75 ? 'warn' : 'accent'} />
@@ -113,8 +118,9 @@ export function LibraryPage() {
             Other project media <strong>{data.workspace.otherStorageGB} GB</strong>
           </li>
         </ul>
+        {addStorage && <AddStorageModal onClose={() => setAddStorage(false)} />}
         <p className="field-hint">
-          <Icon name="shield" size={13} /> At the limit, new uploads pause and you choose what to archive or add. Haven never removes originals on its own.
+          <Icon name="shield" size={13} /> Each file counts once, however many places use it. At the limit, new uploads pause and you choose what to archive or add. Haven never removes originals on its own.
         </p>
       </section>
 

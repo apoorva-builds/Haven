@@ -11,6 +11,8 @@ import { LinksPage } from './pages/Links';
 import { NotFoundPage } from './pages/NotFound';
 import { TeamPage } from './pages/Team';
 import { TodayPage } from './pages/Today';
+import { StudioPage } from './pages/studio/Studio';
+import { StudioProjectPage } from './pages/studio/StudioProject';
 import { StoreProvider } from './state/store';
 import { ThemeProvider } from './state/theme';
 
@@ -36,6 +38,9 @@ export function App() {
                 <Route path="accounts/:accountId" element={<AccountRedirect />} />
                 <Route path="gallery" element={<GalleryPage />} />
                 <Route path="gallery/:versionId" element={<GalleryPage />} />
+                <Route path="studio" element={<StudioPage />} />
+                <Route path="studio/:projectId" element={<StudioProjectPage />} />
+                <Route path="studio/:projectId/:tab" element={<StudioProjectPage />} />
                 <Route path="calendar" element={<CalendarPage />} />
                 <Route path="library" element={<LibraryPage />} />
                 <Route path="campaigns" element={<CampaignsPage />} />

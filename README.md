@@ -85,8 +85,28 @@ The workspace menu opens **Team & access** (`/team`). It shows sample members (o
 
 - **Preview as** a collaborator: every page shows only what that person could open. Direct links to other work say it isn't shared, files follow the work, and status and posting controls follow their capabilities.
 - **Honest scope:** this filters the current browser tab only. It is **not security**, and invitations send nothing. Real sign-in, invitations and server-enforced access are planned in [`docs/backend-plan.md`](docs/backend-plan.md).
-- Haven never asks for social account passwords; a handle only identifies an account. There is no team chat; feedback attached to a creation is a later feature.
+- Haven never asks for social account passwords; a handle only identifies an account. There is no team chat: feedback lives on a video and its exact draft, in the Video Studio.
 - Rules: `src/lib/access.ts` (unit tested in `access.test.ts`); flows in `e2e/team.spec.ts`. Captures in [`docs/redesign/team/`](docs/redesign/team/).
+
+## Video Studio (preview)
+
+`/studio` holds every video being made, from plan to posted: **Plan → Upload → Annotate → Revise → Approve → Post → Revisit**.
+
+- **Plan a video** from a title alone, or from an existing idea. A plan holds concept, audience, hook, outline, script, shot list, references, the accounts it's made for, and optional planned sections. The plan is the idea's own, so Ideas and the Studio show the same thing.
+- **Every draft together.** One video keeps original footage, Draft 1, Draft 2, the final cut and where it was posted (with a link to that day in the calendar). Upload as many drafts as storage allows, name them, choose the current one, compare two side by side, and go back to an older one. A new upload is always a new cut; nothing earlier is replaced. Upload progress and errors are shown (not a video, can't play in this browser, not enough storage).
+- **Working canvas.** Mark a moment (M) or a range (I, then O, or drag on the timeline) with a section name and a note. The timeline shows ranges, moments and chapters, and zooms (up to 64× on long videos) for precise notes on short ones. Long videos have named chapters with previous/next and a chapter list.
+- **Notes panel** (N toggles it): the note under the playhead is highlighted with progress through its range, the next one is flagged *Up next*, and clicking a note seeks there. Notes can be edited, resolved and deleted, and belong to one exact cut.
+- **Notes document:** every note on a cut as one organised document, by section and with timestamps, to download (.md), copy or print.
+- **Earlier feedback:** open notes from earlier cuts are shown with their original timing (“0:21–0:26 in Draft 1”). Carry one forward at the playhead, resolve it where it was, or open it in the earlier cut. Old timestamps are never mapped onto a new cut.
+- **Storage:** each cut's size, the video's total and the workspace total, with a file counted once wherever it's used. Archived cuts still count; deleting a cut asks first and frees space only if nothing else uses the file. Deleting a note or removing a reference never touches media. *Add storage* shows sample prices and the new allowance first; in the preview it charges nothing and the extra space lasts for the session.
+- **Access:** a video follows its idea's Space and the creations it's made for. Account-only collaborators see only videos for their accounts (Sam sees the market video, not the long cut); notes need Edit or Review; approving needs Review; deleting a cut needs Edit on the whole Space; changing the plan or adding storage follows the same rules as elsewhere.
+- **Samples:** `public/demo-media/studio/` holds a genuinely one-hour, seekable long cut (3.9 MB: one frame a second with chapters and a running timecode) and two drafts of the short video, where Draft 2 removes a 4-second pause. All are painted, marked “Haven sample · not real footage”, and rebuilt with `node scripts/make-studio-media.mjs`. Sizes shown for bundled samples are sample figures; files you add use their real size.
+
+**Works now (preview):** everything above, in this browser tab. Plans, cuts, notes, chapters and storage changes last until reload. Files you add play from your device (an object URL) and are never uploaded.
+
+**Needs real media storage and billing:** uploading and keeping files (resumable uploads for multi-GB footage, checksums, streaming renditions for long videos, thumbnails), notes and drafts saved for the team on the server with access enforced there, storage quotas enforced server-side, and real payment for extra storage. See [`docs/backend-plan.md`](docs/backend-plan.md#video-studio).
+
+Model and rules: `src/lib/videoStudio.ts`, `src/lib/access.ts` (unit tested in `videoStudio.test.ts`, `authorize.test.ts`); flows in `e2e/studio.spec.ts` and `e2e/mobile.spec.ts`.
 
 ## Colour: an editorial palette (in review)
 
@@ -127,6 +147,7 @@ Applied so far to **Ideas** and the **Creation Gallery** only; the rest of Haven
 | `/library` | **Raw Library**: source files only (original photos, audio/music, unedited clips, brand assets). Finished posts are never listed here. |
 | `/` | **Today**: memories of posted work, look what you've made, the next action, needs attention, coming up, pick up where you left off |
 | `/ideas`, `/ideas/:id[/assets|/versions|/tasks]` | **Ideas** and the **Idea workspace**; the Versions tab holds the finished-video picker |
+| `/studio`, `/studio/:id[/plan|/drafts|/compare]` | **Video Studio**: videos from plan to posted; review a cut with timed notes (`?cut=`, `?t=` open a cut at a time) |
 | `/calendar` | Visual publishing calendar: covers on days, Day View (`?day=`), months ribbon, filters, drag to reschedule; compact month and agenda on phones |
 | `/links`, `/campaigns` | Saved links; campaigns (reachable from ideas) |
 | `/team` | **Team & access** (preview): members, invitations, access by Space and account, preview as a collaborator |
