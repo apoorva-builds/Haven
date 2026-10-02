@@ -10482,3 +10482,301 @@ button.viewbar__btn:hover:not(:disabled) {
     display: none;
   }
 }
+
+/* ==========================================================================
+   Personal profile: avatar menu, photos, Profile & appearance
+   ========================================================================== */
+.avatar--photo {
+  overflow: hidden;
+  background: var(--surface-3);
+}
+.avatar--photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.me {
+  position: relative;
+  margin-left: 4px;
+}
+.me__btn {
+  display: grid;
+  place-items: center;
+  padding: 3px;
+  border-radius: 50%;
+  transition: box-shadow var(--dur) var(--ease);
+}
+.me__btn:hover,
+.me__btn[aria-expanded='true'] {
+  box-shadow: 0 0 0 2px var(--cobalt-soft), 0 0 0 4px var(--line-2);
+}
+.me__menu {
+  right: 0;
+  top: calc(100% + 8px);
+  width: min(300px, calc(100vw - 24px));
+}
+.me__who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px 8px;
+}
+.me__name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 19px;
+  line-height: 1.15;
+}
+.me__role {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.me__menu .popover__item {
+  flex-wrap: wrap;
+}
+.me__look {
+  flex-basis: 100%;
+  padding-left: 25px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.me__note {
+  margin: 6px 10px 6px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.drawer .nav__item {
+  width: 100%;
+  text-align: left;
+}
+
+/* Profile & appearance */
+.psettings {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  gap: 32px;
+}
+.psettings__h {
+  margin: 0 0 12px;
+  font: 700 11px/1.2 var(--font-ui);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.psettings__h--gap {
+  margin-top: 24px;
+}
+.psettings__me {
+  display: grid;
+  justify-items: start;
+  gap: 14px;
+}
+.psettings__avatar {
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: hsl(var(--hue) 55% 86%);
+  color: hsl(var(--hue) 55% 26%);
+  font: 420 42px/1 var(--font-display);
+  box-shadow: 0 0 0 4px var(--surface), 0 0 0 5px var(--line-2), var(--shadow-2);
+}
+:root[data-theme='dark'] .psettings__avatar {
+  background: hsl(var(--hue) 40% 30%);
+  color: hsl(var(--hue) 80% 90%);
+}
+.psettings__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: studio-rise 260ms var(--ease) both;
+}
+.psettings__name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 1.1;
+}
+.psettings__role {
+  margin: 2px 0 10px;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.psettings__photo-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.psettings__error {
+  margin: 12px 0 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--coral-soft);
+  color: var(--ink);
+  font-size: 13px;
+}
+.psettings__hint {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.psettings__live {
+  margin: 14px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-text);
+}
+.psettings__scope {
+  margin: 0;
+  max-width: 340px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.psettings__seg {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 99px;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.psettings__seg button {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 99px;
+  font: 600 13px/1 var(--font-ui);
+  color: var(--ink-2);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.psettings__seg button.is-on {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-1), inset 0 0 0 1px var(--line-2);
+}
+.psettings__palettes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.swatch {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding: 10px 10px 12px;
+  border-radius: var(--radius);
+  text-align: left;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition: box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.swatch:hover {
+  transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1px var(--line-2), var(--shadow-1);
+}
+.swatch.is-on {
+  box-shadow: inset 0 0 0 2px var(--accent), var(--shadow-1);
+}
+.swatch__mini {
+  display: grid;
+  grid-template-columns: 28% 1fr;
+  gap: 8px;
+  height: 78px;
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: background 320ms var(--ease);
+}
+.swatch__side {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  padding: 6px 5px;
+  border-radius: 6px;
+}
+.swatch__side span {
+  height: 6px;
+  border-radius: 3px;
+}
+.swatch__card {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 7px;
+}
+.swatch__card span {
+  height: 5px;
+  border-radius: 3px;
+}
+.swatch__card span:first-child {
+  width: 70%;
+  height: 7px;
+}
+.swatch__card span:nth-child(2) {
+  width: 50%;
+}
+.swatch__card .swatch__btn {
+  width: 42%;
+  height: 12px;
+  margin-top: 4px;
+  border-radius: 99px;
+}
+.swatch__name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--ink);
+}
+.swatch__mood {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.swatch__check {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.spinner--ink {
+  border-color: color-mix(in srgb, currentColor 25%, transparent);
+  border-top-color: currentColor;
+}
+
+@media (max-width: 720px) {
+  .theme-toggle {
+    display: none;
+  }
+  .psettings {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .psettings__me {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+  }
+  .psettings__avatar {
+    width: 84px;
+    height: 84px;
+    font-size: 32px;
+  }
+  .psettings__palettes {
+    gap: 8px;
+  }
+  .swatch__mini {
+    height: 60px;
+  }
+  .psettings__scope {
+    flex-basis: 100%;
+    order: 3;
+  }
+}

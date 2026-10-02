@@ -88,6 +88,20 @@ The workspace menu opens **Team & access** (`/team`). It shows sample members (o
 - Haven never asks for social account passwords; a handle only identifies an account. There is no team chat: feedback lives on a video and its exact draft, in the Video Studio.
 - Rules: `src/lib/access.ts` (unit tested in `access.test.ts`); flows in `e2e/team.spec.ts`. Captures in [`docs/redesign/team/`](docs/redesign/team/).
 
+## Your profile & appearance (preview)
+
+Open the avatar (top right; also in the phone's navigation drawer) and choose **Profile & appearance**.
+
+- **Photo:** upload, replace or remove. It's cropped to a square and shown wherever you appear (the avatar menu, Today, avatars). Without one, your initials stand in. Non-images and files over 15 MB get a clear message.
+- **Appearance:** Light, Dark or Match device. The top-bar sun/moon still switches light and dark quickly.
+- **Palette:** four curated looks: **Haven** (warm ivory and cobalt), **Plum**, **Harbor** and **Graphite**, each with a light and dark set. A palette changes surfaces and the action colour only; status colours (done, needs eyes, time pressure) and platform marks keep their meaning. Every palette passes WCAG AA for text and controls (`src/lib/palettes.test.ts`).
+- **Preview before saving:** choices recolour the whole app while the panel is open; *Cancel* goes back, *Save* keeps it. The look applies to Today, navigation, the calendar and the Video Studio (the video stage stays dark for footage).
+- **Yours alone:** the photo and look are stored per person. They never change another member's view or any content. *Preview as* shows the other person's own look, and their settings can't be changed from your preview.
+- Model: `src/state/profile.ts`, `src/state/theme.tsx`, `src/lib/palettes.ts`; tests in `src/state/profile.test.ts`, `e2e/profile.spec.ts` and `e2e/mobile.spec.ts`. Captures: [`docs/redesign/profile/`](docs/redesign/profile/).
+
+**Works now:** everything above in this browser. Choices survive reloads and new sessions on this device and apply before first paint, with no flash.
+**Needs the backend:** following the account to *other devices* needs real sign-in: the same record saved on the person's server profile, with the photo in private storage. Until then it's per browser, and the panel says so.
+
 ## Video Studio (preview)
 
 `/studio` is a **review studio, not a video editor**: no cutting, trimming, effects, rendering or modified exports. The editor works in their own tools and uploads the next draft; Haven keeps every draft, its review booklet and the final video together.

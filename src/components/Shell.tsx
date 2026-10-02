@@ -9,6 +9,8 @@ import { AboutPreviewButton } from './AboutPreview';
 import { Modal } from './Modal';
 import { useToast } from './Toast';
 import { Avatar, DemoTag, useDismiss } from './ui';
+import { ProfileSettings } from './ProfileSettings';
+import { PALETTES } from '../lib/palettes';
 
 export const NAV: { to: string; label: string; icon: IconName }[] = [
   { to: '/', label: 'Today', icon: 'today' },
@@ -33,6 +35,7 @@ export function HavenMark({ size = 30 }: { size?: number }) {
 export function AppShell() {
   const [quickAdd, setQuickAdd] = useState(false);
   const [drawer, setDrawer] = useState(false);
+  const [profile, setProfile] = useState(false);
   const location = useLocation();
   const canCreate = useCanCreateIdea();
 
@@ -58,7 +61,7 @@ export function AppShell() {
       </aside>
 
       <div className="main-col">
-        <Topbar onMenu={() => setDrawer(true)} />
+        <Topbar onMenu={() => setDrawer(true)} onProfile={() => setProfile(true)} />
         <PreviewAsBar />
         <RefusalNotice />
         <main id="main" className="main" key={location.pathname.split('/').slice(0, 3).join('/')}>
@@ -86,7 +89,16 @@ export function AppShell() {
         </button>
       </nav>
 
-      {drawer && <MobileDrawer onClose={() => setDrawer(false)} />}
+      {drawer && (
+        <MobileDrawer
+          onClose={() => setDrawer(false)}
+          onProfile={() => {
+            setDrawer(false);
+            setProfile(true);
+          }}
+        />
+      )}
+      {profile && <ProfileSettings onClose={() => setProfile(false)} />}
       {quickAdd && <QuickAddModal onClose={() => setQuickAdd(false)} />}
     </div>
   );
@@ -169,10 +181,8 @@ function WorkspaceSwitcher() {
   );
 }
 
-function Topbar({ onMenu }: { onMenu: () => void }) {
-  const { theme, toggle } = useTheme();
-  const { data } = useStore();
-  const me = personOf(data, data.currentUserId)!;
+function Topbar({ onMenu, onProfile }: { onMenu: () => void; onProfile: () => void }) {
+  const { theme, toggle, canEdit } = useTheme();
   return (
     <header className="topbar">
       <button type="button" className="icon-btn topbar__menu" onClick={onMenu} aria-label="Open navigation">
@@ -191,17 +201,65 @@ function Topbar({ onMenu }: { onMenu: () => void }) {
           type="button"
           className="icon-btn theme-toggle"
           onClick={toggle}
+          disabled={!canEdit}
           aria-label={theme === 'dark' ? 'Switch to light appearance' : 'Switch to dark appearance'}
-          title={theme === 'dark' ? 'Light appearance' : 'Dark appearance'}
+          title={!canEdit ? 'Appearance belongs to the person you’re previewing' : theme === 'dark' ? 'Light appearance' : 'Dark appearance'}
           data-testid="theme-toggle"
         >
           <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
         </button>
-        <span className="topbar__me">
-          <Avatar person={me} size={32} />
-        </span>
+        <MeMenu onProfile={onProfile} />
       </div>
     </header>
+  );
+}
+
+/** The avatar menu: who you are, and your own settings. */
+function MeMenu({ onProfile }: { onProfile: () => void }) {
+  const { data, preview } = useStore();
+  const { palette, appearance, canEdit } = useTheme();
+  const me = personOf(data, data.currentUserId)!;
+  const member = data.members.find((m) => m.personId === me.id);
+  const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
+  const ref = useDismiss<HTMLDivElement>(open, close);
+  const paletteName = PALETTES.find((p) => p.id === palette)?.name ?? 'Haven';
+  const look = `${paletteName} · ${appearance === 'system' ? 'matches device' : appearance === 'dark' ? 'dark' : 'light'}`;
+  return (
+    <div className="me" ref={ref}>
+      <button type="button" className="me__btn" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)} aria-label={`Your account: ${me.name}`} data-testid="me-menu">
+        <Avatar person={me} size={32} />
+      </button>
+      {open && (
+        <div className="popover me__menu" role="menu">
+          <div className="me__who">
+            <Avatar person={me} size={40} />
+            <div>
+              <p className="me__name">{me.name}</p>
+              <p className="me__role">{member ? `${member.role[0].toUpperCase()}${member.role.slice(1)} · ${data.workspace.name}` : me.role}</p>
+            </div>
+          </div>
+          <div className="popover__sep" />
+          <button
+            type="button"
+            role="menuitem"
+            className="popover__item"
+            disabled={!canEdit}
+            onClick={() => {
+              close();
+              onProfile();
+            }}
+          >
+            <Icon name="user" size={15} /> Profile &amp; appearance
+            <span className="me__look">{look}</span>
+          </button>
+          <Link role="menuitem" className="popover__item" to="/team" onClick={close}>
+            <Icon name="shield" size={15} /> Team &amp; access
+          </Link>
+          {!canEdit && preview && <p className="me__note">You’re previewing as {me.name}. Their photo and look are theirs to change.</p>}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -348,8 +406,9 @@ function Notifications() {
   );
 }
 
-function MobileDrawer({ onClose }: { onClose: () => void }) {
+function MobileDrawer({ onClose, onProfile }: { onClose: () => void; onProfile: () => void }) {
   const { data } = useStore();
+  const { canEdit } = useTheme();
   return (
     <div className="drawer-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <nav className="drawer" aria-label="All sections">
@@ -370,9 +429,15 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
           </NavLink>
         ))}
         <NavLink to="/team" className="nav__item" onClick={onClose}>
-          <Icon name="user" size={20} />
+          <Icon name="shield" size={20} />
           <span className="nav__label">Team & access</span>
         </NavLink>
+        {canEdit && (
+          <button type="button" className="nav__item" onClick={onProfile}>
+            <Icon name="user" size={20} />
+            <span className="nav__label">Profile & appearance</span>
+          </button>
+        )}
         <div className="drawer__about">
           <AboutPreviewButton />
         </div>

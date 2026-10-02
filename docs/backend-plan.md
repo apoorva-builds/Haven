@@ -26,7 +26,7 @@ All tables carry `workspace_id`. No table has a column for social account passwo
 
 | Table | Purpose and key columns |
 | --- | --- |
-| `profiles` | One per signed-in person: `id` (auth user), `name`, `avatar_url` |
+| `profiles` | One per signed-in person: `id` (auth user), `name`, `photo_path` (private storage, served by short-lived signed URL), `appearance` (`light` \| `dark` \| `system`), `palette` (`haven` \| `plum` \| `harbor` \| `graphite`), `updated_at`. Only the person can write their own row; members can read each other's name and photo. Appearance and palette are never read for anyone else's view |
 | `workspaces` | `id`, `name`, `created_by` |
 | `memberships` | `workspace_id`, `user_id`, `role` (`owner` \| `admin` \| `collaborator`), `status` (`active` \| `suspended`). A trigger keeps at least one active owner |
 | `spaces` | `id`, `workspace_id`, `name` |

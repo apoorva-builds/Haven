@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import type { Account, IdeaStatus, Person, Platform, VersionStatus } from '../data/types';
 import { useStore } from '../state/store';
+import { useProfile } from '../state/profile';
 import { platformOf } from '../state/selectors';
 import { Icon, type IconName } from './Icon';
 import { InfoButton } from './InfoButton';
@@ -57,15 +58,21 @@ export function StatusPill({ status }: { status: IdeaStatus | VersionStatus }) {
   );
 }
 
-export function Avatar({ person, size = 28 }: { person: Person; size?: number }) {
-  const initials = person.name
-    .split(' ')
+export const initialsOf = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
     .map((p) => p[0])
     .join('')
-    .slice(0, 2);
+    .slice(0, 2)
+    .toUpperCase();
+
+/** A person's own profile photo, or their initials on their colour. */
+export function Avatar({ person, size = 28 }: { person: Person; size?: number }) {
+  const { photo } = useProfile(person.id);
   return (
-    <span className="avatar" style={{ width: size, height: size, ['--hue' as string]: person.hue, fontSize: size * 0.38 }} title={`${person.name} — ${person.role}`}>
-      {initials}
+    <span className={`avatar ${photo ? 'avatar--photo' : ''}`} style={{ width: size, height: size, ['--hue' as string]: person.hue, fontSize: size * 0.38 }} title={`${person.name} — ${person.role}`}>
+      {photo ? <img src={photo} alt="" /> : initialsOf(person.name)}
     </span>
   );
 }

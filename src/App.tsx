@@ -24,8 +24,8 @@ function AccountRedirect() {
 
 export function App() {
   return (
-    <ThemeProvider>
-      <StoreProvider>
+    <StoreProvider>
+      <ThemeProvider>
         <ToastProvider>
           <BrowserRouter>
             <Routes>
@@ -51,7 +51,7 @@ export function App() {
             </Routes>
           </BrowserRouter>
         </ToastProvider>
-      </StoreProvider>
-    </ThemeProvider>
+      </ThemeProvider>
+    </StoreProvider>
   );
 }

@@ -120,3 +120,34 @@ test('phone: the booklet is a slide-over; tap a note to seek, add a note, dismis
   await page.getByTestId('note-composer').getByRole('button', { name: 'Save note' }).tap();
   await expect(booklet.locator('.bnote', { hasText: 'Keep this pause.' })).toContainText('54:20');
 });
+
+test('phone: profile & appearance from the avatar, readable and saved', async ({ page }) => {
+  await open(page, '/');
+  await page.getByTestId('me-menu').tap();
+  await page.getByRole('menuitem', { name: /Profile & appearance/ }).tap();
+  const dialog = page.getByRole('dialog', { name: 'Profile & appearance' });
+  await expect(dialog).toBeVisible();
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(0);
+  // The panel fits the screen and every palette is reachable.
+  const box = (await dialog.boundingBox())!;
+  expect(box.width).toBeLessThanOrEqual(page.viewportSize()!.width);
+  await dialog.getByTestId('profile-photo-input').setInputFiles({
+    name: 'me.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAEUlEQVR4nGM4YWODFTEMLQkAZZlQAVIPr1MAAAAASUVORK5CYII=', 'base64'),
+  });
+  await expect(dialog.getByRole('img', { name: 'Your profile photo' })).toBeVisible();
+  await dialog.getByRole('radio', { name: /Graphite/ }).tap();
+  await dialog.getByRole('radio', { name: 'Dark' }).tap();
+  await dialog.getByTestId('save-profile').tap();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.locator('html')).toHaveAttribute('data-palette', 'graphite');
+  await expect(page.getByTestId('me-menu').locator('img')).toBeVisible();
+  // It's also in the navigation drawer.
+  await page.getByRole('button', { name: 'Open navigation' }).tap();
+  await expect(page.getByRole('button', { name: 'Profile & appearance' })).toBeVisible();
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-palette', 'graphite');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+});

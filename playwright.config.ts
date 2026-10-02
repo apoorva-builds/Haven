@@ -27,7 +27,7 @@ export default defineConfig({
     timeout: 30_000,
   },
   projects: [
-    { name: 'desktop', testMatch: /(flows|team|today|calendar|studio)\.spec\.ts/, use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, launchOptions } },
+    { name: 'desktop', testMatch: /(flows|team|today|calendar|studio|profile)\.spec\.ts/, use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, launchOptions } },
     { name: 'mobile', testMatch: /mobile\.spec\.ts/, use: { ...devices['Pixel 7'], launchOptions } },
     { name: 'screenshots', testMatch: /(screenshots|compare)\.spec\.ts/, use: { ...devices['Desktop Chrome'], launchOptions } },
   ],
