@@ -325,12 +325,6 @@ svg {
   gap: 10px;
   padding: 2px 8px;
 }
-.brand__name {
-  font-family: var(--font-display);
-  font-size: 23px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-}
 
 .nav {
   display: grid;
@@ -4255,11 +4249,10 @@ a.week__item:hover {
     padding: 20px 12px;
     align-items: center;
   }
-  .sidebar .brand__name,
   .sidebar .ws__text,
-  .sidebar .ws__btn > svg,
-  .sidebar .storage-mini,
-  .sidebar .sidebar__note {
+.sidebar .ws__btn > svg,
+.sidebar .storage-mini,
+.sidebar .sidebar__note {
     display: none;
   }
   .ws__btn {
@@ -5332,14 +5325,7 @@ body {
 .brand {
   padding: 0 8px;
 }
-.brand__name {
-  font-size: 26px;
-  font-weight: 400;
-  letter-spacing: 0;
-}
-.haven-mark rect {
-  rx: 8px;
-}
+
 .ws__btn {
   border: 0;
   background: transparent;
@@ -6368,17 +6354,7 @@ body {
 .tabbar__item.active {
   color: var(--cobalt);
 }
-.haven-mark rect {
-  fill: var(--ink);
-}
-.haven-mark path,
-.haven-mark circle {
-  stroke: var(--canvas);
-}
-.haven-mark circle {
-  fill: var(--coral-fill);
-  stroke: none;
-}
+
 .ws__avatar {
   background: var(--jade-fill);
   color: #fff;
@@ -7006,38 +6982,6 @@ body {
   animation-delay: calc(var(--i, 0) * 90ms);
 }
 
-/* Temporary wordmark (replace in src/components/Wordmark.tsx) */
-.wordmark {
-  display: inline-flex;
-  align-items: flex-end;
-  gap: 3px;
-  color: var(--ink);
-}
-.wordmark__type {
-  font-family: var(--font-display);
-  font-size: 34px;
-  line-height: 0.9;
-  letter-spacing: -0.01em;
-}
-.wordmark__dot {
-  width: 7px;
-  height: 7px;
-  margin-bottom: 4px;
-  border-radius: 50%;
-  background: var(--coral-fill);
-}
-.wordmark img {
-  height: 34px;
-  width: auto;
-}
-.wordmark__dark,
-:root[data-theme='dark'] .wordmark__light {
-  display: none;
-}
-:root[data-theme='dark'] .wordmark__dark {
-  display: block;
-}
-
 .t-top {
   display: flex;
   align-items: flex-end;
@@ -7580,9 +7524,7 @@ body {
   .t-top {
     margin-bottom: -8px;
   }
-  .wordmark__type {
-    font-size: 28px;
-  }
+  
   .t-hello__who {
     align-items: flex-start;
     gap: 16px;
@@ -8635,7 +8577,6 @@ body {
   }
 }
 
-
 /* Notes document */
 .notesdoc {
   font-size: 15px;
@@ -9167,7 +9108,6 @@ button.viewbar__btn:hover:not(:disabled) {
     transform: rotate(360deg);
   }
 }
-
 
 /* ==========================================================================
    Video Studio · review player and booklet
@@ -10778,5 +10718,88 @@ button.viewbar__btn:hover:not(:disabled) {
   .psettings__scope {
     flex-basis: 100%;
     order: 3;
+  }
+}
+
+/* ==========================================================================
+   Brand: the Sunlit Rose H (public/brand). Sized by height; the width
+   always follows the artwork, so it never stretches or clips.
+   ========================================================================== */
+.brand-logo {
+  display: block;
+  flex: none;
+  height: var(--logo-h-override, var(--logo-h));
+  width: auto;
+  aspect-ratio: var(--logo-ar);
+  line-height: 0;
+  user-select: none;
+}
+span.brand-logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.brand-logo__dark {
+  display: none !important;
+}
+:root[data-theme='dark'] .brand-logo__light {
+  display: none !important;
+}
+:root[data-theme='dark'] .brand-logo__dark {
+  display: block !important;
+}
+.brand {
+  padding: 2px 6px;
+  border-radius: 12px;
+}
+.brand:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.brand__icon {
+  display: none !important;
+}
+@media (max-width: 1180px) {
+  .sidebar .brand {
+    padding: 0;
+  }
+  .sidebar .brand__wordmark {
+    display: none !important;
+  }
+  .sidebar .brand__icon {
+    display: block !important;
+  }
+}
+.topbar__brand {
+  line-height: 0;
+}
+.drawer__head .brand {
+  padding-left: 2px;
+}
+.t-top {
+  align-items: center;
+}
+/* The founder logo's own transparent margin sits at its left edge. */
+.t-top__logo {
+  margin-left: -4px;
+}
+.about-brand {
+  display: flex;
+  justify-content: center;
+  padding: 6px 0 18px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--hairline);
+}
+@media (max-width: 720px) {
+  .t-top__logo {
+    --logo-h-override: 84px;
+  }
+  .t-top {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .about-brand .brand-logo {
+    --logo-h-override: 96px;
   }
 }

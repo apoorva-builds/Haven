@@ -10,6 +10,7 @@ import { Modal } from './Modal';
 import { useToast } from './Toast';
 import { Avatar, DemoTag, useDismiss } from './ui';
 import { ProfileSettings } from './ProfileSettings';
+import { BrandLogo } from './Brand';
 import { PALETTES } from '../lib/palettes';
 
 export const NAV: { to: string; label: string; icon: IconName }[] = [
@@ -21,16 +22,6 @@ export const NAV: { to: string; label: string; icon: IconName }[] = [
   { to: '/library', label: 'Raw Library', icon: 'library' },
   { to: '/links', label: 'Links', icon: 'links' },
 ];
-
-export function HavenMark({ size = 30 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" className="haven-mark">
-      <rect width="32" height="32" rx="9" fill="var(--accent)" />
-      <path d="M9 23V9m14 14V9M9 16h14" stroke="var(--accent-ink)" strokeWidth="2.6" strokeLinecap="round" />
-      <circle cx="16" cy="16" r="2.2" fill="var(--accent-ink)" />
-    </svg>
-  );
-}
 
 export function AppShell() {
   const [quickAdd, setQuickAdd] = useState(false);
@@ -46,8 +37,8 @@ export function AppShell() {
       </a>
       <aside className="sidebar" aria-label="Primary">
         <Link to="/" className="brand" aria-label="Haven — Today">
-          <HavenMark />
-          <span className="brand__name">Haven</span>
+          <BrandLogo variant="wordmark" height={38} className="brand__wordmark" decorative />
+          <BrandLogo variant="icon" height={40} className="brand__icon" decorative />
         </Link>
         <WorkspaceSwitcher />
         <nav className="nav">
@@ -189,7 +180,7 @@ function Topbar({ onMenu, onProfile }: { onMenu: () => void; onProfile: () => vo
         <Icon name="menu" />
       </button>
       <Link to="/" className="topbar__brand" aria-label="Haven — Today">
-        <HavenMark size={26} />
+        <BrandLogo variant="icon" height={32} decorative />
       </Link>
       <SearchBox />
       <div className="topbar__actions">
@@ -414,8 +405,7 @@ function MobileDrawer({ onClose, onProfile }: { onClose: () => void; onProfile: 
       <nav className="drawer" aria-label="All sections">
         <div className="drawer__head">
           <span className="brand">
-            <HavenMark />
-            <span className="brand__name">Haven</span>
+            <BrandLogo variant="wordmark" height={30} />
           </span>
           <button type="button" className="icon-btn" onClick={onClose} aria-label="Close navigation">
             <Icon name="close" />

@@ -75,7 +75,11 @@ Today opens on the creator's own work, then what's next.
 - **Look what you've made:** a ribbon of the last four weeks and the week ahead, with real covers per day; it opens the Day View and the full Calendar.
 - **What's next:** the next task with *Continue*, quick actions (New idea, Creation Gallery, Calendar), *Needs attention* (tasks with Focus), *Coming up* (seven days) and *Pick up where you left off*.
 - **Personal photo (optional):** each person can add one from the photo circle. Preview: it's kept in this browser only (localStorage) and never uploaded. Without one, initials keep the page complete.
-- **Wordmark:** a temporary typographic placeholder at the top of Today. Replace it by putting your SVGs in `public/brand/` and setting the two paths at the top of `src/components/Wordmark.tsx`.
+- **Brand:** the Sunlit Rose H heart, from the supplied artwork in `public/brand/` (transparent margins trimmed, nothing redrawn), placed by `src/components/Brand.tsx`:
+  - *haven / BY APOORVA* on welcome and public-facing surfaces: the top of Today and the About this preview panel;
+  - *haven* without the byline in the sidebar and phone drawer;
+  - the square icon in the collapsed sidebar, the phone top bar, the browser tab, the home-screen icon and `public/site.webmanifest`.
+  - Dark theme uses `*-dark.png` versions in which only the ink (the wordmark and the H) is recoloured cream; the heart, sparkle, tick and byline keep their supplied colours.
 - **Access:** everything comes from the viewer's own data, so *Preview as* a collaborator shows only their memories and work, and never the owner's photo.
 - Motion is subtle (rise-in, film-strip lift, memory crossfade) and switches off with *reduce motion*. Captures: [`docs/redesign/today/`](docs/redesign/today/).
 

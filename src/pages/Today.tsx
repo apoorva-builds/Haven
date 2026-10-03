@@ -9,7 +9,7 @@ import { QuickAddModal, useCanCreateIdea } from '../components/Shell';
 import { useToast } from '../components/Toast';
 import { TypeCover } from '../components/TypeCover';
 import { AccountBadge, Avatar, EmptyState, PlatformGlyph, SelectField, StatusPill, TextLink, useSimulatedLoad } from '../components/ui';
-import { Wordmark } from '../components/Wordmark';
+import { BrandLogo } from '../components/Brand';
 import { DayCollage, DayView, dayLabel, useDayParam } from '../components/DayView';
 import { calendarEntries, entriesByDay } from '../lib/posts';
 import { creationLabel } from '../lib/creations';
@@ -84,7 +84,7 @@ export function TodayPage() {
   return (
     <div className="page today">
       <header className="t-top t-rise" style={{ ['--i' as string]: 0 }}>
-        <Wordmark />
+        <BrandLogo variant="founder" height={108} className="t-top__logo" />
         <p className="t-top__date">{formatLongDate(data.today)}</p>
       </header>
 

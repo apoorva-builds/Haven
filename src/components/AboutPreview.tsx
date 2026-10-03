@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Modal } from './Modal';
+import { BrandLogo } from './Brand';
 
 /** The single place that explains what this preview is and isn't. */
 export function AboutPreviewButton() {
@@ -21,6 +22,9 @@ export function AboutPreviewButton() {
             </button>
           }
         >
+          <div className="about-brand">
+            <BrandLogo variant="founder" height={120} />
+          </div>
           <ul className="about-list">
             <li>
               <strong>Sample content.</strong> The brands, accounts, people, posts and files are fictional.
@@ -35,7 +39,7 @@ export function AboutPreviewButton() {
               <strong>Nothing is published or connected.</strong> Haven doesn’t post anything, and no social accounts are connected. A post shows as Posted only when you mark it and add its link.
             </li>
             <li>
-              <strong>Changes reset on reload.</strong> Only your light or dark choice is remembered.
+              <strong>Changes reset on reload.</strong> Only your own profile photo and look are remembered, in this browser.
             </li>
           </ul>
         </Modal>
