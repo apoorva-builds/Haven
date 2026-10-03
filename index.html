@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Haven — a calm daily workspace for creators. Milestone 1 interactive demo." />
+    <meta name="theme-color" content="#f7f3ec" />
+    <link rel="icon" href="/brand/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/brand/favicon-48.png" type="image/png" sizes="48x48" />
+    <link rel="icon" href="/brand/icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png" sizes="180x180" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="apple-mobile-web-app-title" content="Haven" />
+    <meta name="application-name" content="Haven" />
+    <title>Haven</title>
+    <script>
+      // Apply the last personal look on this device before first paint, so a
+      // reload never flashes the wrong appearance or palette.
+      (function () {
+        var root = document.documentElement;
+        try {
+          var boot = JSON.parse(localStorage.getItem('haven.boot') || 'null');
+          var stored = localStorage.getItem('haven.theme');
+          var theme = boot && boot.theme
+            ? boot.theme
+            : stored === 'light' || stored === 'dark'
+              ? stored
+              : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          root.dataset.theme = theme;
+          if (boot && boot.vars) {
+            root.dataset.palette = boot.palette;
+            for (var k in boot.vars) root.style.setProperty('--' + k, boot.vars[k]);
+          }
+        } catch (e) {
+          root.dataset.theme = 'light';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
