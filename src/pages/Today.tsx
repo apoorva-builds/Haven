@@ -83,6 +83,7 @@ export function TodayPage() {
 
   return (
     <div className="page today">
+      <StudioBackdrop />
       <header className="t-top t-rise" style={{ ['--i' as string]: 0 }}>
         <BrandLogo variant="founder" height={108} className="t-top__logo" />
         <p className="t-top__date">{formatLongDate(data.today)}</p>
@@ -525,5 +526,36 @@ function MemoryCard({ memories }: { memories: Memory[] }) {
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * The "Haven studio" backdrop behind the top of Today: soft sunlit washes,
+ * a faint paper grain and one thread-like curve from the heart logo. Purely
+ * decorative: hidden from assistive tech, never interactive, and faded out
+ * before the lower sections.
+ */
+function StudioBackdrop() {
+  return (
+    <div className="t-backdrop" aria-hidden="true">
+      <svg className="t-backdrop__thread" viewBox="0 0 1200 640" preserveAspectRatio="xMidYMin slice" focusable="false">
+        <defs>
+          <linearGradient id="t-thread" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="var(--bd-thread-a)" />
+            <stop offset="0.55" stopColor="var(--bd-thread-b)" />
+            <stop offset="1" stopColor="var(--bd-thread-a)" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {/* One continuous line in the open space: the heart's two lobes, drawn out into a thread. */}
+        <path
+          d="M 430 120 C 470 60, 570 36, 640 104 C 700 40, 830 30, 890 104 C 930 150, 1010 168, 1110 150 C 1160 142, 1200 130, 1260 116"
+          fill="none"
+          stroke="url(#t-thread)"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+    </div>
   );
 }

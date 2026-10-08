@@ -10803,3 +10803,92 @@ span.brand-logo img {
     --logo-h-override: 96px;
   }
 }
+
+/* ==========================================================================
+   Today: the "Haven studio" backdrop. Soft washes, faint paper grain and one
+   thread-like curve behind the top of the page. Decorative only; it fades
+   out before the lower sections and sits behind every card.
+   ========================================================================== */
+.main {
+  position: relative;
+  isolation: isolate;
+}
+.t-backdrop {
+  /* Light: sunlit rose and apricot on warm ivory. */
+  --bd-rose: rgba(224, 128, 132, 0.2);
+  --bd-apricot: rgba(240, 168, 110, 0.18);
+  --bd-warm: rgba(244, 196, 150, 0.16);
+  --bd-base: transparent;
+  --bd-thread-a: #d77a7e;
+  --bd-thread-b: #e9a36a;
+  --bd-thread-opacity: 0.22;
+  --bd-grain-opacity: 0.05;
+  position: absolute;
+  z-index: -1;
+  top: calc(var(--topbar-h) * -1);
+  left: 0;
+  right: 0;
+  height: calc(var(--topbar-h) + 780px);
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+  background:
+    radial-gradient(640px 420px at 12% 24%, var(--bd-rose), transparent 70%),
+    radial-gradient(560px 380px at 34% 16%, var(--bd-apricot), transparent 72%),
+    radial-gradient(760px 420px at 84% 18%, var(--bd-warm), transparent 70%),
+    var(--bd-base);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 100%);
+}
+/* Paper grain: an inline SVG noise tile, barely there. */
+.t-backdrop::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: var(--bd-grain-opacity);
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.35 0 0 0 0 0.3 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+.t-backdrop__thread {
+  position: absolute;
+  inset: calc(var(--topbar-h) + 10px) 0 auto 0;
+  width: 100%;
+  height: 640px;
+  opacity: var(--bd-thread-opacity);
+}
+:root[data-theme='dark'] .t-backdrop {
+  /* Dark: rich charcoal, a restrained coral-rose glow by the logo and a
+     faint muted teal glow opposite. */
+  --bd-rose: rgba(214, 104, 112, 0.16);
+  --bd-apricot: rgba(226, 132, 96, 0.07);
+  --bd-warm: rgba(92, 158, 156, 0.11);
+  --bd-base: linear-gradient(180deg, #201e1d 0%, #1b1a19 50%, transparent 100%);
+  --bd-thread-a: #e38a8a;
+  --bd-thread-b: #e9a36a;
+  --bd-thread-opacity: 0.16;
+  --bd-grain-opacity: 0.06;
+}
+:root[data-theme='dark'] .t-backdrop::before {
+  mix-blend-mode: soft-light;
+  filter: invert(1);
+}
+@media (max-width: 720px) {
+  .t-backdrop {
+    height: calc(var(--topbar-h) + 640px);
+    background:
+      radial-gradient(360px 300px at 18% 18%, var(--bd-rose), transparent 72%),
+      radial-gradient(320px 260px at 70% 10%, var(--bd-apricot), transparent 72%),
+      radial-gradient(420px 360px at 90% 62%, var(--bd-warm), transparent 72%),
+      var(--bd-base);
+  }
+  /* On phones the content fills the width, so the thread would cross it. */
+  .t-backdrop__thread {
+    display: none;
+  }
+}
+@media (prefers-contrast: more), print {
+  .t-backdrop {
+    display: none;
+  }
+}
