@@ -37,8 +37,8 @@ export function AppShell() {
       </a>
       <aside className="sidebar" aria-label="Primary">
         <Link to="/" className="brand" aria-label="Haven — Today">
-          <BrandLogo variant="wordmark" height={38} className="brand__wordmark" decorative />
-          <BrandLogo variant="icon" height={40} className="brand__icon" decorative />
+          <BrandLogo variant="horizontal" height={34} className="brand__wordmark" decorative />
+          <BrandLogo variant="symbol" height={34} className="brand__icon" decorative />
         </Link>
         <WorkspaceSwitcher />
         <nav className="nav">
@@ -180,7 +180,7 @@ function Topbar({ onMenu, onProfile }: { onMenu: () => void; onProfile: () => vo
         <Icon name="menu" />
       </button>
       <Link to="/" className="topbar__brand" aria-label="Haven — Today">
-        <BrandLogo variant="icon" height={32} decorative />
+        <BrandLogo variant="symbol" height={28} decorative />
       </Link>
       <SearchBox />
       <div className="topbar__actions">
@@ -405,7 +405,7 @@ function MobileDrawer({ onClose, onProfile }: { onClose: () => void; onProfile: 
       <nav className="drawer" aria-label="All sections">
         <div className="drawer__head">
           <span className="brand">
-            <BrandLogo variant="wordmark" height={30} />
+            <BrandLogo variant="horizontal" height={30} />
           </span>
           <button type="button" className="icon-btn" onClick={onClose} aria-label="Close navigation">
             <Icon name="close" />

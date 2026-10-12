@@ -1,20 +1,21 @@
 /*
- * Haven's brand: the Sunlit Rose H heart. The artwork is the supplied PNGs in
- * public/brand/, used as-is (only transparent margins trimmed). The dark
- * versions recolour the ink (wordmark and the H) to cream so it reads on dark
- * surfaces; the heart, sparkle, tick and byline keep their colours.
+ * Haven's brand: the geometric H and the lowercase "haven" wordmark, taken
+ * from the supplied Haven logo sheet (public/brand/). The artwork is used
+ * as supplied: only the flat sheet background was made transparent. Files
+ * without a suffix have dark lettering for light surfaces; "-light" files
+ * have cream lettering for dark surfaces.
  *
- *   founder  "haven / BY APOORVA": public-facing and welcome surfaces
- *   wordmark "haven" without the byline: everyday navigation
- *   icon     the square app icon: tight spaces, browser tab, home screen
+ *   horizontal  symbol beside the wordmark: navigation and page headers
+ *   stacked     symbol over the wordmark and tagline: large placements
+ *   symbol      the H alone: compact spaces
  */
 
-type Variant = 'founder' | 'wordmark' | 'icon';
+type Variant = 'horizontal' | 'stacked' | 'symbol';
 
-const ASSETS: Record<Variant, { light: string; dark?: string; width: number; height: number }> = {
-  founder: { light: '/brand/haven-logo-founder.png', dark: '/brand/haven-logo-founder-dark.png', width: 1184, height: 400 },
-  wordmark: { light: '/brand/haven-logo.png', dark: '/brand/haven-logo-dark.png', width: 1184, height: 327 },
-  icon: { light: '/brand/icon-192.png', width: 192, height: 192 },
+const ASSETS: Record<Variant, { light: string; dark: string; width: number; height: number }> = {
+  horizontal: { light: '/brand/haven-logo-horizontal.png', dark: '/brand/haven-logo-horizontal-light.png', width: 466, height: 104 },
+  stacked: { light: '/brand/haven-logo-stacked.png', dark: '/brand/haven-logo-stacked-light.png', width: 341, height: 301 },
+  symbol: { light: '/brand/haven-symbol.png', dark: '/brand/haven-symbol-light.png', width: 187, height: 196 },
 };
 
 /**
@@ -25,12 +26,11 @@ const ASSETS: Record<Variant, { light: string; dark?: string; width: number; hei
 export function BrandLogo({ variant, height, className = '', decorative = false }: { variant: Variant; height: number; className?: string; decorative?: boolean }) {
   const a = ASSETS[variant];
   const width = Math.round((a.width / a.height) * height);
-  const alt = decorative ? '' : variant === 'founder' ? 'Haven, by Apoorva' : 'Haven';
+  const alt = decorative ? '' : variant === 'stacked' ? 'Haven. Creators belong here.' : 'Haven';
   const common = { width, height, draggable: false, decoding: 'async' as const };
   // Height can be overridden per layout in CSS (--logo-h-override); the
   // aspect ratio always comes from the artwork, so it never stretches.
   const style = { ['--logo-h' as string]: `${height}px`, ['--logo-ar' as string]: `${a.width} / ${a.height}` };
-  if (!a.dark) return <img {...common} src={a.light} alt={alt} style={style} className={`brand-logo brand-logo--${variant} ${className}`} />;
   return (
     <span className={`brand-logo brand-logo--${variant} ${className}`} style={style} role={decorative ? undefined : 'img'} aria-label={decorative ? undefined : alt} aria-hidden={decorative || undefined}>
       <img {...common} src={a.light} alt="" className="brand-logo__light" />

@@ -85,7 +85,7 @@ export function TodayPage() {
     <div className="page today">
       <StudioBackdrop />
       <header className="t-top t-rise" style={{ ['--i' as string]: 0 }}>
-        <BrandLogo variant="founder" height={108} className="t-top__logo" />
+        <BrandLogo variant="horizontal" height={52} className="t-top__logo" />
         <p className="t-top__date">{formatLongDate(data.today)}</p>
       </header>
 

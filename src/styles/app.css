@@ -10722,7 +10722,7 @@ button.viewbar__btn:hover:not(:disabled) {
 }
 
 /* ==========================================================================
-   Brand: the Sunlit Rose H (public/brand). Sized by height; the width
+   Brand: the geometric H and wordmark (public/brand). Sized by height; the width
    always follows the artwork, so it never stretches or clips.
    ========================================================================== */
 .brand-logo {
@@ -10779,20 +10779,18 @@ span.brand-logo img {
 .t-top {
   align-items: center;
 }
-/* The founder logo's own transparent margin sits at its left edge. */
-.t-top__logo {
-  margin-left: -4px;
-}
 .about-brand {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   padding: 6px 0 18px;
   margin-bottom: 14px;
   border-bottom: 1px solid var(--hairline);
 }
 @media (max-width: 720px) {
   .t-top__logo {
-    --logo-h-override: 84px;
+    --logo-h-override: 40px;
   }
   .t-top {
     align-items: flex-start;
@@ -10800,7 +10798,7 @@ span.brand-logo img {
     gap: 16px;
   }
   .about-brand .brand-logo {
-    --logo-h-override: 96px;
+    --logo-h-override: 46px;
   }
 }
 
@@ -11208,4 +11206,20 @@ input[type='range'] {
 .t-hello__who {
   position: relative;
   z-index: 2;
+}
+
+.about-brand__tagline {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* Card headings on Today use the heading face too. */
+.t-next__task {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }

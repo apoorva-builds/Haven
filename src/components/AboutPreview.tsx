@@ -23,7 +23,8 @@ export function AboutPreviewButton() {
           }
         >
           <div className="about-brand">
-            <BrandLogo variant="founder" height={120} />
+            <BrandLogo variant="horizontal" height={56} />
+            <p className="about-brand__tagline">Creators belong here.</p>
           </div>
           <ul className="about-list">
             <li>
