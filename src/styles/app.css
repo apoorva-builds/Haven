@@ -4,8 +4,8 @@
    ========================================================================== */
 
 :root {
-  --font-display: 'Fraunces Variable', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
-  --font-ui: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Manrope Variable', 'Manrope', 'Avenir Next', 'Segoe UI', sans-serif;
+  --font-ui: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   --radius-xs: 6px;
@@ -5237,7 +5237,7 @@ a.week__item:hover {
    larger, intentional moments. Media brings the colour.
    ========================================================================== */
 :root {
-  --font-display: 'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-display: 'Manrope Variable', 'Manrope', 'Avenir Next', 'Segoe UI', sans-serif;
   --sidebar-w: 212px;
   --topbar-h: 56px;
   --radius-ctl: 8px;
@@ -6830,7 +6830,7 @@ body {
 .capbox input:checked + .capbox__mark {
   background: var(--cobalt-fill);
   border-color: var(--cobalt-fill);
-  color: #fff;
+  color: var(--accent-ink);
 }
 .capbox input:focus-visible + .capbox__mark {
   outline: 2px solid var(--focus);
@@ -10805,40 +10805,35 @@ span.brand-logo img {
 }
 
 /* ==========================================================================
-   Today: the "Haven studio" backdrop. Soft washes, faint paper grain and one
-   thread-like curve behind the top of the page. Decorative only; it fades
-   out before the lower sections and sits behind every card.
+   Today: the "Haven studio" backdrop. Soft pale-nude and champagne washes
+   with faint paper grain behind the top of the page. Decorative only; it
+   fades out before the lower sections and sits behind every card.
    ========================================================================== */
 .main {
   position: relative;
   isolation: isolate;
 }
 .t-backdrop {
-  /* Light: sunlit rose and apricot on warm ivory. */
-  --bd-rose: rgba(224, 128, 132, 0.2);
-  --bd-apricot: rgba(240, 168, 110, 0.18);
-  --bd-warm: rgba(244, 196, 150, 0.16);
-  --bd-base: transparent;
-  --bd-thread-a: #d77a7e;
-  --bd-thread-b: #e9a36a;
-  --bd-thread-opacity: 0.22;
-  --bd-grain-opacity: 0.05;
+  /* Light: pale nude and a touch of champagne rose on porcelain cream. */
+  --bd-nude: rgba(237, 215, 199, 0.42);
+  --bd-champagne: rgba(215, 165, 140, 0.14);
+  --bd-greige: rgba(207, 191, 181, 0.2);
+  --bd-grain-opacity: 0.04;
   position: absolute;
   z-index: -1;
   top: calc(var(--topbar-h) * -1);
   left: 0;
   right: 0;
-  height: calc(var(--topbar-h) + 780px);
+  height: calc(var(--topbar-h) + 760px);
   pointer-events: none;
   user-select: none;
   overflow: hidden;
   background:
-    radial-gradient(640px 420px at 12% 24%, var(--bd-rose), transparent 70%),
-    radial-gradient(560px 380px at 34% 16%, var(--bd-apricot), transparent 72%),
-    radial-gradient(760px 420px at 84% 18%, var(--bd-warm), transparent 70%),
-    var(--bd-base);
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 100%);
+    radial-gradient(680px 420px at 10% 20%, var(--bd-nude), transparent 70%),
+    radial-gradient(560px 360px at 40% 8%, var(--bd-greige), transparent 72%),
+    radial-gradient(720px 420px at 88% 16%, var(--bd-champagne), transparent 70%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 50%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 50%, transparent 100%);
 }
 /* Paper grain: an inline SVG noise tile, barely there. */
 .t-backdrop::before {
@@ -10850,24 +10845,12 @@ span.brand-logo img {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.35 0 0 0 0 0.3 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 180px 180px;
 }
-.t-backdrop__thread {
-  position: absolute;
-  inset: calc(var(--topbar-h) + 10px) 0 auto 0;
-  width: 100%;
-  height: 640px;
-  opacity: var(--bd-thread-opacity);
-}
 :root[data-theme='dark'] .t-backdrop {
-  /* Dark: rich charcoal, a restrained coral-rose glow by the logo and a
-     faint muted teal glow opposite. */
-  --bd-rose: rgba(214, 104, 112, 0.16);
-  --bd-apricot: rgba(226, 132, 96, 0.07);
-  --bd-warm: rgba(92, 158, 156, 0.11);
-  --bd-base: linear-gradient(180deg, #201e1d 0%, #1b1a19 50%, transparent 100%);
-  --bd-thread-a: #e38a8a;
-  --bd-thread-b: #e9a36a;
-  --bd-thread-opacity: 0.16;
-  --bd-grain-opacity: 0.06;
+  /* Dark: warm mocha depth with a quiet mauve-taupe and champagne glow. */
+  --bd-nude: rgba(155, 129, 120, 0.16);
+  --bd-champagne: rgba(215, 165, 140, 0.08);
+  --bd-greige: rgba(207, 191, 181, 0.05);
+  --bd-grain-opacity: 0.05;
 }
 :root[data-theme='dark'] .t-backdrop::before {
   mix-blend-mode: soft-light;
@@ -10875,20 +10858,354 @@ span.brand-logo img {
 }
 @media (max-width: 720px) {
   .t-backdrop {
-    height: calc(var(--topbar-h) + 640px);
+    height: calc(var(--topbar-h) + 620px);
     background:
-      radial-gradient(360px 300px at 18% 18%, var(--bd-rose), transparent 72%),
-      radial-gradient(320px 260px at 70% 10%, var(--bd-apricot), transparent 72%),
-      radial-gradient(420px 360px at 90% 62%, var(--bd-warm), transparent 72%),
-      var(--bd-base);
-  }
-  /* On phones the content fills the width, so the thread would cross it. */
-  .t-backdrop__thread {
-    display: none;
+      radial-gradient(360px 300px at 18% 16%, var(--bd-nude), transparent 72%),
+      radial-gradient(420px 360px at 92% 52%, var(--bd-champagne), transparent 72%);
   }
 }
 @media (prefers-contrast: more), print {
   .t-backdrop {
     display: none;
   }
+}
+
+/* ==========================================================================
+   Haven identity: porcelain cream, pale nude, soft greige, mauve-taupe and
+   mocha, with champagne rose kept for small brand details. These map the
+   brand tokens onto the existing variables, so every page picks them up.
+   Status (jade, amber, coral), account and calendar colours are untouched.
+   The Haven palette's colours themselves live in src/lib/palettes.ts; the
+   values below are the same, for first paint before the app applies them.
+   ========================================================================== */
+:root {
+  --haven-champagne-rose: #d7a58c;
+  --haven-pale-nude: #edd7c7;
+  --haven-porcelain-cream: #f9f0e5;
+  --haven-soft-greige: #cfbfb5;
+  --haven-mauve-taupe: #9b8178;
+  --haven-mocha: #6f554d;
+  --radius-sm: 10px;
+  --radius-ctl: 10px;
+  --radius: 14px;
+  --radius-lg: 18px;
+  --page-atmosphere: none;
+}
+:root,
+:root[data-theme='light'] {
+  --canvas: #fcf9f5;
+  --canvas-2: #f9f0e5;
+  --surface: #fffdfa;
+  --surface-2: #f7efe6;
+  --surface-3: #eee3d9;
+  --ink: #433732;
+  --ink-2: #5e4e47;
+  --ink-3: #75635b;
+  --line: #e6dad0;
+  --line-2: #cfbfb5;
+  --hairline: #efe6dd;
+  --cobalt: #6f554d;
+  --cobalt-fill: #6f554d;
+  --cobalt-hover: #5b443d;
+  --cobalt-soft: #f3e4d8;
+  --accent-ink: #fffdfa;
+  --control-line: #9b8178;
+  --focus: #805a48;
+  --shadow-1: 0 1px 2px rgb(80 55 42 / 5%);
+  --shadow-2: 0 1px 2px rgb(80 55 42 / 4%), 0 8px 32px rgb(80 55 42 / 6%);
+  --shadow-3: 0 16px 48px rgb(80 55 42 / 12%);
+}
+:root[data-theme='dark'] {
+  --canvas: #251f1c;
+  --canvas-2: #2a2320;
+  --surface: #302824;
+  --surface-2: #3b302a;
+  --surface-3: #463932;
+  --ink: #f5ece3;
+  --ink-2: #dccbbf;
+  --ink-3: #cbb8ab;
+  --line: #57453c;
+  --line-2: #6b574c;
+  --hairline: #3a2f2a;
+  --cobalt: #edd7c7;
+  --cobalt-fill: #edd7c7;
+  --cobalt-hover: #f5e6da;
+  --cobalt-soft: #4a3b33;
+  --accent-ink: #302824;
+  --control-line: #a68d7d;
+  --focus: #d7a58c;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 25%);
+  --shadow-2: 0 1px 2px rgb(0 0 0 / 22%), 0 10px 32px rgb(0 0 0 / 22%);
+  --shadow-3: 0 16px 48px rgb(0 0 0 / 40%);
+}
+/* The page atmosphere belongs to the Haven palette; the others stay flat. */
+:root:not([data-palette]),
+:root[data-palette='haven'] {
+  --page-atmosphere:
+    radial-gradient(ellipse at 5% 0%, rgb(237 215 199 / 24%), transparent 52%),
+    radial-gradient(ellipse at 95% 15%, rgb(215 165 140 / 12%), transparent 42%);
+}
+:root:not([data-palette])[data-theme='dark'],
+:root[data-palette='haven'][data-theme='dark'] {
+  --page-atmosphere:
+    radial-gradient(ellipse at 5% 0%, rgb(155 129 120 / 10%), transparent 52%),
+    radial-gradient(ellipse at 95% 15%, rgb(215 165 140 / 6%), transparent 42%);
+}
+body {
+  background-color: var(--canvas);
+  background-image: var(--page-atmosphere);
+  background-attachment: fixed;
+}
+::selection {
+  background: color-mix(in srgb, var(--cobalt-fill) 22%, transparent);
+}
+
+/* Typography: Manrope headings with gentle negative tracking, Inter for
+   everything else. Manrope has no italic, so display text stays upright. */
+.display,
+.h2,
+.empty h3,
+.modal__head h2,
+.studio-head__h,
+.upnext__title,
+.idea-section__h,
+.gallery__sech,
+.access-editor__h,
+.t-hello__h,
+.memory__title,
+.t-section-h,
+.dayview__title,
+.dayview__empty-title,
+.dpost__title,
+.vidrow__title,
+.notesdoc__title,
+.booklet__title,
+.pcheck__title,
+.psettings__name,
+.tcover__title,
+.ctile__title,
+.idea-tile__title,
+.vstage__title,
+.gallery__date,
+.hrow__label,
+.pblock__title {
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  font-style: normal;
+}
+.note,
+.rv__section,
+.pcheck__title span {
+  font-style: normal;
+}
+/* Page titles: 28–36px. */
+.display,
+.studio-head__h,
+.t-hello__h {
+  font-size: clamp(28px, 2.8vw, 36px);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+}
+.upnext__title,
+.memory__title,
+.dayview__title {
+  font-size: clamp(24px, 2.4vw, 30px);
+  line-height: 1.15;
+}
+.idea-section__h,
+.gallery__sech,
+.t-section-h,
+.access-editor__h,
+.booklet__title,
+.notesdoc__title {
+  font-size: 24px;
+  line-height: 1.2;
+}
+.dpost__title,
+.vidrow__title {
+  font-size: clamp(20px, 2vw, 24px);
+  line-height: 1.2;
+}
+.tcover__title {
+  font-size: clamp(20px, 1.8vw, 26px);
+  line-height: 1.15;
+}
+.ctile__title,
+.idea-tile__title,
+.vstage__title,
+.gallery__date,
+.hrow__label,
+.dayview__empty-title {
+  font-size: 18px;
+  line-height: 1.25;
+}
+.h2,
+.modal__head h2,
+.pcheck__title,
+.psettings__name {
+  font-size: 20px;
+}
+.empty h3 {
+  font-size: 18px;
+}
+.upnext__type {
+  font-size: 34px;
+}
+.idea-thumb__type,
+.t-thumb__type {
+  font-size: 24px;
+}
+.pphoto__initials {
+  font-size: 30px;
+  letter-spacing: -0.02em;
+}
+.storage__big {
+  font-size: 30px;
+  letter-spacing: -0.02em;
+}
+.cover__caption,
+.memory__caption,
+.dpost__caption,
+.strip__title,
+.account-card__handle,
+.t-film__title,
+.t-idea__title,
+.drafts__label,
+.booklet__empty-title,
+.bsec__title,
+.me__name,
+.swatch__name,
+.week__date strong,
+.smeter__figure strong,
+.bcomposer__at {
+  letter-spacing: -0.015em;
+}
+
+/* Controls: 10px corners, warm borders that stand off the page (3:1). */
+.btn {
+  border-radius: var(--radius-ctl);
+  font-weight: 600;
+}
+.btn--primary {
+  background: var(--cobalt-fill);
+  color: var(--accent-ink);
+  box-shadow: 0 1px 2px rgb(80 55 42 / 10%);
+}
+.btn--primary:hover:not(:disabled) {
+  background: var(--cobalt-hover);
+}
+.btn--ghost {
+  border-color: var(--line-2);
+  color: var(--ink);
+}
+.btn--ghost:hover:not(:disabled) {
+  border-color: var(--control-line);
+  background: var(--surface);
+}
+:where(input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea) {
+  border-color: var(--control-line);
+  border-radius: var(--radius-ctl);
+  background-color: var(--surface);
+}
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 1px var(--focus), 0 0 0 4px var(--cobalt-soft);
+}
+input[type='checkbox'],
+input[type='radio'],
+input[type='range'] {
+  accent-color: var(--cobalt-fill);
+}
+.capbox__mark {
+  border-color: var(--control-line);
+}
+:focus-visible {
+  outline-color: var(--focus);
+}
+
+/* Cards, panels and the floating layers: ivory, soft warm shadows. */
+.card,
+.panel {
+  border-radius: var(--radius-lg);
+}
+.modal {
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-3);
+}
+.modal-backdrop,
+.drawer-backdrop {
+  background: rgb(52 40 35 / 34%);
+}
+:root[data-theme='dark'] .modal-backdrop,
+:root[data-theme='dark'] .drawer-backdrop {
+  background: rgb(14 10 9 / 58%);
+}
+.popover {
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-3);
+}
+.popover__item {
+  border-radius: 8px;
+}
+.empty__icon {
+  background: var(--canvas-2);
+  color: var(--cobalt);
+}
+.dropzone {
+  border-color: var(--line-2);
+  border-radius: var(--radius-lg);
+  background: var(--canvas-2);
+}
+.dropzone.is-dragging {
+  border-color: var(--cobalt-fill);
+  background: var(--cobalt-soft);
+}
+
+/* Collection panels: mocha in place of the old cobalt, in Haven only. */
+:root:not([data-palette]) .tone--cobalt,
+:root[data-palette='haven'] .tone--cobalt {
+  --panel: #6f554d;
+  --panel-ink: #fffdfa;
+}
+:root:not([data-palette])[data-theme='dark'] .tone--cobalt,
+:root[data-palette='haven'][data-theme='dark'] .tone--cobalt {
+  --panel: #5b443d;
+  --panel-ink: #f5ece3;
+}
+:root:not([data-palette]) .tone--ink,
+:root[data-palette='haven'] .tone--ink {
+  --panel: #433732;
+  --panel-ink: #f9f0e5;
+}
+:root:not([data-palette])[data-theme='dark'] .tone--ink,
+:root[data-palette='haven'][data-theme='dark'] .tone--ink {
+  --panel: #3b302a;
+}
+
+/* Links on always-dark media panels. */
+.memory .text-link,
+.rmenu__link {
+  color: #edd7c7;
+}
+
+/* On this day: a warm mocha frame around the memory, in Haven. */
+:root:not([data-palette]) .memory,
+:root[data-palette='haven'] .memory {
+  --mem-bg: #2e2521;
+  --mem-ink: #f5ece3;
+  --mem-ink-2: #d3c2b5;
+}
+:root:not([data-palette])[data-theme='dark'] .memory,
+:root[data-palette='haven'][data-theme='dark'] .memory {
+  --mem-bg: #382d28;
+}
+
+/* Keep the photo menu above the card that follows it on Today. */
+.t-hello__who {
+  position: relative;
+  z-index: 2;
 }

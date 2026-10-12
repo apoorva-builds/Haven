@@ -20,6 +20,11 @@ describe('palettes keep text and controls readable', () => {
         expect(contrast(t['accent-ink'], t['cobalt-hover']), 'hovered button label').toBeGreaterThanOrEqual(4.5);
         // Controls stand off the page: a filled button is distinguishable from the canvas.
         expect(contrast(t['cobalt-fill'], t.canvas), 'button against page').toBeGreaterThanOrEqual(3);
+        // Field borders and the focus ring are visible on the page and on cards.
+        for (const bg of [t.canvas, t.surface, t['surface-2']]) {
+          expect(contrast(t['control-line'], bg), 'control border').toBeGreaterThanOrEqual(3);
+          expect(contrast(t.focus, bg), 'focus ring').toBeGreaterThanOrEqual(3);
+        }
       });
     }
   }
