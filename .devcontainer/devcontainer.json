@@ -1,0 +1,10 @@
+{
+  "name": "Haven",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
+  "postCreateCommand": "npm install && npx playwright install --with-deps chromium",
+  "forwardPorts": [5173, 4173],
+  "portsAttributes": {
+    "5173": { "label": "Haven dev server", "onAutoForward": "openPreview" },
+    "4173": { "label": "Haven preview build" }
+  }
+}

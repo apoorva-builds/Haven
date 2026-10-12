@@ -23,7 +23,7 @@ Haven is a web product. It stores links to each social platform and its own anal
 
 **Global:** Haven mark; workspace switcher; universal search; quick-add; notifications; theme toggle; profile.  
 **Primary:** Today, Ideas, Calendar, Accounts, Library, Campaigns, Links.  
-**Contextual:** Tasks and review live with their idea groups; team, storage, billing, and settings live under the workspace menu. Do not split the same work into disconnected duplicate dashboards.
+**Contextual:** Tasks and review live with their idea groups; team & access, storage, billing, and settings live under the workspace menu. Do not split the same work into disconnected duplicate dashboards.
 
 ### Today
 
@@ -57,6 +57,27 @@ Reusable originals and brand assets, searchable by topic, campaign, platform, pe
 ### Campaigns and Links
 
 Campaigns group multiple ideas for a launch, series, sponsorship, or event. Links keeps account pages, native analytics pages, published URLs, affiliate/campaign URLs, and brand resources. A public link-in-bio page is not part of the current brief.
+
+## Workspace, collaborators and access (revised direction)
+
+**One workspace per customer.** Each customer has one shared Haven workspace. **Spaces** (usually a brand or show, such as “Pine & Paper”) and their **social accounts** organise the work inside it. A person can use the workspace alone or invite collaborators.
+
+**Roles and access.** The owner and admins have full access to the workspace's work. An admin assigns each collaborator access to specific Spaces and social accounts, with clear capabilities:
+
+- **View**: open the work and the files it uses.
+- **Edit & upload**: change versions, captions and dates, and add files.
+- **Review & approve**: move a version to Ready to post.
+- **Publish**: record a post as live. Real publishing only where a supported platform connection exists and its granted permissions allow it; otherwise the action stays clearly manual.
+
+A whole-Space grant covers every account in that Space. **Files follow the work**: a collaborator sees the files used by what they can open, never the rest. Access checks cover files and linked creations, so a restricted person can't open them through a direct URL or a shared reference.
+
+**Sign-in and credentials.** Each collaborator signs in to Haven as themselves. Nobody signs in to every social account to plan, edit or review in Haven. Haven never requests, stores, reveals or distributes social account passwords; a handle identifies an account and is not a credential.
+
+**Work activity.** Admins can see work activity inside Haven: who uploaded, edited, approved, changed status or published what. Haven never exposes anyone's personal account activity, private messages or unrelated browsing.
+
+**Not in scope.** No team chat, channels, group rooms or disappearing messages. Feedback attached to a specific creation (timestamped review comments) is a later work feature (Milestone 3).
+
+**Preview status (Milestone 1).** *Team & access* in the workspace menu shows sample members, invitations and an access editor by Space and account, and can *preview as* a collaborator. In the preview this only filters the current browser tab; it is not security. Real sign-in, invitations and server-enforced access follow the backend plan (`docs/backend-plan.md`).
 
 ## Full feature inventory to preserve
 
@@ -92,11 +113,11 @@ Claude creates a GitHub repository with a responsive web app and seeded demo wor
 
 ### Milestone 2 — trustworthy core data and media
 
-Authentication, workspaces, roles, ideas, account profiles, variants, campaigns, tasks, assets, and saved links; production database and secure object storage. Implement resumable uploads, integrity checks, access controls, download/recovery, quota enforcement, duplicate handling, deletion semantics, and an export path. Keep secrets out of the repository. Test the failure cases that could lose a creator's media.
+Authentication (each person signs in as themselves), one workspace per customer with Spaces, invitations, roles and per-Space/per-account capabilities enforced on the server, work-activity history, ideas, account profiles, variants, campaigns, tasks, assets, and saved links; production database and secure object storage. Implement resumable uploads, integrity checks, access controls, download/recovery, quota enforcement, duplicate handling, deletion semantics, and an export path. Keep secrets out of the repository. Test the failure cases that could lose a creator's media.
 
 ### Milestone 3 — collaboration and paid workflow
 
-Timestamped review, version comparison, client links/approval, ready-to-post bundles, recurring templates, billing, storage add-ons, usage transparency, and team/client plans. Verify access and payment states before selling plans. Native platform connections, automatic publishing, in-browser editing, and imported analytics are outside the present scope.
+Feedback attached to a specific creation (timestamped review), version comparison, client links/approval, ready-to-post bundles, recurring templates, billing, storage add-ons, usage transparency, and team/client plans. Verify access and payment states before selling plans. Native platform connections, automatic publishing, in-browser editing, and imported analytics are outside the present scope.
 
 ## Claude's first implementation task (paste into Claude Code)
 
