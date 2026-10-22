@@ -1,0 +1,516 @@
+/* ==========================================================================
+   Sample sign-in (/login). UI only. Uses the app's theme tokens, so it
+   follows light and dark mode and the Haven palette.
+   ========================================================================== */
+.login {
+  --sig: var(--haven-champagne-rose);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) 1.3fr;
+  background-color: var(--canvas);
+  background-image: var(--page-atmosphere);
+}
+
+/* Brand panel: mocha with a soft champagne light, the H and the tagline. */
+.login__brand {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  padding: 48px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgb(237 215 199 / 22%), transparent 55%),
+    radial-gradient(ellipse at 90% 100%, rgb(215 165 140 / 26%), transparent 50%),
+    linear-gradient(160deg, #6f554d, #4e3c36);
+  color: #f5ece3;
+}
+.login__brand::after {
+  content: '';
+  position: absolute;
+  inset: 22px;
+  border: 1px solid rgb(237 215 199 / 22%);
+  border-radius: 22px;
+  pointer-events: none;
+}
+/* The panel is always mocha, so it always shows the cream artwork. */
+.login__brand .brand-logo__light {
+  display: none !important;
+}
+.login__brand .brand-logo__dark {
+  display: block !important;
+}
+.login__tagline {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgb(245 236 227 / 86%);
+}
+
+.login__main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 28px clamp(16px, 4vw, 56px) 32px;
+}
+.login__top {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.login__demo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 11px;
+  border: 1px solid var(--line-2);
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  background: var(--surface);
+}
+.login__demo-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--amber-fill);
+}
+
+.login__card {
+  width: 100%;
+  max-width: 520px;
+  margin-top: clamp(0px, 4vh, 40px);
+  padding: clamp(22px, 4vw, 40px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+.login__fineprint {
+  max-width: 520px;
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-3);
+  text-align: center;
+}
+
+/* Progress */
+.lprog {
+  margin-bottom: 28px;
+}
+.lprog__count {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+.lprog__list {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lprog__item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.lprog__dot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--line);
+  color: transparent;
+  transition: background var(--dur) var(--ease);
+}
+.lprog__dot svg {
+  display: none;
+}
+.lprog__item.is-done .lprog__dot,
+.lprog__item.is-current .lprog__dot {
+  background: var(--cobalt-fill);
+}
+.lprog__item.is-current {
+  color: var(--ink);
+  font-weight: 600;
+}
+.lprog__item.is-current .lprog__dot {
+  box-shadow: 0 0 0 3px var(--cobalt-soft);
+}
+
+/* Steps */
+.login__step--fwd {
+  animation: lstep-fwd 360ms var(--ease) both;
+}
+.login__step--back {
+  animation: lstep-back 360ms var(--ease) both;
+}
+@keyframes lstep-fwd {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+}
+@keyframes lstep-back {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+}
+.lstep {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.lstep__head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lstep__eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.lstep__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(26px, 3vw, 30px);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.lstep__title:focus {
+  outline: none;
+}
+.lstep__title:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+}
+.lstep__lede {
+  margin: 4px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.lstep__actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+.lstep__actions .btn--primary {
+  min-width: 140px;
+}
+
+/* Fields */
+.lfield {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.lfield__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.lfield__input {
+  width: 100%;
+  min-height: 46px;
+  font-size: 15px;
+}
+.lfield__input--long {
+  min-height: 52px;
+}
+.lfield__input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+.lfield__secret {
+  position: relative;
+}
+.lfield__secret .lfield__input {
+  padding-right: 92px;
+}
+.lfield__toggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.lfield__toggle:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.lfield__hint,
+.lfield__error {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.lfield__error {
+  color: var(--danger);
+  font-weight: 500;
+}
+
+/* Signature swatches */
+.lswatches {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.lswatch {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--canvas);
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease), transform 160ms var(--ease);
+}
+.lswatch:hover {
+  border-color: var(--control-line);
+  transform: translateY(-1px);
+}
+.lswatch input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.lswatch__chip {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--swatch);
+  box-shadow: inset 0 0 0 1px rgb(67 55 50 / 14%), 0 6px 14px -8px rgb(80 55 42 / 40%);
+  color: transparent;
+}
+.lswatch__name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+  text-align: center;
+}
+.lswatch:has(input:checked) {
+  border-color: var(--cobalt-fill);
+  box-shadow: 0 0 0 1px var(--cobalt-fill);
+  background: var(--surface);
+}
+.lswatch:has(input:checked) .lswatch__name {
+  color: var(--ink);
+  font-weight: 600;
+}
+.lswatch input:checked + .lswatch__chip {
+  color: var(--swatch-ink);
+}
+.lswatch:has(input:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Simulated passkey */
+.lpasskey {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.lpasskey__btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 18px;
+  border: 1px solid var(--control-line);
+  border-radius: var(--radius);
+  background: var(--canvas);
+  text-align: left;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.lpasskey__btn:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+.lpasskey__btn:disabled {
+  cursor: default;
+}
+.lpasskey__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  background: var(--cobalt-soft);
+  color: var(--cobalt);
+}
+.lpasskey.is-checking .lpasskey__icon {
+  animation: lpasskey-pulse 1.1s var(--ease) infinite;
+}
+.lpasskey.is-done .lpasskey__btn {
+  border-color: var(--jade);
+}
+.lpasskey.is-done .lpasskey__icon {
+  background: var(--jade-soft);
+  color: var(--jade);
+}
+@keyframes lpasskey-pulse {
+  50% {
+    box-shadow: 0 0 0 8px var(--cobalt-soft);
+  }
+}
+.lpasskey__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 15px;
+  color: var(--ink);
+}
+.lpasskey__badge {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--warn);
+  background: var(--warn-soft);
+}
+.lpasskey__note {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.lpasskey__note svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+/* Welcome */
+.lwelcome {
+  align-items: center;
+  text-align: center;
+}
+.lwelcome .lstep__head {
+  align-items: center;
+}
+.lwelcome__halo {
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--sig) 45%, transparent), transparent 70%);
+  animation: lwelcome-in 700ms var(--ease) both;
+}
+@keyframes lwelcome-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+.lwelcome__summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 14px 18px;
+  list-style: none;
+  border-radius: var(--radius);
+  background: var(--canvas-2);
+  font-size: 13.5px;
+  color: var(--ink-2);
+  text-align: left;
+}
+.lwelcome__summary li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lwelcome__summary svg {
+  color: var(--jade);
+}
+.lwelcome__sig {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--sig);
+  box-shadow: inset 0 0 0 1px rgb(67 55 50 / 18%);
+}
+.lwelcome__go {
+  margin-top: 4px;
+}
+
+@media (max-width: 860px) {
+  .login {
+    grid-template-columns: 1fr;
+  }
+  .login__brand {
+    display: none;
+  }
+}
+@media (max-width: 480px) {
+  .lswatches {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .lprog__label {
+    font-size: 11px;
+  }
+  .lstep__actions .btn--primary {
+    min-width: 0;
+    flex: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .login__step--fwd,
+  .login__step--back,
+  .lwelcome__halo,
+  .lpasskey.is-checking .lpasskey__icon {
+    animation: none;
+  }
+  .lswatch:hover {
+    transform: none;
+  }
+}

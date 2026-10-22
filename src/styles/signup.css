@@ -1,0 +1,85 @@
+/* Sign-up preview: builds on the sample sign-in layout (login.css). */
+.signup__plans {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.signup__plans legend {
+  margin-bottom: 8px;
+  padding: 0;
+}
+.signup__plan {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--canvas);
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.signup__plan:hover {
+  border-color: var(--control-line);
+}
+.signup__plan input {
+  flex: none;
+  margin-top: 3px;
+  width: 17px;
+  height: 17px;
+}
+.signup__plan:has(input:checked) {
+  border-color: var(--cobalt-fill);
+  box-shadow: 0 0 0 1px var(--cobalt-fill);
+  background: var(--surface);
+}
+.signup__plan-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.signup__plan-text strong {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.signup__plan-price {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+.signup__signin {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--cobalt);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--cobalt) 40%, transparent);
+}
+.signup__done-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+@media (max-width: 480px) {
+  .signup__done-actions .btn {
+    width: 100%;
+  }
+  .lstep__actions:has(.signup__signin) {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    text-align: center;
+  }
+  .lstep__actions:has(.signup__signin) .btn--primary {
+    flex: none;
+  }
+}
