@@ -8,6 +8,7 @@ import { IdeasPage } from './pages/Ideas';
 import { IdeaWorkspacePage } from './pages/idea/IdeaWorkspace';
 import { LibraryPage } from './pages/Library';
 import { LinksPage } from './pages/Links';
+import { LoginPage } from './pages/Login';
 import { NotFoundPage } from './pages/NotFound';
 import { TeamPage } from './pages/Team';
 import { TodayPage } from './pages/Today';
@@ -29,6 +30,8 @@ export function App() {
         <ToastProvider>
           <BrowserRouter>
             <Routes>
+              {/* Sample sign-in: a UI-only preview, outside the workspace shell. */}
+              <Route path="login" element={<LoginPage />} />
               <Route element={<AppShell />}>
                 <Route index element={<TodayPage />} />
                 <Route path="ideas" element={<IdeasPage />} />

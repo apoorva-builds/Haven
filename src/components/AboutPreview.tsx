@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Modal } from './Modal';
 import { BrandLogo } from './Brand';
 
@@ -41,6 +42,13 @@ export function AboutPreviewButton() {
             </li>
             <li>
               <strong>Changes reset on reload.</strong> Only your own profile photo and look are remembered, in this browser.
+            </li>
+            <li>
+              <strong>Sign-in is a sample.</strong> There’s no real account sign-in yet.{' '}
+              <Link className="text-link" to="/login">
+                Try the sample sign-in
+              </Link>
+              ; it’s UI only and saves nothing.
             </li>
           </ul>
         </Modal>
