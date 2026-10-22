@@ -12,13 +12,15 @@ test('homepage: sections, honest labels and no invented prices', async ({ page }
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1, name: /One idea\.\s*Every version\./ })).toBeVisible();
   for (const name of [
-    'Your whole practice, on one calm page',
-    'Made for the way creators actually work',
-    'A private home for the long films that matter',
+    'Everything a video needs, from first clip to final post.',
+    'One idea. Every platform.',
+    'For the films you’ll still want to watch in fifty years.',
+    'Review every cut like it’s the premiere.',
     'Where your files and your work finally meet',
-    'Two plans, each with one clear purpose',
-    'Built to be trusted with what you can’t replace',
+    'Two plans, each with one clear purpose.',
+    'Built to be trusted with what you can’t replace.',
     'Frequently asked',
+    'Creators belong here.',
   ]) {
     await expect(page.getByRole('heading', { level: 2, name })).toBeVisible();
   }
@@ -95,15 +97,42 @@ test('the workspace demo is one click away and its pages still work', async ({ p
   await expect(page).toHaveURL(/\/studio$/);
 });
 
-test('the theme toggle switches the homepage between light and dark', async ({ page }) => {
-  await page.emulateMedia({ colorScheme: 'light' });
+test('the product showcase switches between real workspace views', async ({ page }) => {
   await page.goto('/');
-  const html = page.locator('html');
-  await expect(html).toHaveAttribute('data-theme', 'light');
+  const panel = page.getByRole('tabpanel');
+  await expect(page.getByRole('tab', { name: 'Today' })).toHaveAttribute('aria-selected', 'true');
+  await expect(panel.locator('img.is-active')).toHaveAttribute('src', '/marketing/showcase-today-light.webp');
+  await page.getByRole('tab', { name: 'Library' }).click();
+  await expect(panel.locator('img.is-active')).toHaveAttribute('src', '/marketing/showcase-library-light.webp');
+  await expect(panel.getByRole('img', { name: /Raw Library/ })).toBeVisible();
+  // Arrow keys move between views.
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByRole('tab', { name: 'Calendar' })).toBeFocused();
+  await expect(page.getByRole('tab', { name: 'Calendar' })).toHaveAttribute('aria-selected', 'true');
+  await page.keyboard.press('ArrowRight');
+  await expect(panel.locator('img.is-active')).toHaveAttribute('src', '/marketing/showcase-accounts-light.webp');
+});
+
+test('the homepage opens light, and its dark edition doesn’t change the workspace', async ({ page }) => {
+  // Even on a device set to dark, the homepage opens in its light edition.
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('/');
+  const home = page.locator('.home');
+  await expect(home).not.toHaveClass(/home--dark/);
+  await expect(home).toHaveCSS('background-color', 'rgb(251, 248, 244)');
+  const workspaceTheme = await page.locator('html').getAttribute('data-theme');
+
   await page.getByRole('button', { name: 'Switch to dark mode' }).click();
-  await expect(html).toHaveAttribute('data-theme', 'dark');
-  await expect(page.locator('.hframe--desktop .theme-img--dark')).toBeVisible();
-  await expect(page.locator('.hframe--desktop .theme-img--light')).toBeHidden();
+  await expect(home).toHaveClass(/home--dark/);
+  await expect(home).toHaveCSS('background-color', 'rgb(21, 17, 16)');
+  await expect(page.getByRole('tabpanel').locator('img.is-active')).toHaveAttribute('src', '/marketing/showcase-today-dark.webp');
+  // The workspace appearance is untouched.
+  await expect(page.locator('html')).toHaveAttribute('data-theme', workspaceTheme!);
+  // Remembered on this device.
+  await page.reload();
+  await expect(page.locator('.home')).toHaveClass(/home--dark/);
+  await page.getByRole('button', { name: 'Switch to light mode' }).click();
+  await expect(page.locator('.home')).not.toHaveClass(/home--dark/);
 });
 
 test.describe('on a phone', () => {
