@@ -11,7 +11,7 @@ test.skip(!out, 'Set COMPARE_OUT to capture before/after screenshots.');
 const only = process.env.COMPARE_SCREENS?.split(',');
 const onlyDevice = process.env.COMPARE_DEVICES?.split(',');
 const allScreens = [
-  { name: 'today', path: '/', fullPage: true },
+  { name: 'today', path: '/app', fullPage: true },
   { name: 'calendar', path: '/calendar', fullPage: true },
   {
     name: 'calendar-day',

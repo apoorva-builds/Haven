@@ -96,7 +96,7 @@ export function LoginPage() {
             {step === 1 && <SignatureStep headingRef={headingRef} swatch={swatch} setSwatch={setSwatch} onBack={back} onNext={next} />}
             {step === 2 && <PasskeyStep headingRef={headingRef} status={passkey} setStatus={setPasskey} onBack={back} onNext={next} />}
             {step === 3 && <SentenceStep headingRef={headingRef} sentence={sentence} setSentence={setSentence} onBack={back} onNext={next} />}
-            {step === 4 && <WelcomeStep headingRef={headingRef} email={email} swatchName={chosen?.name} onEnter={() => navigate('/')} />}
+            {step === 4 && <WelcomeStep headingRef={headingRef} email={email} swatchName={chosen?.name} onEnter={() => navigate('/app')} />}
           </div>
         </div>
 

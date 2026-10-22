@@ -14,7 +14,7 @@ const screens: { name: string; path: string; click?: string }[] = [
   { name: 'creation', path: '/gallery/v-ig-atlas' },
   { name: 'creation-posted', path: '/gallery/v-yt-pine-spots' },
   { name: 'library', path: '/library' },
-  { name: 'today', path: '/' },
+  { name: 'today', path: '/app' },
   { name: 'ideas', path: '/ideas' },
   { name: 'idea-versions', path: '/ideas/market-phrases/versions?v=v-ig-atlas' },
   { name: 'calendar', path: '/calendar' },

@@ -4,12 +4,14 @@ import { ToastProvider } from './components/Toast';
 import { CalendarPage } from './pages/Calendar';
 import { CampaignsPage } from './pages/Campaigns';
 import { GalleryPage } from './pages/Gallery';
+import { HomePage } from './pages/Home';
 import { IdeasPage } from './pages/Ideas';
 import { IdeaWorkspacePage } from './pages/idea/IdeaWorkspace';
 import { LibraryPage } from './pages/Library';
 import { LinksPage } from './pages/Links';
 import { LoginPage } from './pages/Login';
 import { NotFoundPage } from './pages/NotFound';
+import { SignupPage } from './pages/Signup';
 import { TeamPage } from './pages/Team';
 import { TodayPage } from './pages/Today';
 import { StudioPage } from './pages/studio/Studio';
@@ -30,10 +32,14 @@ export function App() {
         <ToastProvider>
           <BrowserRouter>
             <Routes>
-              {/* Sample sign-in: a UI-only preview, outside the workspace shell. */}
+              {/* Public pages, outside the workspace shell. */}
+              <Route index element={<HomePage />} />
+              {/* Sample sign-in and sign-up: UI-only previews. */}
               <Route path="login" element={<LoginPage />} />
+              <Route path="signup" element={<SignupPage />} />
+              {/* The workspace demo. Today lives at /app; its other pages keep their paths. */}
               <Route element={<AppShell />}>
-                <Route index element={<TodayPage />} />
+                <Route path="app" element={<TodayPage />} />
                 <Route path="ideas" element={<IdeasPage />} />
                 <Route path="ideas/:ideaId" element={<IdeaWorkspacePage />} />
                 <Route path="ideas/:ideaId/:tab" element={<IdeaWorkspacePage />} />

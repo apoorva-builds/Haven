@@ -55,12 +55,12 @@ test('sample sign-in: five steps, back keeps choices, secrets never stored', asy
   expect(stored).not.toContain('not-a-real-pass');
   expect(stored).not.toContain('quiet morning');
   await page.getByRole('button', { name: /Go to your dashboard/ }).click();
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/app$/);
   await expect(page.locator('.t-hello__h')).toBeVisible();
 });
 
 test('the About panel links to the sample sign-in', async ({ page }) => {
-  await page.goto('/?instant');
+  await page.goto('/app?instant');
   await page.locator('.topbar__preview button').first().click();
   await page.getByRole('link', { name: 'Try the sample sign-in' }).click();
   await expect(page).toHaveURL(/\/login/);

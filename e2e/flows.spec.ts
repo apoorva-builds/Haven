@@ -27,7 +27,7 @@ const chooseAccount = async (page: Page, brand: string | null, platform?: string
 
 test('theme toggle is remembered across reloads', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' });
-  await open(page, '/');
+  await open(page, '/app');
   const html = page.locator('html');
   await expect(html).toHaveAttribute('data-theme', 'light');
   await page.getByTestId('theme-toggle').click();
@@ -96,7 +96,7 @@ test('ⓘ buttons explain sections on request and stay out of the way', async ({
 });
 
 test('Today shows one next action and task groups', async ({ page }) => {
-  await open(page, '/');
+  await open(page, '/app');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Robin');
   await expect(page.getByRole('tab', { name: /Needs you/ })).toHaveAttribute('aria-selected', 'true');
   await page.getByRole('tab', { name: /Assigned to others/ }).click();
@@ -116,7 +116,7 @@ test('Today shows one next action and task groups', async ({ page }) => {
 });
 
 test('one idea follows into three platforms and both Instagram accounts', async ({ page }) => {
-  await open(page, '/');
+  await open(page, '/app');
   await page.getByRole('link', { name: /Continue “Five phrases for a night market”/ }).click();
   await expect(page).toHaveURL(/\/ideas\/market-phrases\/versions/);
 
@@ -281,7 +281,7 @@ test('Raw Library: storage is labelled demo and packages produce no files', asyn
 });
 
 test('universal search jumps to results', async ({ page }) => {
-  await open(page, '/');
+  await open(page, '/app');
   await page.keyboard.press('/');
   await page.keyboard.type('desk changes');
   await page.getByRole('option', { name: /Three small desk changes/ }).first().click();
@@ -294,6 +294,9 @@ test('every primary route renders without console errors', async ({ page }) => {
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   for (const path of [
     '/',
+    '/app',
+    '/login',
+    '/signup',
     '/gallery',
     '/gallery?account=yt-pine',
     '/gallery?account=ig-atlas',

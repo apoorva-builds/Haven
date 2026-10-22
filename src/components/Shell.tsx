@@ -14,7 +14,7 @@ import { BrandLogo } from './Brand';
 import { PALETTES } from '../lib/palettes';
 
 export const NAV: { to: string; label: string; icon: IconName }[] = [
-  { to: '/', label: 'Today', icon: 'today' },
+  { to: '/app', label: 'Today', icon: 'today' },
   { to: '/gallery', label: 'Creation Gallery', icon: 'grid' },
   { to: '/ideas', label: 'Ideas', icon: 'ideas' },
   { to: '/studio', label: 'Video Studio', icon: 'film' },
@@ -36,14 +36,14 @@ export function AppShell() {
         Skip to content
       </a>
       <aside className="sidebar" aria-label="Primary">
-        <Link to="/" className="brand" aria-label="Haven — Today">
+        <Link to="/app" className="brand" aria-label="Haven — Today">
           <BrandLogo variant="horizontal" height={34} className="brand__wordmark" decorative />
           <BrandLogo variant="symbol" height={34} className="brand__icon" decorative />
         </Link>
         <WorkspaceSwitcher />
         <nav className="nav">
           {NAV.map((n) => (
-            <NavLink key={n.to} to={n.to} end={n.to === '/'} className="nav__item" title={n.label}>
+            <NavLink key={n.to} to={n.to} end={n.to === '/app'} className="nav__item" title={n.label}>
               <Icon name={n.icon} size={19} />
               <span className="nav__label">{n.label}</span>
             </NavLink>
@@ -61,8 +61,8 @@ export function AppShell() {
       </div>
 
       <nav className="tabbar" aria-label="Primary (mobile)">
-        {NAV.filter((n) => n.to === '/' || n.to === '/ideas').map((n) => (
-          <NavLink key={n.to} to={n.to} end={n.to === '/'} className="tabbar__item">
+        {NAV.filter((n) => n.to === '/app' || n.to === '/ideas').map((n) => (
+          <NavLink key={n.to} to={n.to} end={n.to === '/app'} className="tabbar__item">
             <Icon name={n.icon} size={21} />
             <span>{n.label}</span>
           </NavLink>
@@ -179,7 +179,7 @@ function Topbar({ onMenu, onProfile }: { onMenu: () => void; onProfile: () => vo
       <button type="button" className="icon-btn topbar__menu" onClick={onMenu} aria-label="Open navigation">
         <Icon name="menu" />
       </button>
-      <Link to="/" className="topbar__brand" aria-label="Haven — Today">
+      <Link to="/app" className="topbar__brand" aria-label="Haven — Today">
         <BrandLogo variant="symbol" height={28} decorative />
       </Link>
       <SearchBox />
@@ -413,7 +413,7 @@ function MobileDrawer({ onClose, onProfile }: { onClose: () => void; onProfile: 
         </div>
         <p className="drawer__ws">{data.workspace.name}</p>
         {NAV.map((n) => (
-          <NavLink key={n.to} to={n.to} end={n.to === '/'} className="nav__item" onClick={onClose}>
+          <NavLink key={n.to} to={n.to} end={n.to === '/app'} className="nav__item" onClick={onClose}>
             <Icon name={n.icon} size={20} />
             <span className="nav__label">{n.label}</span>
           </NavLink>

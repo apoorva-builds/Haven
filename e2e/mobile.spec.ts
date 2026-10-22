@@ -6,7 +6,7 @@ const open = (page: Page, path: string) => page.goto(`${path}${path.includes('?'
 
 test('phone layout uses the tab bar and never scrolls sideways', async ({ page }) => {
   for (const path of [
-    '/',
+    '/app',
     '/gallery',
     '/gallery?account=yt-pine',
     '/gallery?account=ig-atlas',
@@ -37,7 +37,7 @@ test('phone layout uses the tab bar and never scrolls sideways', async ({ page }
 });
 
 test('quick capture from the tab bar', async ({ page }) => {
-  await open(page, '/');
+  await open(page, '/app');
   await page.getByRole('button', { name: 'Capture a new idea' }).click();
   await page.getByLabel('Working title').fill('Phone idea: ferry phrases');
   await page.getByRole('button', { name: 'Capture idea' }).click();
@@ -74,7 +74,7 @@ test('review a version on the phone', async ({ page }) => {
 });
 
 test('Creation Gallery on the phone: preview label, ⓘ, account selector, Audience Pulse, opened creation', async ({ page }) => {
-  await open(page, '/');
+  await open(page, '/app');
   await expect(page.getByRole('button', { name: /About this preview/ })).toBeVisible();
   const tabbar = page.getByRole('navigation', { name: 'Primary (mobile)' });
   await expect(tabbar.getByRole('link')).toHaveCount(3);
@@ -122,7 +122,7 @@ test('phone: the booklet is a slide-over; tap a note to seek, add a note, dismis
 });
 
 test('phone: profile & appearance from the avatar, readable and saved', async ({ page }) => {
-  await open(page, '/');
+  await open(page, '/app');
   await page.getByTestId('me-menu').tap();
   await page.getByRole('menuitem', { name: /Profile & appearance/ }).tap();
   const dialog = page.getByRole('dialog', { name: 'Profile & appearance' });

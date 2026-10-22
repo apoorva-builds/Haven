@@ -25,7 +25,7 @@ const cssVar = (page: Page, name: string) => page.evaluate((n) => getComputedSty
 const topAvatarImg = (page: Page) => page.getByTestId('me-menu').locator('img');
 
 test('upload, replace and remove a profile photo, with an initials fallback', async ({ page }) => {
-  await open(page, '/');
+  await open(page, '/app');
   await expect(page.getByTestId('me-menu')).toContainText('R');
   await expect(topAvatarImg(page)).toHaveCount(0);
 
@@ -67,7 +67,7 @@ test('upload, replace and remove a profile photo, with an initials fallback', as
 
 test('a palette previews across Haven, Cancel goes back, Save keeps it across sessions', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' });
-  await open(page, '/');
+  await open(page, '/app');
   const html = page.locator('html');
   await expect(html).toHaveAttribute('data-palette', 'haven');
   const havenFill = await cssVar(page, '--cobalt-fill');
@@ -118,7 +118,7 @@ test('a palette previews across Haven, Cancel goes back, Save keeps it across se
 });
 
 test('personalisation belongs to one person: other members keep their own look and content is unchanged', async ({ page }) => {
-  await open(page, '/');
+  await open(page, '/app');
   // The work on the page, leaving out the person's own photo.
   const work = () => page.evaluate(() => {
     const m = document.querySelector('main')!.cloneNode(true) as HTMLElement;

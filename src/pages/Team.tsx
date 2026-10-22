@@ -231,7 +231,7 @@ function AccessEditor({ data, member, onRemoved }: { data: DemoData; member: Mem
               className="btn btn--ghost btn--sm"
               onClick={() => {
                 setPreviewAs(member.personId);
-                navigate('/');
+                navigate('/app');
               }}
             >
               <Icon name="user" size={15} /> Preview as {person.name}

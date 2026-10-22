@@ -6,7 +6,7 @@ const open = (page: Page, path: string) => page.goto(`${path}${path.includes('?'
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==', 'base64');
 
 test('memories bring back posted work, lead with "on this day", rotate, and open the original', async ({ page }) => {
-  await open(page, '/');
+  await open(page, '/app');
   const memory = page.getByRole('region', { name: 'Carry-on packing list' });
   await expect(memory).toContainText('On this day · 1 year ago');
   await expect(memory).toContainText('Everything in one carry-on');
@@ -30,7 +30,7 @@ test('memories bring back posted work, lead with "on this day", rotate, and open
 });
 
 test('the ribbon shows real covers by day, opens a Day View, and leads to the full calendar', async ({ page }) => {
-  await open(page, '/');
+  await open(page, '/app');
   const ribbon = page.getByRole('region', { name: 'Look what you’ve made' });
   await expect(ribbon).toContainText('posting since');
   // A day with two posts shows a collage with its count.
@@ -52,7 +52,7 @@ test('the ribbon shows real covers by day, opens a Day View, and leads to the fu
 });
 
 test('next action, quick actions and the work list stay one click away', async ({ page }) => {
-  await open(page, '/');
+  await open(page, '/app');
   await expect(page.getByRole('link', { name: /Continue “Five phrases for a night market”/ })).toBeVisible();
   await page.getByRole('group', { name: 'Quick actions' }).getByRole('button', { name: 'New idea' }).click();
   await expect(page.getByRole('dialog', { name: 'Capture an idea' })).toBeVisible();
@@ -62,7 +62,7 @@ test('next action, quick actions and the work list stay one click away', async (
 });
 
 test('a personal photo is optional, kept in this browser, and per person', async ({ page }) => {
-  await open(page, '/');
+  await open(page, '/app');
   const photoBtn = page.getByRole('button', { name: 'Add a photo of you' });
   await expect(photoBtn).toContainText('R');
   await photoBtn.click();
@@ -86,7 +86,7 @@ test('a personal photo is optional, kept in this browser, and per person', async
   await expect(page.locator('.ribbon .collage.is-posted')).toHaveCount(0);
   await page.getByRole('button', { name: 'Back to your view' }).click();
 
-  await page.goto('/?instant');
+  await page.goto('/app?instant');
   await page.getByRole('button', { name: 'Change your photo' }).click();
   await page.getByRole('menuitem', { name: 'Remove photo' }).click();
   await expect(page.getByRole('button', { name: 'Add a photo of you' })).toBeVisible();

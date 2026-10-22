@@ -15,7 +15,7 @@ const goDirect = (page: Page, path: string) =>
   }, path);
 
 test('workspace menu opens Team & access instead of placeholder items', async ({ page }) => {
-  await open(page, '/');
+  await open(page, '/app');
   await page.getByRole('complementary', { name: 'Primary' }).getByRole('button', { name: /Haven Preview/ }).click();
   const menu = page.getByRole('menu');
   await expect(menu.getByRole('menuitem', { name: /Billing|Storage|Settings|Team & roles/ })).toHaveCount(0);
